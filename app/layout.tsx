@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description: 'Plataforma de atendimento multicanal com WhatsApp e Discord',
   generator: 'v0.app',
   icons: {
-    icon: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 }
 

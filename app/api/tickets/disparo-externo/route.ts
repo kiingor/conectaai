@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { criarEDistribuirTicket } from '@/lib/ticket-distribution'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 /**
  * POST /api/tickets/disparo-externo
@@ -44,7 +45,19 @@ export async function POST(request: NextRequest) {
       cnpj = null,
       registro = null,
       canal = 'whatsapp',
+      organizacao_id: orgIdBody = null,
     } = body
+
+    // Resolver orgId — header → body → DB lookup via setor_id
+    let orgId: string | null = request.headers.get(ORG_ID_HEADER) || orgIdBody
+    if (!orgId && setor_id) {
+      const { data: setorOrg } = await supabase
+        .from('setores')
+        .select('organizacao_id')
+        .eq('id', setor_id)
+        .single()
+      orgId = setorOrg?.organizacao_id || null
+    }
 
     // ─── Validação ────────────────────────────────────────────────────────────
     if (!setor_id) {
@@ -70,11 +83,12 @@ export async function POST(request: NextRequest) {
 
     if (!clienteId && formattedPhone) {
       // Tentar encontrar por telefone
-      const { data: existingCliente } = await supabase
+      let clienteLookupQ = supabase
         .from('clientes')
         .select('id')
         .eq('telefone', formattedPhone)
-        .maybeSingle()
+      if (orgId) clienteLookupQ = clienteLookupQ.eq('organizacao_id', orgId)
+      const { data: existingCliente } = await clienteLookupQ.maybeSingle()
 
       if (existingCliente) {
         clienteId = existingCliente.id
@@ -90,14 +104,16 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Criar novo cliente
+        const clienteInsert: Record<string, unknown> = {
+          nome,
+          telefone: formattedPhone,
+          CNPJ: cnpj ? cnpj.replace(/\D/g, '') : null,
+          Registro: registro || null,
+        }
+        if (orgId) clienteInsert.organizacao_id = orgId
         const { data: newCliente, error: clienteError } = await supabase
           .from('clientes')
-          .insert({
-            nome,
-            telefone: formattedPhone,
-            CNPJ: cnpj ? cnpj.replace(/\D/g, '') : null,
-            Registro: registro || null,
-          })
+          .insert(clienteInsert)
           .select('id')
           .single()
 
@@ -117,13 +133,14 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Verificar ticket aberto existente ────────────────────────────────────
-    const { data: existingTicket } = await supabase
+    let existingTicketQ = supabase
       .from('tickets')
       .select('id, numero, colaborador_id')
       .eq('cliente_id', clienteId)
       .eq('setor_id', setor_id)
       .in('status', ['aberto', 'em_atendimento'])
-      .maybeSingle()
+    if (orgId) existingTicketQ = existingTicketQ.eq('organizacao_id', orgId)
+    const { data: existingTicket } = await existingTicketQ.maybeSingle()
 
     let ticketId: string
     let ticketNumero: number | null = null
@@ -140,7 +157,7 @@ export async function POST(request: NextRequest) {
       console.log(`[Disparo Externo] Criando ticket — cliente: ${clienteId}, setor: ${setor_id}, subsetor: ${subsetor_id || 'none'}, canal: ${canal}`)
       let result: Awaited<ReturnType<typeof criarEDistribuirTicket>> = null
       try {
-        result = await criarEDistribuirTicket(clienteId, setor_id, canal, subsetor_id || null)
+        result = await criarEDistribuirTicket(clienteId, setor_id, canal, subsetor_id || null, orgId)
       } catch (distError: any) {
         console.error(`[Disparo Externo] criarEDistribuirTicket threw:`, distError)
         return NextResponse.json(
@@ -176,19 +193,21 @@ export async function POST(request: NextRequest) {
 
     // ─── Buscar canal ativo do setor (Evolution OU API Oficial) ────────────────
     // Tenta qualquer canal ativo — usa o primeiro que encontrar
-    const { data: canaisAtivos } = await supabase
+    let canaisAtivosQ = supabase
       .from('setor_canais')
       .select('id, tipo, instancia, evolution_base_url, evolution_api_key, phone_number_id, whatsapp_token, template_id, template_language')
       .eq('setor_id', setor_id)
       .eq('ativo', true)
-      .order('criado_em', { ascending: true })
+    if (orgId) canaisAtivosQ = canaisAtivosQ.eq('organizacao_id', orgId)
+    const { data: canaisAtivos } = await canaisAtivosQ.order('criado_em', { ascending: true })
 
     // Também buscar config do setor como fallback para API oficial
-    const { data: setorConfig } = await supabase
+    let setorConfigQ = supabase
       .from('setores')
       .select('template_id, phone_number_id, template_language, whatsapp_token')
       .eq('id', setor_id)
-      .single()
+    if (orgId) setorConfigQ = setorConfigQ.eq('organizacao_id', orgId)
+    const { data: setorConfig } = await setorConfigQ.single()
 
     const canalEvolution = canaisAtivos?.find((c: any) => c.tipo === 'evolution_api' && c.instancia) || null
     const canalOficial = canaisAtivos?.find((c: any) => c.tipo === 'whatsapp' && (c.phone_number_id || setorConfig?.phone_number_id)) || null
@@ -316,7 +335,7 @@ export async function POST(request: NextRequest) {
       ? `Cliente notificado via Template. Disparo externo. Aguardando resposta.`
       : mensagem
 
-    await supabase.from('mensagens').insert({
+    const msgInsert: Record<string, unknown> = {
       ticket_id: ticketId,
       remetente: 'bot',
       conteudo: conteudoMensagem,
@@ -325,11 +344,13 @@ export async function POST(request: NextRequest) {
       canal_envio: canalEnvio,
       whatsapp_message_id: messageId,
       enviado_em: new Date().toISOString(),
-    })
+    }
+    if (orgId) msgInsert.organizacao_id = orgId
+    await supabase.from('mensagens').insert(msgInsert)
 
     // ─── Salvar log de disparo (tabela opcional) ──────────────────────────────
     try {
-      await supabase.from('disparo_logs').insert({
+      const logInsert: Record<string, unknown> = {
         setor_id: setor_id,
         colaborador_id: colaboradorId,
         ticket_id: ticketId,
@@ -339,7 +360,9 @@ export async function POST(request: NextRequest) {
           ? `[Template Oficial]`
           : `[Externo] ${mensagem.slice(0, 60)}${mensagem.length > 60 ? '...' : ''}`,
         status: 'enviado',
-      })
+      }
+      if (orgId) logInsert.organizacao_id = orgId
+      await supabase.from('disparo_logs').insert(logInsert)
     } catch { /* tabela pode não existir */ }
 
     // ─── Resposta ─────────────────────────────────────────────────────────────

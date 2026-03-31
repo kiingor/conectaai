@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Headphones, Eye, EyeOff, ArrowRight, MessageCircle, Zap, Users, Clock, ArrowLeft, Mail } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -22,6 +22,20 @@ export default function WorkdeskLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // Resolve ?org=slug → seta cookie org_id
+  useEffect(() => {
+    const orgSlug = new URLSearchParams(window.location.search).get('org')
+    if (!orgSlug) return
+    fetch(`/api/org/lookup?slug=${encodeURIComponent(orgSlug)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.id) {
+          document.cookie = `org_id=${data.id}; path=/; max-age=3600; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,11 +86,13 @@ export default function WorkdeskLoginPage() {
       if (error) throw error
 
       // Check if user is a colaborador
-      const { data: colaborador } = await supabase
+      const orgId = document.cookie.match(/(?:^|;\s*)org_id=([^;]+)/)?.[1] || null
+      let colaboradorQ = supabase
         .from('colaboradores')
         .select('id, ativo')
         .eq('email', data.user.email)
-        .single()
+      if (orgId) colaboradorQ = colaboradorQ.eq('organizacao_id', orgId)
+      const { data: colaborador } = await colaboradorQ.single()
 
       if (!colaborador) {
         throw new Error('Voce nao tem permissao para acessar o WorkDesk')

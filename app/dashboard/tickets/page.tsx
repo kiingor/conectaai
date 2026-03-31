@@ -657,7 +657,7 @@ export default function TicketsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Setores</SelectItem>
-                {setores.filter(s => s.canal !== 'discord').map((setor) => (
+                {setores.map((setor) => (
                   <SelectItem key={setor.id} value={setor.id}>
                     {setor.nome}
                   </SelectItem>
@@ -1098,8 +1098,7 @@ export default function TicketsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {setores
-                    .filter((s) => s.canal !== 'discord')
-                    .map((s) => (
+                                        .map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         <div className="flex items-center gap-2">
                           <span>{s.nome}</span>

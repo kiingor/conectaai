@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 const EVOLUTION_BASE_URL = 'https://whatsapi.mensageria.softcomtecnologia.com'
 const EVOLUTION_GLOBAL_API_KEY =
@@ -7,6 +8,7 @@ const EVOLUTION_GLOBAL_API_KEY =
 
 export async function POST(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -25,23 +27,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Get colaborador info
-    const { data: colaborador } = await supabase
+    let colaboradorQuery = supabase
       .from('colaboradores')
       .select('id, nome, setor_id')
       .eq('email', user.email)
-      .single()
+    if (orgId) colaboradorQuery = colaboradorQuery.eq('organizacao_id', orgId)
+    const { data: colaborador } = await colaboradorQuery.single()
 
     if (!colaborador) {
       return NextResponse.json({ error: 'Colaborador não encontrado' }, { status: 404 })
     }
 
     // Get active Evolution canal for the setor
-    const { data: canalEvolution } = await supabase
+    let canalQuery = supabase
       .from('setor_canais')
       .select('evolution_base_url, evolution_api_key, instancia')
       .eq('setor_id', setorId)
       .eq('tipo', 'evolution_api')
       .eq('ativo', true)
+    if (orgId) canalQuery = canalQuery.eq('organizacao_id', orgId)
+    const { data: canalEvolution } = await canalQuery
       .order('criado_em', { ascending: true })
       .limit(1)
       .maybeSingle()
@@ -72,11 +77,12 @@ export async function POST(request: NextRequest) {
 
     let clienteId: string
 
-    const { data: existingCliente } = await supabase
+    let clienteLookup = supabase
       .from('clientes')
       .select('id')
       .eq('telefone', formattedPhone)
-      .maybeSingle()
+    if (orgId) clienteLookup = clienteLookup.eq('organizacao_id', orgId)
+    const { data: existingCliente } = await clienteLookup.maybeSingle()
 
     if (existingCliente) {
       clienteId = existingCliente.id
@@ -89,14 +95,16 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', clienteId)
     } else {
+      const clienteInsert: Record<string, unknown> = {
+        nome: clienteNome,
+        telefone: formattedPhone,
+        CNPJ: cleanCnpj,
+        Registro: clienteRegistro || null,
+      }
+      if (orgId) clienteInsert.organizacao_id = orgId
       const { data: newCliente, error: clienteError } = await supabase
         .from('clientes')
-        .insert({
-          nome: clienteNome,
-          telefone: formattedPhone,
-          CNPJ: cleanCnpj,
-          Registro: clienteRegistro || null,
-        })
+        .insert(clienteInsert)
         .select('id')
         .single()
 
@@ -111,13 +119,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing open ticket for this client in this setor
-    const { data: existingTicket } = await supabase
+    let ticketLookup = supabase
       .from('tickets')
       .select('id, numero, colaborador_id, colaboradores(nome)')
       .eq('cliente_id', clienteId)
       .eq('setor_id', setorId)
       .in('status', ['aberto', 'em_atendimento'])
-      .maybeSingle()
+    if (orgId) ticketLookup = ticketLookup.eq('organizacao_id', orgId)
+    const { data: existingTicket } = await ticketLookup.maybeSingle()
 
     let ticketId: string
     let ticketNumero: number | null = null
@@ -133,16 +142,18 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Create ticket — no is_disparo flag (agent can reply immediately, no lock)
+      const ticketInsert: Record<string, unknown> = {
+        cliente_id: clienteId,
+        colaborador_id: colaborador.id,
+        setor_id: setorId,
+        status: 'em_atendimento',
+        prioridade: 'normal',
+        canal: 'whatsapp',
+      }
+      if (orgId) ticketInsert.organizacao_id = orgId
       const { data: ticket, error: ticketError } = await supabase
         .from('tickets')
-        .insert({
-          cliente_id: clienteId,
-          colaborador_id: colaborador.id,
-          setor_id: setorId,
-          status: 'em_atendimento',
-          prioridade: 'normal',
-          canal: 'whatsapp',
-        })
+        .insert(ticketInsert)
         .select('id, numero')
         .single()
 
@@ -214,7 +225,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save message in DB as bot message (initial dispatch message)
-    const { error: msgError } = await supabase.from('mensagens').insert({
+    const msgInsert: Record<string, unknown> = {
       ticket_id: ticketId,
       remetente: 'bot',
       conteudo: mensagem,
@@ -223,14 +234,16 @@ export async function POST(request: NextRequest) {
       canal_envio: 'evolutionapi',
       whatsapp_message_id: evolutionMessageId,
       enviado_em: new Date().toISOString(),
-    })
+    }
+    if (orgId) msgInsert.organizacao_id = orgId
+    const { error: msgError } = await supabase.from('mensagens').insert(msgInsert)
 
     if (msgError) {
       console.error('[Evolution Dispatch] Error saving message:', JSON.stringify(msgError))
     }
 
     // Save dispatch log
-    const { error: logError } = await supabase.from('disparo_logs').insert({
+    const logInsert: Record<string, unknown> = {
       setor_id: setorId,
       colaborador_id: colaborador.id,
       ticket_id: ticketId,
@@ -238,7 +251,9 @@ export async function POST(request: NextRequest) {
       cliente_telefone: formattedPhone,
       template_usado: `[Evolution] ${mensagem.slice(0, 60)}${mensagem.length > 60 ? '...' : ''}`,
       status: 'enviado',
-    })
+    }
+    if (orgId) logInsert.organizacao_id = orgId
+    const { error: logError } = await supabase.from('disparo_logs').insert(logInsert)
 
     if (logError) {
       console.error('[Evolution Dispatch] Error saving disparo_log:', JSON.stringify(logError))

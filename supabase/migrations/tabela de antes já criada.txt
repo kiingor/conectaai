@@ -1,0 +1,358 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.clientes (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  nome text NOT NULL,
+  telefone text,
+  email text,
+  documento text,
+  created_at timestamp with time zone DEFAULT now(),
+  PDV text,
+  CNPJ text,
+  Registro text,
+  discord_user_id text,
+  CONSTRAINT clientes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.colaborador_setores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  colaborador_id uuid NOT NULL,
+  setor_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT colaborador_setores_pkey PRIMARY KEY (id),
+  CONSTRAINT colaborador_setores_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT colaborador_setores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.colaboradores (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  nome text NOT NULL,
+  email text NOT NULL UNIQUE,
+  setor_id uuid,
+  permissao_id uuid,
+  is_online boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  ativo boolean DEFAULT true,
+  is_master boolean DEFAULT false,
+  last_heartbeat timestamp with time zone,
+  pausa_atual_id uuid,
+  CONSTRAINT colaboradores_pkey PRIMARY KEY (id),
+  CONSTRAINT colaboradores_pausa_atual_id_fkey FOREIGN KEY (pausa_atual_id) REFERENCES public.pausas_colaboradores(id),
+  CONSTRAINT colaboradores_permissao_id_fkey FOREIGN KEY (permissao_id) REFERENCES public.permissoes(id),
+  CONSTRAINT colaboradores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.colaboradores_setores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  colaborador_id uuid NOT NULL,
+  setor_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  subsetor_id uuid,
+  CONSTRAINT colaboradores_setores_pkey PRIMARY KEY (id),
+  CONSTRAINT colaboradores_setores_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT colaboradores_setores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id),
+  CONSTRAINT colaboradores_setores_subsetor_id_fkey FOREIGN KEY (subsetor_id) REFERENCES public.subsetores(id)
+);
+CREATE TABLE public.colaboradores_subsetores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  colaborador_id uuid NOT NULL,
+  setor_id uuid NOT NULL,
+  subsetor_id uuid NOT NULL,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT colaboradores_subsetores_pkey PRIMARY KEY (id),
+  CONSTRAINT colaboradores_subsetores_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT colaboradores_subsetores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id),
+  CONSTRAINT colaboradores_subsetores_subsetor_id_fkey FOREIGN KEY (subsetor_id) REFERENCES public.subsetores(id)
+);
+CREATE TABLE public.disparo_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  ticket_id uuid,
+  colaborador_id uuid,
+  colaborador_nome text NOT NULL,
+  cliente_nome text,
+  cliente_telefone text,
+  cliente_cnpj text,
+  template_name text,
+  status text DEFAULT 'enviado'::text,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT disparo_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT disparo_logs_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT disparo_logs_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id),
+  CONSTRAINT disparo_logs_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.tickets(id)
+);
+CREATE TABLE public.disponibilidade_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  colaborador_id uuid NOT NULL,
+  status text NOT NULL CHECK (status = ANY (ARRAY['online'::text, 'offline'::text])),
+  timestamp timestamp with time zone DEFAULT now(),
+  CONSTRAINT disponibilidade_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT disponibilidade_logs_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id)
+);
+CREATE TABLE public.error_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tela text NOT NULL,
+  rota text NOT NULL,
+  log text NOT NULL,
+  componente text,
+  usuario_id uuid,
+  usuario_nome text,
+  navegador text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  resolvido boolean DEFAULT false,
+  criado_em timestamp with time zone DEFAULT now(),
+  resolvido_por text,
+  CONSTRAINT error_logs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.horarios_atendimento (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  dia_semana integer NOT NULL CHECK (dia_semana >= 0 AND dia_semana <= 6),
+  ativo boolean DEFAULT false,
+  hora_inicio time without time zone,
+  hora_fim time without time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT horarios_atendimento_pkey PRIMARY KEY (id),
+  CONSTRAINT horarios_atendimento_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.mensagens (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  ticket_id uuid,
+  cliente_id uuid,
+  remetente text NOT NULL CHECK (remetente = ANY (ARRAY['cliente'::text, 'colaborador'::text, 'bot'::text, 'sistema'::text])),
+  conteudo text,
+  tipo text NOT NULL DEFAULT 'texto'::text CHECK (tipo = ANY (ARRAY['texto'::text, 'imagem'::text, 'audio'::text, 'video'::text, 'documento'::text])),
+  enviado_em timestamp with time zone DEFAULT now(),
+  is_bot boolean DEFAULT false,
+  phone_number_id text DEFAULT '958565544008403'::text,
+  whatsapp_message_id text,
+  url_imagem text,
+  media_type text,
+  canal text DEFAULT 'whatsapp'::text,
+  discord_user_id text,
+  canal_envio text,
+  CONSTRAINT mensagens_pkey PRIMARY KEY (id),
+  CONSTRAINT mensagens_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES public.clientes(id),
+  CONSTRAINT mensagens_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.tickets(id)
+);
+CREATE TABLE public.notificacoes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  remetente_id uuid NOT NULL,
+  destinatario_id uuid,
+  titulo character varying NOT NULL,
+  mensagem text NOT NULL,
+  tipo character varying DEFAULT 'info'::character varying,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT notificacoes_pkey PRIMARY KEY (id),
+  CONSTRAINT notificacoes_destinatario_id_fkey FOREIGN KEY (destinatario_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT notificacoes_remetente_id_fkey FOREIGN KEY (remetente_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT notificacoes_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.notificacoes_lidas (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  notificacao_id uuid NOT NULL,
+  colaborador_id uuid NOT NULL,
+  lido_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT notificacoes_lidas_pkey PRIMARY KEY (id),
+  CONSTRAINT notificacoes_lidas_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT notificacoes_lidas_notificacao_id_fkey FOREIGN KEY (notificacao_id) REFERENCES public.notificacoes(id)
+);
+CREATE TABLE public.pausas (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  nome character varying NOT NULL,
+  descricao text,
+  tempo_maximo_minutos integer,
+  ativo boolean DEFAULT true,
+  criado_em timestamp with time zone DEFAULT now(),
+  atualizado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT pausas_pkey PRIMARY KEY (id),
+  CONSTRAINT pausas_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.pausas_colaboradores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  colaborador_id uuid NOT NULL,
+  pausa_id uuid NOT NULL,
+  setor_id uuid NOT NULL,
+  inicio timestamp with time zone DEFAULT now(),
+  fim timestamp with time zone,
+  duracao_minutos integer,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT pausas_colaboradores_pkey PRIMARY KEY (id),
+  CONSTRAINT pausas_colaboradores_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT pausas_colaboradores_pausa_id_fkey FOREIGN KEY (pausa_id) REFERENCES public.pausas(id),
+  CONSTRAINT pausas_colaboradores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.permissoes (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  nome text NOT NULL,
+  can_view_dashboard boolean DEFAULT false,
+  can_manage_users boolean DEFAULT false,
+  can_see_all_tickets boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT permissoes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.setor_canais (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  nome text NOT NULL,
+  tipo text NOT NULL CHECK (tipo = ANY (ARRAY['whatsapp'::text, 'evolution_api'::text, 'discord'::text])),
+  phone_number_id text,
+  whatsapp_token text,
+  template_id text,
+  template_language text DEFAULT 'pt_BR'::text,
+  max_disparos_dia integer DEFAULT 0,
+  evolution_base_url text,
+  evolution_api_key text,
+  discord_bot_token text,
+  discord_guild_id text,
+  ativo boolean DEFAULT true,
+  criado_em timestamp with time zone DEFAULT now(),
+  instancia text,
+  CONSTRAINT setor_canais_pkey PRIMARY KEY (id),
+  CONSTRAINT setor_canais_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.setor_destinos_transferencia (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_origem_id uuid NOT NULL,
+  setor_destino_id uuid NOT NULL,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT setor_destinos_transferencia_pkey PRIMARY KEY (id),
+  CONSTRAINT setor_destinos_transferencia_setor_destino_id_fkey FOREIGN KEY (setor_destino_id) REFERENCES public.setores(id),
+  CONSTRAINT setor_destinos_transferencia_setor_origem_id_fkey FOREIGN KEY (setor_origem_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.setor_tipos_atendimento (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  tipo text NOT NULL CHECK (tipo = ANY (ARRAY['suporte'::text, 'ouvidoria'::text, 'financeiro'::text, 'implantacao'::text, 'comercial'::text])),
+  setor_destino_id uuid NOT NULL,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT setor_tipos_atendimento_pkey PRIMARY KEY (id),
+  CONSTRAINT setor_tipos_atendimento_setor_destino_id_fkey FOREIGN KEY (setor_destino_id) REFERENCES public.setores(id),
+  CONSTRAINT setor_tipos_atendimento_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.setores (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  nome text NOT NULL,
+  descricao text,
+  created_at timestamp with time zone DEFAULT now(),
+  icon_url text,
+  cor text DEFAULT '#3B82F6'::text,
+  mensagem_finalizacao text,
+  template_id text,
+  phone_number_id text,
+  template_language text DEFAULT 'pt_BR'::text,
+  whatsapp_token text,
+  max_disparos_dia integer DEFAULT 50,
+  canal text DEFAULT 'whatsapp'::text,
+  discord_bot_token text,
+  discord_guild_id text,
+  webhook_eventos ARRAY DEFAULT '{}'::text[],
+  webhook_url text,
+  evolution_base_url text,
+  evolution_api_key text,
+  tempo_espera_minutos integer DEFAULT 0,
+  tag_id uuid,
+  is_receptor boolean DEFAULT false,
+  transmissao_ativa boolean DEFAULT false,
+  setor_receptor_id uuid,
+  CONSTRAINT setores_pkey PRIMARY KEY (id),
+  CONSTRAINT setores_setor_receptor_id_fkey FOREIGN KEY (setor_receptor_id) REFERENCES public.setores(id),
+  CONSTRAINT setores_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES public.tags(id)
+);
+CREATE TABLE public.subsetores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  nome text NOT NULL,
+  descricao text,
+  ativo boolean DEFAULT true,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT subsetores_pkey PRIMARY KEY (id),
+  CONSTRAINT subsetores_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.tags (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nome text NOT NULL,
+  cor text NOT NULL DEFAULT '#6B7280'::text,
+  criado_em timestamp with time zone DEFAULT now(),
+  ordem integer NOT NULL DEFAULT 0,
+  CONSTRAINT tags_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.templates_mensagem (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid NOT NULL,
+  atalho text NOT NULL,
+  mensagem text NOT NULL,
+  ativo boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT templates_mensagem_pkey PRIMARY KEY (id),
+  CONSTRAINT templates_mensagem_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.ticket_assignment_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  ticket_id uuid NOT NULL,
+  colaborador_id uuid,
+  setor_id uuid NOT NULL,
+  action text NOT NULL CHECK (action = ANY (ARRAY['auto_assigned'::text, 'manual_assigned'::text, 'transferred'::text, 'unassigned'::text, 'queue_timeout'::text])),
+  previous_colaborador_id uuid,
+  queue_wait_time_seconds integer,
+  assignment_reason text,
+  created_at timestamp with time zone DEFAULT now(),
+  created_by uuid,
+  CONSTRAINT ticket_assignment_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT ticket_assignment_logs_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT ticket_assignment_logs_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.colaboradores(id),
+  CONSTRAINT ticket_assignment_logs_previous_colaborador_id_fkey FOREIGN KEY (previous_colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT ticket_assignment_logs_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id),
+  CONSTRAINT ticket_assignment_logs_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.tickets(id)
+);
+CREATE TABLE public.ticket_distribution_config (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  setor_id uuid UNIQUE,
+  check_interval_seconds integer DEFAULT 30,
+  max_tickets_per_agent integer DEFAULT 10,
+  queue_timeout_minutes integer DEFAULT 60,
+  auto_assign_enabled boolean DEFAULT true,
+  priority_by_wait_time boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ticket_distribution_config_pkey PRIMARY KEY (id),
+  CONSTRAINT ticket_distribution_config_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id)
+);
+CREATE TABLE public.ticket_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  ticket_id uuid NOT NULL,
+  tipo text NOT NULL CHECK (tipo = ANY (ARRAY['status'::text, 'observacao'::text, 'transferencia'::text, 'manual'::text])),
+  descricao text NOT NULL,
+  autor_id uuid,
+  criado_em timestamp with time zone DEFAULT now(),
+  CONSTRAINT ticket_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT ticket_logs_autor_id_fkey FOREIGN KEY (autor_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT ticket_logs_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.tickets(id)
+);
+CREATE TABLE public.tickets (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  cliente_id uuid NOT NULL,
+  colaborador_id uuid,
+  setor_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'aberto'::text CHECK (status = ANY (ARRAY['aberto'::text, 'em_atendimento'::text, 'encerrado'::text])),
+  prioridade text NOT NULL DEFAULT 'normal'::text CHECK (prioridade = ANY (ARRAY['normal'::text, 'urgente'::text])),
+  canal text NOT NULL DEFAULT 'whatsapp'::text,
+  primeira_resposta_em timestamp with time zone,
+  criado_em timestamp with time zone DEFAULT now(),
+  encerrado_em timestamp with time zone,
+  assignment_lock_until timestamp with time zone,
+  assignment_attempts integer DEFAULT 0,
+  numero integer NOT NULL DEFAULT nextval('tickets_numero_seq'::regclass),
+  disparo_em timestamp with time zone,
+  is_disparo boolean DEFAULT false,
+  user_name_discord text,
+  subsetor_id uuid,
+  atribuido_em timestamp with time zone,
+  CONSTRAINT tickets_pkey PRIMARY KEY (id),
+  CONSTRAINT tickets_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES public.clientes(id),
+  CONSTRAINT tickets_colaborador_id_fkey FOREIGN KEY (colaborador_id) REFERENCES public.colaboradores(id),
+  CONSTRAINT tickets_setor_id_fkey FOREIGN KEY (setor_id) REFERENCES public.setores(id),
+  CONSTRAINT tickets_subsetor_id_fkey FOREIGN KEY (subsetor_id) REFERENCES public.subsetores(id)
+);

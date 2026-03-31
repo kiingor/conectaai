@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 /**
  * POST /api/logs/error
@@ -9,6 +10,7 @@ import { createServiceClient } from '@/lib/supabase/service'
  */
 export async function POST(request: Request) {
   try {
+    const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const body = await request.json()
     const { tela, rota, log, componente, usuario_id, usuario_nome, navegador, metadata } = body
 
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
 
     const supabase = createServiceClient()
 
-    const { error } = await supabase.from('error_logs').insert({
+    const logData: Record<string, unknown> = {
       tela,
       rota,
       log: typeof log === 'string' ? log : JSON.stringify(log),
@@ -27,7 +29,10 @@ export async function POST(request: Request) {
       usuario_nome: usuario_nome || null,
       navegador: navegador || null,
       metadata: metadata || {},
-    })
+    }
+    if (orgId) logData.organizacao_id = orgId
+
+    const { error } = await supabase.from('error_logs').insert(logData)
 
     if (error) {
       console.error('[ErrorLog API] Erro ao salvar log:', error)

@@ -545,7 +545,7 @@ export default function MonitoramentoPage() {
         // Detect channel from last message
         const { data: lastMsgData } = await supabase
           .from('mensagens')
-          .select('canal_envio, phone_number_id, discord_user_id')
+          .select('canal_envio, phone_number_id')
           .eq('ticket_id', selectedTicket.id)
           .neq('remetente', 'sistema')
           .order('enviado_em', { ascending: false })
@@ -553,15 +553,11 @@ export default function MonitoramentoPage() {
 
         const lastCanalEnvio = lastMsgData?.[0]?.canal_envio || null
         const lastPhoneNumberId = lastMsgData?.[0]?.phone_number_id || null
-        const lastDiscordUserId = lastMsgData?.[0]?.discord_user_id || null
 
         let setorCanal = 'whatsapp'
         let phoneNumberId: string | null = lastPhoneNumberId
 
-        if (lastDiscordUserId || lastCanalEnvio === 'discord') {
-          setorCanal = 'discord'
-          phoneNumberId = null
-        } else if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
+        if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
           if (lastPhoneNumberId) {
             const { data: evoCanal } = await supabase
               .from('setor_canais')
@@ -594,13 +590,7 @@ export default function MonitoramentoPage() {
 
         // Send closing message via the appropriate channel
         try {
-          if (setorCanal === 'discord') {
-            await fetch('/api/discord/send', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ticketId: selectedTicket.id, message: processedMessage }),
-            })
-          } else if (setorCanal === 'evolution_api' && phoneNumberId && cliente?.telefone) {
+          if (setorCanal === 'evolution_api' && phoneNumberId && cliente?.telefone) {
             await fetch('/api/evolution/send', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1142,7 +1132,7 @@ export default function MonitoramentoPage() {
                               {ticket.numero ? `#${ticket.numero}` : '—'}
                             </TableCell>
                             <TableCell className="text-sm text-foreground">
-                              {ticket.canal === 'discord' ? '—' : formatPhone(ticket.telefone)}
+                              {formatPhone(ticket.telefone)}
                             </TableCell>
                             <TableCell className="text-sm text-foreground max-w-[140px]">
                               <div className="flex items-center gap-1">
@@ -1289,7 +1279,7 @@ export default function MonitoramentoPage() {
                             {ticket.numero ? `#${ticket.numero}` : '—'}
                           </TableCell>
                           <TableCell className="text-sm text-foreground">
-                            {ticket.canal === 'discord' ? '—' : formatPhone(ticket.telefone)}
+                            {formatPhone(ticket.telefone)}
                           </TableCell>
                           <TableCell className="text-sm text-foreground">
                             <div className="flex items-center gap-1">

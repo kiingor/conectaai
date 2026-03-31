@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const setorId = searchParams.get('setor_id')
     const dateParam = searchParams.get('date')
+    const orgId = searchParams.get('organizacao_id')
 
     // Data de referência
     const refDate = dateParam ? new Date(dateParam + 'T00:00:00') : new Date()
@@ -32,10 +33,12 @@ export async function GET(request: NextRequest) {
     let colaboradorIds: string[] | null = null
 
     if (setorId) {
-      const { data: csData } = await supabase
+      let csQ = supabase
         .from('colaboradores_setores')
         .select('colaborador_id')
         .eq('setor_id', setorId)
+      if (orgId) csQ = csQ.eq('organizacao_id', orgId)
+      const { data: csData } = await csQ
 
       colaboradorIds = (csData || []).map((c) => c.colaborador_id)
       if (colaboradorIds.length === 0) {
@@ -51,6 +54,7 @@ export async function GET(request: NextRequest) {
     if (colaboradorIds) {
       colabQuery = colabQuery.in('id', colaboradorIds)
     }
+    if (orgId) colabQuery = colabQuery.eq('organizacao_id', orgId)
 
     const { data: colaboradores, error: colabError } = await colabQuery
 

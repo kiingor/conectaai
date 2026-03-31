@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v21.0'
 
 export async function POST(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
     
     // Get current user
@@ -43,15 +45,15 @@ const body = await request.json()
       if (ticket?.setor_id) {
         // Priority 1: Check setor_canais by phone_number_id
         if (phoneNumberId) {
-          const { data: canalMatch } = await supabase
+          let canalMatchQ = supabase
             .from('setor_canais')
             .select('phone_number_id, whatsapp_token')
             .eq('setor_id', ticket.setor_id)
             .eq('phone_number_id', phoneNumberId)
             .eq('tipo', 'whatsapp')
             .eq('ativo', true)
-            .limit(1)
-            .maybeSingle()
+          if (orgId) canalMatchQ = canalMatchQ.eq('organizacao_id', orgId)
+          const { data: canalMatch } = await canalMatchQ.limit(1).maybeSingle()
 
           if (canalMatch) {
             if (canalMatch.whatsapp_token) accessToken = canalMatch.whatsapp_token

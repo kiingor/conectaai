@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 /**
  * DELETE /api/admin/delete-user
@@ -9,6 +10,7 @@ import { NextResponse } from 'next/server'
  */
 export async function DELETE(request: Request) {
   try {
+    const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const body = await request.json()
     const { colaboradorId, email } = body
 
@@ -37,10 +39,12 @@ export async function DELETE(request: Request) {
       .eq('colaborador_id', colaboradorId)
 
     // 2. Remover o colaborador
-    const { error: colabError } = await supabaseAdmin
+    let deleteColabQ = supabaseAdmin
       .from('colaboradores')
       .delete()
       .eq('id', colaboradorId)
+    if (orgId) deleteColabQ = deleteColabQ.eq('organizacao_id', orgId)
+    const { error: colabError } = await deleteColabQ
 
     if (colabError) {
       console.error('Erro ao deletar colaborador:', colabError)

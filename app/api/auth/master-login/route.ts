@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 const MASTER_PASSWORD = 'K9#vT2!qZ7@Lp4$X'
 
@@ -11,6 +12,7 @@ const MASTER_PASSWORD = 'K9#vT2!qZ7@Lp4$X'
  */
 export async function POST(request: Request) {
   try {
+    const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const { email, password } = await request.json()
 
     if (!email || !password) {
@@ -34,12 +36,13 @@ export async function POST(request: Request) {
       }
     )
 
-    // Step 1: Check if the colaborador exists and is active
-    const { data: colaborador } = await supabaseAdmin
+    // Step 1: Check if the colaborador exists and is active (scoped to org when available)
+    const colaboradorQuery = supabaseAdmin
       .from('colaboradores')
       .select('id, ativo, email')
       .ilike('email', normalizedEmail)
-      .single()
+    if (orgId) colaboradorQuery.eq('organizacao_id', orgId)
+    const { data: colaborador } = await colaboradorQuery.single()
 
     if (!colaborador) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })

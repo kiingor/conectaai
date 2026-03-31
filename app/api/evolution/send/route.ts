@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 export async function POST(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
 
     // Get current user
@@ -43,14 +45,14 @@ export async function POST(request: NextRequest) {
     // Priority 1: busca pela instancia em TODOS os setores
     // (ticket pode ter sido transferido do setor original, então não filtramos por setor_id)
     if (instanceName) {
-      const { data: canalByInstance } = await supabase
+      let canalByInstanceQ = supabase
         .from('setor_canais')
         .select('evolution_base_url, evolution_api_key')
         .eq('tipo', 'evolution_api')
         .eq('instancia', instanceName)
         .eq('ativo', true)
-        .limit(1)
-        .maybeSingle()
+      if (orgId) canalByInstanceQ = canalByInstanceQ.eq('organizacao_id', orgId)
+      const { data: canalByInstance } = await canalByInstanceQ.limit(1).maybeSingle()
 
       if (canalByInstance) {
         evolutionBaseUrl = canalByInstance.evolution_base_url
@@ -61,14 +63,14 @@ export async function POST(request: NextRequest) {
 
     // Priority 2: Fallback — qualquer canal Evolution ativo do setor atual
     if (!evolutionBaseUrl || !evolutionApiKey) {
-      const { data: canalSetor } = await supabase
+      let canalSetorQ = supabase
         .from('setor_canais')
         .select('evolution_base_url, evolution_api_key')
         .eq('setor_id', ticket.setor_id)
         .eq('tipo', 'evolution_api')
         .eq('ativo', true)
-        .limit(1)
-        .maybeSingle()
+      if (orgId) canalSetorQ = canalSetorQ.eq('organizacao_id', orgId)
+      const { data: canalSetor } = await canalSetorQ.limit(1).maybeSingle()
 
       if (canalSetor) {
         evolutionBaseUrl = evolutionBaseUrl || canalSetor.evolution_base_url

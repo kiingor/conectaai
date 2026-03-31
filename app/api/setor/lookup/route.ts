@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 export async function GET(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -19,16 +21,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Search in setor_canais table by multiple fields — return ALL matches
-    const { data: canalMatches, error: canalError } = await supabase
+    let canalQ = supabase
       .from('setor_canais')
       .select(`
         id, setor_id, nome, tipo, ativo, instancia, max_disparos_dia, criado_em,
         phone_number_id, whatsapp_token, template_id, template_language,
         evolution_base_url, evolution_api_key,
-        discord_bot_token, discord_guild_id,
         setores(id, nome)
       `)
       .or(`evolution_api_key.eq.${identifier},instancia.eq.${identifier},phone_number_id.eq.${identifier}`)
+    if (orgId) canalQ = canalQ.eq('organizacao_id', orgId)
+    const { data: canalMatches, error: canalError } = await canalQ
 
     if (canalMatches && canalMatches.length > 0) {
       const results = await Promise.all(
@@ -59,11 +62,6 @@ export async function GET(request: NextRequest) {
             canalEspecifico = {
               evolution_base_url: canalMatch.evolution_base_url || null,
               evolution_api_key: canalMatch.evolution_api_key || null,
-            }
-          } else if (canalMatch.tipo === 'discord') {
-            canalEspecifico = {
-              discord_bot_token: canalMatch.discord_bot_token || null,
-              discord_guild_id: canalMatch.discord_guild_id || null,
             }
           }
 
@@ -123,10 +121,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Priority 2: Fallback to setores table — return ALL matches
-    const { data: setorMatches } = await supabase
+    let setorMatchQ = supabase
       .from('setores')
       .select('id, nome, canal')
       .or(`evolution_api_key.eq.${identifier},phone_number_id.eq.${identifier}`)
+    if (orgId) setorMatchQ = setorMatchQ.eq('organizacao_id', orgId)
+    const { data: setorMatches } = await setorMatchQ
 
     if (setorMatches && setorMatches.length > 0) {
       return NextResponse.json(

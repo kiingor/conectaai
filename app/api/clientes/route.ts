@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 /**
  * POST /api/clientes
@@ -20,8 +21,9 @@ import { NextResponse } from 'next/server'
  * - created: true se criou novo cliente, false se atualizou existente
  * - cliente: dados do cliente
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
     const body = await request.json()
 
@@ -39,11 +41,12 @@ export async function POST(request: Request) {
     const telefoneNormalizado = telefone.replace(/\D/g, '')
 
     // Verificar se cliente ja existe
-    const { data: clienteExistente } = await supabase
+    let clienteLookupQ = supabase
       .from('clientes')
       .select('*')
       .eq('telefone', telefoneNormalizado)
-      .maybeSingle()
+    if (orgId) clienteLookupQ = clienteLookupQ.eq('organizacao_id', orgId)
+    const { data: clienteExistente } = await clienteLookupQ.maybeSingle()
 
     if (clienteExistente) {
       // Cliente existe - atualizar dados
@@ -91,17 +94,19 @@ export async function POST(request: Request) {
     }
 
     // Cliente nao existe - criar novo
+    const novoClienteData: Record<string, unknown> = {
+      telefone: telefoneNormalizado,
+      nome: nome || null,
+      email: email || null,
+      documento: documento || null,
+      PDV: PDV || null,
+      CNPJ: CNPJ || null,
+      Registro: Registro || null,
+    }
+    if (orgId) novoClienteData.organizacao_id = orgId
     const { data: novoCliente, error: insertError } = await supabase
       .from('clientes')
-      .insert({
-        telefone: telefoneNormalizado,
-        nome: nome || null,
-        email: email || null,
-        documento: documento || null,
-        PDV: PDV || null,
-        CNPJ: CNPJ || null,
-        Registro: Registro || null,
-      })
+      .insert(novoClienteData)
       .select()
       .single()
 
@@ -139,8 +144,9 @@ export async function POST(request: Request) {
  * - search?: string - busca por nome ou telefone
  * - limit?: number - limite de resultados (default: 50)
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -153,6 +159,8 @@ export async function GET(request: Request) {
       .select('*')
       .order('nome')
       .limit(limit)
+
+    if (orgId) query = query.eq('organizacao_id', orgId)
 
     // Busca por telefone exato
     if (telefone) {

@@ -13,11 +13,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createServiceClient()
+    const { searchParams } = new URL(request.url)
+    const orgId = searchParams.get('organizacao_id')
 
-    const { data, error } = await supabase
+    let setoresQ = supabase
       .from('setores')
       .select('id, nome, descricao, created_at')
       .order('nome')
+    if (orgId) setoresQ = setoresQ.eq('organizacao_id', orgId)
+    const { data, error } = await setoresQ
 
     if (error) {
       console.error('[painel/setores] Error:', error)

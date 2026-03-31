@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 /**
  * POST /api/admin/create-user
@@ -11,6 +12,7 @@ import { NextResponse } from 'next/server'
  */
 export async function POST(request: Request) {
   try {
+    const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const body = await request.json()
     const { email, password, nome } = body
 

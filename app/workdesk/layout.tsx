@@ -74,46 +74,89 @@ export default function WorkdeskLayout({
   }
 
   const fetchColaborador = useCallback(async () => {
+    console.log('[workdesk layout] fetchColaborador iniciado, pathname:', pathname)
+
     // Skip auth check for login and reset-password pages
     if (pathname === '/workdesk/login' || pathname === '/workdesk/reset-password') {
+      console.log('[workdesk layout] página de login/reset, pulando auth check')
       setLoading(false)
       return
     }
 
+    console.log('[workdesk layout] verificando sessão...')
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
+    console.log('[workdesk layout] getUser resultado:', { user: user?.email ?? null, error: userError?.message ?? null })
+
     if (!user) {
-      router.push('/workdesk/login')
+      const orgParam = new URLSearchParams(window.location.search).get('org')
+      console.log('[workdesk layout] sem usuário, redirecionando para login. org param:', orgParam)
+      router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
       return
     }
 
-    // First get colaborador
-    const { data: colaboradorData } = await supabase
+    // Se tem ?org= na URL e não tem cookie, resolve o org_id agora
+    let orgId = document.cookie.match(/(?:^|;\s*)org_id=([^;]+)/)?.[1] ?? null
+    const orgParam = new URLSearchParams(window.location.search).get('org')
+    if (!orgId && orgParam) {
+      console.log('[workdesk layout] sem cookie, resolvendo org via ?org=', orgParam)
+      try {
+        const res = await fetch(`/api/org/lookup?slug=${encodeURIComponent(orgParam)}`)
+        const data = res.ok ? await res.json() : null
+        if (data?.id) {
+          orgId = data.id
+          document.cookie = `org_id=${data.id}; path=/; max-age=28800; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`
+          console.log('[workdesk layout] org_id setado via ?org=:', orgId)
+        }
+      } catch { /* silencia erros de rede */ }
+    }
+
+    console.log('[workdesk layout] org_id do cookie:', orgId)
+    console.log('[workdesk layout] buscando colaborador para email:', user.email, 'org:', orgId)
+
+    let colaboradorQuery = supabase
       .from('colaboradores')
       .select('id, nome, email, is_online, pausa_atual_id')
-      .eq('email', user.email)
-      .single()
+      .eq('email', user.email!)
+    if (orgId) colaboradorQuery = colaboradorQuery.eq('organizacao_id', orgId)
+    let { data: colaboradorData, error: colabError } = await colaboradorQuery.maybeSingle()
+    console.log('[workdesk layout] colaborador resultado:', { data: colaboradorData, error: colabError?.message ?? null })
+
+    // Fallback: se não achou na org específica, busca sem filtro de org (master admin)
+    if (!colaboradorData && orgId) {
+      console.log('[workdesk layout] não encontrado na org, tentando fallback sem filtro de org')
+      const fallback = await supabase
+        .from('colaboradores')
+        .select('id, nome, email, is_online, pausa_atual_id')
+        .eq('email', user.email!)
+        .limit(1)
+        .maybeSingle()
+      console.log('[workdesk layout] fallback resultado:', { data: fallback.data, error: fallback.error?.message ?? null })
+      colaboradorData = fallback.data
+    }
 
     if (!colaboradorData) {
-      setLoading(false)
+      console.log('[workdesk layout] colaborador não encontrado, redirecionando para login')
+      router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
       return
     }
 
     // Then get their setores
-    const { data: setoresData } = await supabase
+    const { data: setoresData, error: setoresError } = await supabase
       .from('colaboradores_setores')
       .select('setor_id')
       .eq('colaborador_id', colaboradorData.id)
+    console.log('[workdesk layout] setores resultado:', { count: setoresData?.length ?? 0, error: setoresError?.message ?? null })
 
     const data = {
       ...colaboradorData,
       setores_vinculados: setoresData || [],
     }
 
-    if (data) {
-      setColaborador(data)
-    }
+    console.log('[workdesk layout] colaborador carregado com sucesso:', data.nome)
+    setColaborador(data)
     setLoading(false)
   }, [supabase, router, pathname])
 
@@ -260,7 +303,13 @@ export default function WorkdeskLayout({
   }
 
   if (!colaborador) {
-    return null
+    const orgParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('org') : null
+    router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   return (

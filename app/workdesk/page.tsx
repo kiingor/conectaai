@@ -138,7 +138,6 @@ interface Ticket {
   mensagens_nao_lidas?: number
   is_disparo?: boolean
   disparo_em?: string | null
-  user_name_discord?: string | null
 }
 
 interface Mensagem {
@@ -151,7 +150,6 @@ interface Mensagem {
   enviado_em: string
   phone_number_id?: string
   whatsapp_message_id?: string
-  discord_user_id?: string | null
   url_imagem?: string | null
   media_type?: string | null
   // For history display
@@ -595,7 +593,7 @@ export default function WorkdeskPage() {
   const [disparoLimitInfo, setDisparoLimitInfo] = useState('')
   const [disparoCanalChoice, setDisparoCanalChoice] = useState<'whatsapp' | 'evolution_api'>('whatsapp')
   const [disparoMensagemEvolution, setDisparoMensagemEvolution] = useState('')
-  const [setorCanalConfig, setSetorCanalConfig] = useState<'whatsapp' | 'discord' | 'evolution_api'>('whatsapp')
+  const [setorCanalConfig, setSetorCanalConfig] = useState<'whatsapp' | 'evolution_api'>('whatsapp')
   const [setorCanaisAtivos, setSetorCanaisAtivos] = useState<string[]>([])
   
   // Unread messages tracking
@@ -852,8 +850,7 @@ export default function WorkdeskPage() {
         setMensagens(data)
 
         // Check 24h window - only applies to WhatsApp channel
-        // Discord has no 24h window limitation
-if (setorCanalConfig === 'discord' || setorCanalConfig === 'evolution_api') {
+if (setorCanalConfig === 'evolution_api') {
   setIsWindowExpired(false)
   setLastMessageTime(null)
   } else {
@@ -1400,7 +1397,7 @@ if (setorCanalConfig === 'discord' || setorCanalConfig === 'evolution_api') {
     setMobileDrawerOpen(false)
     // Update canal config based on ticket's setor
     if (ticket.setores?.canal) {
-      setSetorCanalConfig(ticket.setores.canal as 'whatsapp' | 'discord' | 'evolution_api')
+      setSetorCanalConfig(ticket.setores.canal as 'whatsapp' | 'evolution_api')
     }
     // Initialize audio context on user interaction
     initAudioContext()
@@ -1457,7 +1454,7 @@ const handleEncerrarTicket = async () => {
         // Detectar canal pela última mensagem (mesma lógica do handleSendMessage)
         const { data: lastMsgData } = await supabase
           .from('mensagens')
-          .select('canal_envio, phone_number_id, discord_user_id')
+          .select('canal_envio, phone_number_id')
           .eq('ticket_id', selectedTicket.id)
           .neq('remetente', 'sistema')
           .order('enviado_em', { ascending: false })
@@ -1465,16 +1462,11 @@ const handleEncerrarTicket = async () => {
 
         const lastCanalEnvio = lastMsgData?.[0]?.canal_envio || null
         const lastPhoneNumberId = lastMsgData?.[0]?.phone_number_id || null
-        const lastDiscordUserId = lastMsgData?.[0]?.discord_user_id || null
-        const hasDiscordMsg = lastDiscordUserId || mensagens.some(m => m.discord_user_id)
 
         let setorCanal = 'whatsapp'
         let phoneNumberId: string | null = lastPhoneNumberId
 
-        if (hasDiscordMsg || lastCanalEnvio === 'discord') {
-          setorCanal = 'discord'
-          phoneNumberId = null
-        } else if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
+        if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
           if (lastPhoneNumberId) {
             const { data: evoCanal } = await supabase
               .from('setor_canais')
@@ -1510,16 +1502,7 @@ const handleEncerrarTicket = async () => {
 
         const processedMessage = processTemplateVariables(setor.mensagem_finalizacao)
 
-        if (setorCanal === 'discord') {
-          await fetch('/api/discord/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ticketId: selectedTicket.id,
-              message: processedMessage,
-            }),
-          })
-        } else if (setorCanal === 'evolution_api' && phoneNumberId && selectedTicket.clientes.telefone) {
+        if (setorCanal === 'evolution_api' && phoneNumberId && selectedTicket.clientes.telefone) {
           await fetch('/api/evolution/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2315,15 +2298,14 @@ const tempId = `temp-${Date.now()}`
     // Send in background
     try {
       // Determinar canal de envio pela última mensagem do ticket
-      // Prioridade: discord_user_id (indicador mais confiável) > canal_envio > setor_canais > fallback
+      // Prioridade: canal_envio > setor_canais > fallback
       let setorCanal = 'whatsapp'
       let phoneNumberId: string | null = null
 
       // 1. Busca a última mensagem do ticket (exceto sistema)
-      //    Inclui discord_user_id — indicador definitivo de ticket Discord
       const { data: lastMsgData } = await supabase
         .from('mensagens')
-        .select('canal_envio, phone_number_id, discord_user_id')
+        .select('canal_envio, phone_number_id')
         .eq('ticket_id', capturedTicketId)
         .neq('remetente', 'sistema')
         .order('enviado_em', { ascending: false })
@@ -2331,30 +2313,14 @@ const tempId = `temp-${Date.now()}`
 
       const lastCanalEnvio = lastMsgData?.[0]?.canal_envio || null
       const lastPhoneNumberId = lastMsgData?.[0]?.phone_number_id || null
-      const lastDiscordUserId = lastMsgData?.[0]?.discord_user_id || null
-
-      // Também verificar se alguma mensagem do cliente tem discord_user_id (mais abrangente)
-      const hasDiscordMsg = lastDiscordUserId || mensagens.some(m => m.discord_user_id)
 
       console.log('[workdesk] Canal detection — ticket:', capturedTicketId, {
         lastCanalEnvio,
         lastPhoneNumberId,
-        lastDiscordUserId,
-        hasDiscordMsg,
         setorCanalConfig,
       })
 
-      if (hasDiscordMsg) {
-        // Indicador definitivo: mensagem com discord_user_id = é Discord
-        setorCanal = 'discord'
-        phoneNumberId = null
-        console.log('[workdesk] Canal detectado: DISCORD (via discord_user_id)')
-      } else if (lastCanalEnvio === 'discord') {
-        // Discord via canal_envio (caso esteja correto no banco)
-        setorCanal = 'discord'
-        phoneNumberId = null
-        console.log('[workdesk] Canal detectado: DISCORD (via canal_envio)')
-      } else if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
+      if (lastCanalEnvio === 'evolutionapi' || lastPhoneNumberId) {
         // Evolution ou WhatsApp — cruzar phone_number_id com setor_canais
         // IMPORTANTE: busca em TODOS os setores (ticket pode ter sido transferido do setor original)
         if (lastPhoneNumberId) {
@@ -2380,38 +2346,32 @@ const tempId = `temp-${Date.now()}`
           console.log('[workdesk] Canal detectado: EVOLUTION_API (sem phone_number_id confirmado)')
         }
       } else if (capturedTicket.setor_id) {
-        // Sem indicadores nas mensagens — usar setorCanalConfig ou setor_canais
-        if (setorCanalConfig === 'discord') {
-          setorCanal = 'discord'
-          phoneNumberId = null
-          console.log('[workdesk] Canal detectado: DISCORD (via setorCanalConfig)')
-        } else {
-          const { data: canalAtivo } = await supabase
-            .from('setor_canais')
-            .select('tipo, instancia, phone_number_id')
-            .eq('setor_id', capturedTicket.setor_id)
-            .eq('ativo', true)
-            .order('criado_em', { ascending: true })
-            .limit(1)
-            .maybeSingle()
+        // Sem indicadores nas mensagens — usar setor_canais
+        const { data: canalAtivo } = await supabase
+          .from('setor_canais')
+          .select('tipo, instancia, phone_number_id')
+          .eq('setor_id', capturedTicket.setor_id)
+          .eq('ativo', true)
+          .order('criado_em', { ascending: true })
+          .limit(1)
+          .maybeSingle()
 
-          if (canalAtivo) {
-            setorCanal = canalAtivo.tipo as typeof setorCanal
-            phoneNumberId = canalAtivo.tipo === 'evolution_api'
-              ? canalAtivo.instancia
-              : canalAtivo.phone_number_id
-            console.log('[workdesk] Canal detectado:', setorCanal.toUpperCase(), '(via setor_canais fallback)')
-          } else {
-            // Legacy fallback: campos diretos da tabela setores
-            const { data: setorData } = await supabase
-              .from('setores')
-              .select('canal, phone_number_id, discord_bot_token')
-              .eq('id', capturedTicket.setor_id)
-              .single()
-            setorCanal = setorData?.canal || 'whatsapp'
-            phoneNumberId = setorData?.phone_number_id || null
-            console.log('[workdesk] Canal detectado:', setorCanal.toUpperCase(), '(via setores legacy fallback)')
-          }
+        if (canalAtivo) {
+          setorCanal = canalAtivo.tipo as typeof setorCanal
+          phoneNumberId = canalAtivo.tipo === 'evolution_api'
+            ? canalAtivo.instancia
+            : canalAtivo.phone_number_id
+          console.log('[workdesk] Canal detectado:', setorCanal.toUpperCase(), '(via setor_canais fallback)')
+        } else {
+          // Legacy fallback: campos diretos da tabela setores
+          const { data: setorData } = await supabase
+            .from('setores')
+            .select('canal, phone_number_id')
+            .eq('id', capturedTicket.setor_id)
+            .single()
+          setorCanal = setorData?.canal || 'whatsapp'
+          phoneNumberId = setorData?.phone_number_id || null
+          console.log('[workdesk] Canal detectado:', setorCanal.toUpperCase(), '(via setores legacy fallback)')
         }
       }
 
@@ -2492,17 +2452,7 @@ const tempId = `temp-${Date.now()}`
         let sendUrl = '/api/whatsapp/send'
         let sendBody: Record<string, any> = {}
 
-        if (setorCanal === 'discord') {
-          sendUrl = '/api/discord/send'
-          sendBody = {
-            ticketId: capturedTicketId,
-            message: messageContent,
-            messageId: savedMsg.id,
-            fileUrl: fileUrl,
-            fileType: fileToUpload?.type || null,
-            fileName: fileToUpload?.name || null,
-          }
-        } else if (setorCanal === 'evolution_api') {
+        if (setorCanal === 'evolution_api') {
           sendUrl = '/api/evolution/send'
           sendBody = {
             ticketId: capturedTicketId,
@@ -2676,7 +2626,7 @@ const tempId = `temp-${Date.now()}`
         <aside className="w-52 shrink-0 border-r border-white/30 dark:border-white/8 bg-white/55 dark:bg-white/4 backdrop-blur-xl lg:w-60 xl:w-72 h-full overflow-hidden flex flex-col">
           {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
           {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
-            (setorCanalConfig !== 'discord' && setorCanalConfig !== 'evolution_api')) && (
+            setorCanalConfig !== 'evolution_api') && (
           <div className="p-2 border-b border-white/30 dark:border-white/8 shrink-0">
   <Button
   onClick={async () => {
@@ -2795,7 +2745,7 @@ const tempId = `temp-${Date.now()}`
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-xs font-sans font-bold text-muted-foreground shrink-0">#{selectedTicket.numero}</span>
-                      <h2 className="text-xs font-semibold text-foreground truncate max-w-[180px]">{setorCanalConfig === 'discord' ? (selectedTicket.user_name_discord || selectedTicket.clientes.nome) : selectedTicket.clientes.nome}</h2>
+                      <h2 className="text-xs font-semibold text-foreground truncate max-w-[180px]">{selectedTicket.clientes.nome}</h2>
                     </div>
                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       {selectedTicket.setores && (
@@ -2853,7 +2803,7 @@ const tempId = `temp-${Date.now()}`
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowClientInfo(!showClientInfo)}
-                    title={showClientInfo ? (setorCanalConfig === 'discord' ? 'Ocultar dados do colaborador' : 'Ocultar dados do cliente') : (setorCanalConfig === 'discord' ? 'Mostrar dados do colaborador' : 'Mostrar dados do cliente')}
+                    title={showClientInfo ? 'Ocultar dados do cliente' : 'Mostrar dados do cliente'}
                   >
                     {showClientInfo ? (
                       <PanelRightClose className="h-4 w-4" />
@@ -3243,68 +3193,6 @@ const tempId = `temp-${Date.now()}`
             showClientInfo ? "hidden xl:block" : "hidden"
           )}>
             <div className="p-4">
-              {setorCanalConfig === 'discord' ? (
-              <>
-              {/* Header Dados do Colaborador */}
-              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
-                <User className="h-3.5 w-3.5" />
-                Dados do Colaborador
-              </h3>
-
-              {/* Dados compactos */}
-              <div className="rounded-lg border bg-muted/30 divide-y divide-border">
-                {/* Nome Discord */}
-                <div className="flex items-center px-2.5 py-1.5">
-                  <label className="w-16 shrink-0 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                    Nome
-                  </label>
-                  <p className="text-xs font-medium text-foreground break-words flex-1">
-                    {selectedTicket.user_name_discord || '—'}
-                  </p>
-                  {selectedTicket.user_name_discord && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 shrink-0"
-                      onClick={() => copyToClipboard(selectedTicket.user_name_discord || '', 'Nome Discord')}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-
-                {/* Discord ID */}
-                <div className="flex items-center px-2.5 py-1.5">
-                  <label className="w-16 shrink-0 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                    ID
-                  </label>
-                  {(() => {
-                    const lastClientMsg = mensagens.filter(m => m.remetente === 'cliente' && m.discord_user_id).pop()
-                    const discordId = lastClientMsg?.discord_user_id || null
-                    return (
-                      <>
-                        <p className="text-xs font-mono text-foreground break-all flex-1">
-                          {discordId || '—'}
-                        </p>
-                        {discordId && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 shrink-0"
-                            onClick={() => copyToClipboard(discordId, 'Discord ID')}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </>
-                    )
-                  })()}
-                </div>
-              </div>
-
-              </>
-              ) : (
-              <>
               {/* Header Dados do Cliente */}
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -3425,8 +3313,6 @@ const tempId = `temp-${Date.now()}`
                   </div>
                 )}
               </div>
-              </>
-              )}
 
               {/* Ticket Info Section */}
               <div className="mt-4 pt-4 border-t border-border">
@@ -3497,7 +3383,7 @@ const tempId = `temp-${Date.now()}`
                     <User className="h-5 w-5 text-secondary-foreground" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-foreground">{setorCanalConfig === 'discord' ? (selectedTicket.user_name_discord || selectedTicket.clientes.nome) : selectedTicket.clientes.nome}</h2>
+                    <h2 className="font-semibold text-foreground">{selectedTicket.clientes.nome}</h2>
                     <Badge
                       variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
                       className={cn(
@@ -4507,7 +4393,7 @@ function TicketList({
   searchTerm: string
   setSearchTerm: (v: string) => void
   unreadCounts: Map<string, number>
-  setorCanal: 'whatsapp' | 'discord' | 'evolution_api'
+  setorCanal: 'whatsapp' | 'evolution_api'
   colaboradorEmail: string
   onOpenTicketIframe: (ticket: Ticket) => void
 }) {
@@ -4544,7 +4430,7 @@ function TicketList({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder={setorCanal === 'discord' ? "Buscar colaborador..." : "Buscar cliente..."}
+                placeholder="Buscar cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 h-8 text-xs"
@@ -4692,7 +4578,7 @@ function TicketList({
                       "text-sm font-medium line-clamp-1",
                       isSelected ? "text-primary" : "text-foreground"
                     )}>
-  {setorCanal === 'discord' ? (ticket.user_name_discord || ticket.clientes.nome) : ticket.clientes.nome}
+  {ticket.clientes.nome}
   </p>
   
   {/* Row 3: Tempo */}

@@ -3,7 +3,7 @@
 import { useRef } from "react"
 
 import { useState, useMemo, useEffect, useTransition } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
@@ -184,13 +184,13 @@ const DIAS_SEMANA = [
 ]
 
 // Sidebar items (removed vendas and andico)
-const sidebarItems = [
-    { id: 'monitoramento', name: 'Monitoramento', icon: Activity, description: 'Monitore sua operação em tempo real' },
-    { id: 'relatorios', name: 'Relatórios de atendimento', icon: FileText, description: 'Analise as métricas de atendimentos' },
-    { id: 'atendentes', name: 'Atendentes', icon: Users, description: 'Gerencie os atendentes do setor' },
+const ALL_SIDEBAR_ITEMS = [
+    { id: 'monitoramento', name: 'Monitoramento', icon: Activity, description: 'Monitore sua operação em tempo real', empresaHide: true },
+    { id: 'relatorios', name: 'Relatórios de atendimento', icon: FileText, description: 'Analise as métricas de atendimentos', empresaHide: true },
+    { id: 'atendentes', name: 'Atendentes', icon: Users, description: 'Gerencie os atendentes da empresa' },
     { id: 'horarios', name: 'Horários de atendimento', icon: Clock, description: 'Defina dias e horários disponíveis' },
     { id: 'pausas', name: 'Pausas', icon: Coffee, description: 'Gerencie os tipos de pausas dos atendentes' },
-    { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações do setor' },
+    { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações da empresa' },
     { id: 'disparo_logs', name: 'Log de Disparos', icon: Megaphone, description: 'Historico de disparos realizados', whatsappOnly: true },
   ]
 
@@ -400,6 +400,9 @@ function getIconComponent(iconName: string | null) {
 export default function SetorPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const empresaMode = searchParams.get('mode') === 'empresa'
+  const sidebarItems = ALL_SIDEBAR_ITEMS.filter(item => !(empresaMode && (item as any).empresaHide))
   const setorId = params.id as string
   const { data: colaboradorLogado } = useColaborador()
   const [isPending, startTransition] = useTransition()
@@ -504,14 +507,12 @@ export default function SetorPage() {
   icon_url: 'MessageCircle',
   cor: '#3B82F6',
   mensagem_finalizacao: '',
-  canal: 'whatsapp' as 'whatsapp' | 'discord' | 'evolution_api',
+  canal: 'whatsapp' as 'whatsapp' | 'evolution_api',
   template_id: '',
   phone_number_id: '',
   template_language: 'pt_BR',
   whatsapp_token: '',
   max_disparos_dia: 0,
-  discord_bot_token: '',
-  discord_guild_id: '',
   evolution_base_url: '',
   evolution_api_key: '',
   webhook_url: '',
@@ -537,15 +538,13 @@ export default function SetorPage() {
     id: string
     setor_id: string
     nome: string
-    tipo: 'whatsapp' | 'evolution_api' | 'discord'
+    tipo: 'whatsapp' | 'evolution_api'
     phone_number_id: string | null
     whatsapp_token: string | null
     template_id: string | null
     template_language: string | null
     evolution_base_url: string | null
     evolution_api_key: string | null
-    discord_bot_token: string | null
-    discord_guild_id: string | null
     instancia: string | null
     max_disparos_dia: number
     ativo: boolean
@@ -577,15 +576,13 @@ export default function SetorPage() {
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null)
   const [canalForm, setCanalForm] = useState({
     nome: '',
-    tipo: 'whatsapp' as 'whatsapp' | 'evolution_api' | 'discord',
+    tipo: 'whatsapp' as 'whatsapp' | 'evolution_api',
     phone_number_id: '',
     whatsapp_token: '',
     template_id: '',
     template_language: 'pt_BR',
     evolution_base_url: '',
     evolution_api_key: '',
-    discord_bot_token: '',
-    discord_guild_id: '',
     instancia: '',
     max_disparos_dia: 0,
     ativo: true,
@@ -836,8 +833,6 @@ export default function SetorPage() {
         template_language: setor.template_language || 'pt_BR',
         whatsapp_token: setor.whatsapp_token || '',
         max_disparos_dia: setor.max_disparos_dia || 0,
-        discord_bot_token: setor.discord_bot_token || '',
-        discord_guild_id: setor.discord_guild_id || '',
         evolution_base_url: setor.evolution_base_url || '',
         evolution_api_key: setor.evolution_api_key || '',
         webhook_url: setor.webhook_url || '',
@@ -1198,8 +1193,6 @@ const saveConfig = async () => {
   template_language: configForm.template_language || 'pt_BR',
   whatsapp_token: configForm.whatsapp_token || null,
   max_disparos_dia: configForm.max_disparos_dia || 0,
-  discord_bot_token: configForm.discord_bot_token || null,
-  discord_guild_id: configForm.discord_guild_id || null,
   evolution_base_url: configForm.evolution_base_url || null,
   evolution_api_key: configForm.evolution_api_key || null,
   webhook_url: configForm.webhook_url || null,
@@ -1528,9 +1521,6 @@ const saveConfig = async () => {
       } else if (canalForm.tipo === 'evolution_api') {
         payload.evolution_base_url = canalForm.evolution_base_url || null
         payload.evolution_api_key = canalForm.evolution_api_key || null
-      } else if (canalForm.tipo === 'discord') {
-        payload.discord_bot_token = canalForm.discord_bot_token || null
-        payload.discord_guild_id = canalForm.discord_guild_id || null
       }
 
       if (editingCanal) {
@@ -1613,8 +1603,6 @@ const saveConfig = async () => {
       template_language: 'pt_BR',
       evolution_base_url: '',
       evolution_api_key: '',
-      discord_bot_token: '',
-      discord_guild_id: '',
       instancia: '',
       max_disparos_dia: 0,
       ativo: true,
@@ -1808,8 +1796,6 @@ const saveConfig = async () => {
       template_language: canal.template_language || 'pt_BR',
       evolution_base_url: canal.evolution_base_url || '',
       evolution_api_key: canal.evolution_api_key || '',
-      discord_bot_token: canal.discord_bot_token || '',
-      discord_guild_id: canal.discord_guild_id || '',
       instancia: canal.instancia || '',
       max_disparos_dia: canal.max_disparos_dia || 0,
       ativo: canal.ativo,
@@ -2443,7 +2429,7 @@ const saveConfig = async () => {
         {/* Sidebar */}
         <aside className="w-64 shrink-0 overflow-y-auto border-r glass-panel p-4">
           <nav className="space-y-1">
-            {sidebarItems.filter((item) => !(item as any).whatsappOnly || configForm.canal !== 'discord').map((item) => {
+            {sidebarItems.map((item) => {
               const Icon = item.icon
               const isActive = activeSection === item.id
               return (
@@ -3926,8 +3912,8 @@ const saveConfig = async () => {
           </Card>
         </div>
 
-        {/* Setores de Atendimento */}
-        <Card className="glass-card-elevated rounded-2xl border-0">
+        {/* Roteamento de Atendimento — oculto em modo empresa */}
+        {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5" />
@@ -3995,12 +3981,12 @@ const saveConfig = async () => {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
         {/* Row 1: Subsetores + Tempo de Espera */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Subsetores */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
+          {/* Subsetores — oculto em modo empresa */}
+          {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
             <CardHeader className="flex flex-row items-center justify-between shrink-0">
               <div>
                 <CardTitle className="flex items-center gap-2">
@@ -4064,7 +4050,7 @@ const saveConfig = async () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* Tempo de Espera */}
           <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
@@ -4099,8 +4085,8 @@ const saveConfig = async () => {
 
         {/* Row 2: Distribuição de Tickets + Mensagem de Finalização */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Distribuição de Tickets */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
+          {/* Distribuição de Tickets — oculto em modo empresa */}
+          {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
             <CardHeader className="flex flex-row items-start justify-between space-y-0 shrink-0">
               <div>
                 <CardTitle className="flex items-center gap-2">
@@ -4155,7 +4141,7 @@ const saveConfig = async () => {
                 </p>
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* Mensagem de Finalização */}
           <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
@@ -4202,7 +4188,7 @@ const saveConfig = async () => {
             <div>
               <CardTitle>Canais de Atendimento</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Configure multiplos canais (WhatsApp, EvolutionAPI, Discord) para este setor.
+                Configure multiplos canais (WhatsApp, EvolutionAPI) para este setor.
               </p>
             </div>
             <Button
@@ -4246,11 +4232,9 @@ const saveConfig = async () => {
                             'outline'
                           } className={
                             canal.tipo === 'whatsapp' ? 'bg-emerald-600 hover:bg-emerald-700' :
-                            canal.tipo === 'evolution_api' ? 'bg-sky-600 hover:bg-sky-700 text-primary-foreground' :
-                            'bg-indigo-600 hover:bg-indigo-700 text-primary-foreground'
+                            'bg-sky-600 hover:bg-sky-700 text-primary-foreground'
                           }>
-                            {canal.tipo === 'whatsapp' ? 'WhatsApp' :
-                             canal.tipo === 'evolution_api' ? 'EvolutionAPI' : 'Discord'}
+                            {canal.tipo === 'whatsapp' ? 'WhatsApp' : 'EvolutionAPI'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs font-mono">
@@ -4265,11 +4249,10 @@ const saveConfig = async () => {
                                 <span className="text-orange-500 text-[10px] font-sans">sem instância</span>
                               )}
                             </div>
-                           ) :
-                           (canal.discord_guild_id || '-')}
+                           ) : '-'}
                         </TableCell>
                         <TableCell>
-                          {canal.tipo === 'whatsapp' || canal.tipo === 'discord' ? (
+                          {canal.tipo === 'whatsapp' ? (
                             <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
                               <Wifi className="h-3 w-3" />
                               Conectado
@@ -4513,8 +4496,8 @@ const saveConfig = async () => {
           </Card>
         </div>
 
-        {/* Setores para Transferência */}
-        <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[420px]">
+        {/* Setores para Transferência — oculto em modo empresa */}
+        {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[420px]">
           <CardHeader className="flex flex-row items-start justify-between space-y-0 shrink-0">
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -4601,10 +4584,10 @@ const saveConfig = async () => {
               )
             })()}
           </CardContent>
-        </Card>
+        </Card>}
 
-        {/* Receptor / Transmissor — apenas admin */}
-        {colaboradorLogado?.is_master && (
+        {/* Receptor / Transmissor — apenas admin, oculto em modo empresa */}
+        {colaboradorLogado?.is_master && !empresaMode && (
           <Card className="glass-card-elevated rounded-2xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -4980,7 +4963,7 @@ const saveConfig = async () => {
                 <Label>Tipo</Label>
                 <Select
                   value={canalForm.tipo}
-                  onValueChange={(value: 'whatsapp' | 'evolution_api' | 'discord') =>
+                  onValueChange={(value: 'whatsapp' | 'evolution_api') =>
                     setCanalForm((prev) => ({ ...prev, tipo: value }))
                   }
                   disabled={!!editingCanal}
@@ -4991,7 +4974,6 @@ const saveConfig = async () => {
                   <SelectContent>
                     <SelectItem value="whatsapp">WhatsApp Oficial</SelectItem>
                     <SelectItem value="evolution_api">EvolutionAPI</SelectItem>
-                    <SelectItem value="discord">Discord</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -5023,7 +5005,7 @@ const saveConfig = async () => {
                 </div>
               )}
 
-              {/* Instância (apenas para WhatsApp e Discord) */}
+              {/* Instância (apenas para WhatsApp) */}
               {canalForm.tipo !== 'evolution_api' && (
                 <div className="space-y-2">
                   <Label htmlFor="canal-instancia">Instância</Label>
@@ -5095,30 +5077,6 @@ const saveConfig = async () => {
                       onChange={(e) =>
                         setCanalForm((prev) => ({ ...prev, max_disparos_dia: parseInt(e.target.value) || 0 }))
                       }
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Discord fields */}
-              {canalForm.tipo === 'discord' && (
-                <div className="space-y-3 border-t pt-4">
-                  <p className="text-sm font-semibold">Discord — Configurações</p>
-                  <div className="space-y-2">
-                    <Label>Bot Token</Label>
-                    <Input
-                      type="password"
-                      placeholder="MTIzNDU2Nzg5MDEy..."
-                      value={canalForm.discord_bot_token}
-                      onChange={(e) => setCanalForm((prev) => ({ ...prev, discord_bot_token: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Guild ID (Servidor)</Label>
-                    <Input
-                      placeholder="Ex: 123456789012345678"
-                      value={canalForm.discord_guild_id}
-                      onChange={(e) => setCanalForm((prev) => ({ ...prev, discord_guild_id: e.target.value }))}
                     />
                   </div>
                 </div>

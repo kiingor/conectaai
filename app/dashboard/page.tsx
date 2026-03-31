@@ -108,7 +108,6 @@ const AVAILABLE_COLORS = [
 const CANAL_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
   whatsapp: { label: 'WhatsApp', icon: '💬', color: '#ffffff', bg: 'rgba(34, 197, 94, 0.85)' },
   evolution_api: { label: 'Evolution', icon: '🔗', color: '#ffffff', bg: 'rgba(14, 165, 233, 0.85)' },
-  discord: { label: 'Discord', icon: '🎮', color: '#ffffff', bg: 'rgba(99, 102, 241, 0.85)' },
 }
 
 // Get icon component by name

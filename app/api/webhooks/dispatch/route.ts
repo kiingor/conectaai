@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 // Format milliseconds into human-readable duration
 function formatDuration(ms: number): string {
@@ -30,6 +31,7 @@ function formatBR(iso: string | null): string | null {
 export async function POST(request: Request) {
   try {
     // Use service role to bypass RLS — webhooks are internal server calls
+    const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const supabase = createServiceClient()
     const body = await request.json()
     const { ticketId, evento } = body
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Fetch ticket with full relational data
+    // Fetch ticket with full relational data (lookup by UUID — globally unique)
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select(`
@@ -57,7 +59,6 @@ export async function POST(request: Request) {
         encerrado_em,
         primeira_resposta_em,
         subsetor_id,
-        user_name_discord,
         clientes (
           id,
           nome,
@@ -189,7 +190,6 @@ export async function POST(request: Request) {
         encerrado_em:          ticket.encerrado_em || null,
         encerrado_em_br:       formatBR(ticket.encerrado_em),
 
-        user_name_discord: ticket.user_name_discord || null,
       },
 
       cliente: {

@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const dateFrom = searchParams.get('date_from')
     const dateTo = searchParams.get('date_to')
+    const orgId = searchParams.get('organizacao_id')
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const perPage = Math.min(100, Math.max(1, parseInt(searchParams.get('per_page') || '50')))
     const offset = (page - 1) * perPage
@@ -50,6 +51,9 @@ export async function GET(request: NextRequest) {
     }
     if (dateTo) {
       query = query.lte('criado_em', dateTo)
+    }
+    if (orgId) {
+      query = query.eq('organizacao_id', orgId)
     }
 
     const { data: ticketsData, error, count } = await query

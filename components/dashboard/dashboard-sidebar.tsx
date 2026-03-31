@@ -17,6 +17,7 @@ import {
   HelpCircle,
   ExternalLink,
   Bug,
+  Briefcase,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -24,12 +25,13 @@ import { motion } from 'framer-motion'
 import { useColaborador } from '@/lib/hooks/use-data'
 
 const baseNavigation = [
-  { name: 'Setores', href: '/dashboard', icon: Building2 },
+  { name: 'Empresa', href: '/dashboard/empresa', icon: Briefcase },
   { name: 'Monitoramento', href: '/dashboard/monitoramento', icon: Activity },
   { name: 'Dashboard Geral', href: '/dashboard/metricas', icon: BarChart3 },
 ]
 
 const masterNavigation = [
+  { name: 'Organizações', href: '/dashboard', icon: Building2 },
   { name: 'Usuarios Master', href: '/dashboard/usuarios', icon: UserCog },
   { name: 'Logs de Erros', href: '/dashboard/logs', icon: Bug },
 ]
@@ -100,7 +102,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           Menu
         </p>
         {navigation.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.href === '/dashboard/empresa' && pathname.startsWith('/setor/'))
           const isLoading = loadingHref === item.href && isPending
           return (
             <a

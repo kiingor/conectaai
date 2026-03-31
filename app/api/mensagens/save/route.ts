@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { ORG_ID_HEADER, resolveOrgByPhoneNumberId } from '@/lib/tenant'
 
 /**
  * POST /api/mensagens/save
- * 
+ *
  * Endpoint para salvar mensagens de conversas externas (bot/n8n) no banco.
  * Permite salvar mensagens sem ticket (conversa com bot antes da criação do ticket)
  * e mensagens com ticket (respostas do bot durante o atendimento).
- * 
+ *
  * Body:
  *   - telefone (string, obrigatório): telefone do cliente (ex: "553389127816")
  *   - conteudo (string, obrigatório): conteúdo da mensagem
@@ -16,16 +17,17 @@ import { createClient } from '@/lib/supabase/server'
  *   - ticket_id (string, opcional): ID do ticket (se já existir)
  *   - cliente_id (string, opcional): ID do cliente (se já souber)
  *   - nome_cliente (string, opcional): nome do cliente (para criação automática)
- *   - canal_envio (string, opcional): "whatsapp" | "evolutionapi" | "discord"
+ *   - canal_envio (string, opcional): "whatsapp" | "evolutionapi"
  *   - instancia (string, opcional): nome da instância Evolution
  *   - phone_number_id (string, opcional): phone_number_id do WhatsApp
  *   - url_imagem (string, opcional): URL da imagem/mídia
  *   - media_type (string, opcional): tipo MIME da mídia
  *   - whatsapp_message_id (string, opcional): ID da mensagem no WhatsApp/Evolution
- * 
+ *   - organizacao_id (string, opcional): UUID da organização (fallback para bots sem subdomínio)
+ *
  * Retorna:
  *   - { success: true, mensagem_id, cliente_id }
- * 
+ *
  * Uso pelo n8n:
  *   curl -X POST https://seu-dominio/api/mensagens/save \
  *     -H "Content-Type: application/json" \
@@ -38,7 +40,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createServiceClient()
     const body = await request.json()
 
     const {
@@ -55,6 +57,7 @@ export async function POST(request: NextRequest) {
       url_imagem,
       media_type,
       whatsapp_message_id,
+      organizacao_id: orgIdBody = null,
     } = body
 
     // Validar campos obrigatórios
@@ -72,27 +75,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Resolver orgId — cadeia: header → body → phone_number_id/instancia lookup
+    let orgId: string | null = request.headers.get(ORG_ID_HEADER) || orgIdBody
+
+    if (!orgId && (phone_number_id || instancia)) {
+      orgId = await resolveOrgByPhoneNumberId(phone_number_id || instancia)
+    }
+
     // Resolver cliente_id
     let resolvedClienteId = cliente_id
 
     if (!resolvedClienteId && telefone) {
-      // Buscar cliente existente pelo telefone
-      const { data: existingCliente } = await supabase
+      // Buscar cliente existente pelo telefone (com escopo de org se disponível)
+      let clienteQ = supabase
         .from('clientes')
         .select('id')
         .eq('telefone', telefone)
-        .maybeSingle()
+      if (orgId) clienteQ = clienteQ.eq('organizacao_id', orgId)
+      const { data: existingCliente } = await clienteQ.maybeSingle()
 
       if (existingCliente) {
         resolvedClienteId = existingCliente.id
       } else {
         // Criar novo cliente
+        const clienteInsert: Record<string, unknown> = {
+          telefone,
+          nome: nome_cliente || 'Desconhecido',
+        }
+        if (orgId) clienteInsert.organizacao_id = orgId
         const { data: newCliente, error: clienteError } = await supabase
           .from('clientes')
-          .insert({
-            telefone,
-            nome: nome_cliente || 'Desconhecido',
-          })
+          .insert(clienteInsert)
           .select('id')
           .single()
 
@@ -125,6 +138,7 @@ export async function POST(request: NextRequest) {
     if (url_imagem) mensagemData.url_imagem = url_imagem
     if (media_type) mensagemData.media_type = media_type
     if (whatsapp_message_id) mensagemData.whatsapp_message_id = whatsapp_message_id
+    if (orgId) mensagemData.organizacao_id = orgId
 
     // Salvar mensagem
     const { data: mensagem, error: msgError } = await supabase

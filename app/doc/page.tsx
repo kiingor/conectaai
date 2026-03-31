@@ -449,7 +449,7 @@ curl --request GET \\
               { name: 'attendant_name', type: 'string | null', description: 'Nome do atendente' },
               { name: 'customer_identity', type: 'UUID', description: 'ID do cliente' },
               { name: 'requester_name', type: 'string | null', description: 'Nome do cliente/solicitante' },
-              { name: 'provider', type: 'string', description: 'Canal de origem (ex: "whatsapp", "discord")' },
+              { name: 'provider', type: 'string', description: 'Canal de origem (ex: "whatsapp", "evolutionapi")' },
               { name: 'open_at', type: 'ISO 8601', description: 'Data/hora de abertura' },
               { name: 'status_at', type: 'ISO 8601', description: 'Data/hora da última mudança de status' },
               { name: 'closed_at', type: 'ISO 8601 | null', description: 'Data/hora de encerramento' },

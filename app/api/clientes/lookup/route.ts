@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { request as undiciRequest } from 'undici'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 export async function POST(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -23,21 +25,23 @@ export async function POST(request: NextRequest) {
     console.log('[v0] CNPJ Lookup - searching for:', cleanCnpj)
 
     // 1. First check in local database - use limit(1) to handle duplicates
-    const { data: localClientes } = await supabase
+    let cnpjQ = supabase
       .from('clientes')
       .select('*')
       .eq('CNPJ', cleanCnpj)
-      .limit(1)
+    if (orgId) cnpjQ = cnpjQ.eq('organizacao_id', orgId)
+    const { data: localClientes } = await cnpjQ.limit(1)
 
     let localCliente = localClientes?.[0] || null
 
     // Fallback: try ilike in case CNPJ is stored with formatting
     if (!localCliente) {
-      const { data: localClientesFormatted } = await supabase
+      let cnpjIlikeQ = supabase
         .from('clientes')
         .select('*')
         .ilike('CNPJ', `%${cleanCnpj}%`)
-        .limit(1)
+      if (orgId) cnpjIlikeQ = cnpjIlikeQ.eq('organizacao_id', orgId)
+      const { data: localClientesFormatted } = await cnpjIlikeQ.limit(1)
 
       localCliente = localClientesFormatted?.[0] || null
     }

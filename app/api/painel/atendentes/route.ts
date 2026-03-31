@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     const setorId = searchParams.get('setor_id')
     const dateFrom = searchParams.get('date_from')
     const dateTo = searchParams.get('date_to')
+    const orgId = searchParams.get('organizacao_id')
 
     // Período para métricas de tickets
     const now = new Date()
@@ -31,10 +32,12 @@ export async function GET(request: NextRequest) {
 
     // Se filtrar por setor, buscar IDs dos colaboradores do setor
     if (setorId) {
-      const { data: csData, error: csError } = await supabase
+      let csQ = supabase
         .from('colaboradores_setores')
         .select('colaborador_id')
         .eq('setor_id', setorId)
+      if (orgId) csQ = csQ.eq('organizacao_id', orgId)
+      const { data: csData, error: csError } = await csQ
 
       if (csError) {
         console.error('[painel/atendentes] Error fetching setor colaboradores:', csError)
@@ -57,6 +60,7 @@ export async function GET(request: NextRequest) {
     if (colaboradorIds) {
       query = query.in('id', colaboradorIds)
     }
+    if (orgId) query = query.eq('organizacao_id', orgId)
 
     const { data: colaboradores, error: colabError } = await query
 
@@ -106,12 +110,14 @@ export async function GET(request: NextRequest) {
     }
 
     // 5) Contar tickets por colaborador no período
-    const { data: ticketsData } = await supabase
+    let ticketsQ = supabase
       .from('tickets')
       .select('id, colaborador_id, status, criado_em, encerrado_em, primeira_resposta_em')
       .in('colaborador_id', ids)
       .gte('criado_em', periodFrom)
       .lte('criado_em', periodTo)
+    if (orgId) ticketsQ = ticketsQ.eq('organizacao_id', orgId)
+    const { data: ticketsData } = await ticketsQ
 
     // Calcular métricas por colaborador
     const metricsByColab: Record<

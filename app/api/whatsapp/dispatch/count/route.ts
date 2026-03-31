@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ORG_ID_HEADER } from '@/lib/tenant'
 
 export async function GET(request: NextRequest) {
   try {
+    const orgId = request.headers.get(ORG_ID_HEADER)
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -15,20 +17,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'setorId obrigatorio' }, { status: 400 })
     }
 
-    const { data: setor } = await supabase
+    let setorQ = supabase
       .from('setores')
       .select('max_disparos_dia')
       .eq('id', setorId)
-      .single()
+    if (orgId) setorQ = setorQ.eq('organizacao_id', orgId)
+    const { data: setor } = await setorQ.single()
 
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
 
-    const { count } = await supabase
+    let countQ = supabase
       .from('disparo_logs')
       .select('*', { count: 'exact', head: true })
       .eq('setor_id', setorId)
       .gte('created_at', todayStart.toISOString())
+    if (orgId) countQ = countQ.eq('organizacao_id', orgId)
+    const { count } = await countQ
 
     return NextResponse.json({
       used: count || 0,
