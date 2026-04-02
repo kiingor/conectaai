@@ -117,8 +117,15 @@ export default function AdminPage() {
     setDialogOpen(false)
   }
 
-  const handleSlugChange = (v: string) => {
-    setForm(prev => ({ ...prev, slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-') }))
+  const generateSlug = (nome: string) => {
+    return nome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -140,7 +147,7 @@ export default function AdminPage() {
         slug: data.organizacao.slug,
         admin_email: form.admin_email,
         senha: form.admin_senha,
-        login_url: data.login_url,
+        login_url: `${window.location.origin}/login?org=${data.organizacao.slug}`,
       })
       toast.success('Organização criada com sucesso!')
     } catch {
@@ -404,28 +411,16 @@ export default function AdminPage() {
                     <input
                       placeholder="Ex: Softcom Tecnologia"
                       value={form.nome}
-                      onChange={e => setForm(prev => ({ ...prev, nome: e.target.value }))}
+                      onChange={e => {
+                        const nome = e.target.value
+                        setForm(prev => ({ ...prev, nome, slug: generateSlug(nome) }))
+                      }}
                       required
                       className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
                     />
-                  </div>
-
-                  {/* Slug */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
-                      <Tag className="h-3.5 w-3.5" />
-                      Slug (subdomínio)
-                    </label>
-                    <input
-                      placeholder="softcom"
-                      value={form.slug}
-                      onChange={e => handleSlugChange(e.target.value)}
-                      required
-                      className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none font-mono"
-                    />
                     {form.slug && (
-                      <p className="text-xs text-white/30">
-                        Acesso: <span className="text-emerald-400/80">{process.env.NEXT_PUBLIC_APP_URL || 'https://multihub-one.vercel.app'}/login?org={form.slug}</span>
+                      <p className="text-xs text-white/30 mt-1">
+                        Slug: <span className="text-emerald-400/80 font-mono">{form.slug}</span>
                       </p>
                     )}
                   </div>

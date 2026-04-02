@@ -154,6 +154,6 @@ export async function POST(request: NextRequest) {
     success: true,
     organizacao: org,
     admin: { email: admin_email },
-    login_url: `${process.env.NEXT_PUBLIC_APP_URL || 'multihub-one.vercel.app'}/login?org=${slug}`,
+    login_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://conectaai.net'}/login?org=${slug}`,
   }, { status: 201 })
 }
