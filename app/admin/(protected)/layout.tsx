@@ -21,5 +21,11 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
     redirect('/admin/login')
   }
 
-  return <>{children}</>
+  return (
+    <div className="ambient-glow min-h-screen relative">
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
+  )
 }

@@ -129,80 +129,85 @@ export default function SetoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Setores
-        </h1>
-        <p className="text-muted-foreground">
-          Gerencie os setores da sua empresa para organizar os atendimentos.
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <Building2 className="h-5 w-5 text-emerald-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Setores
+          </h1>
+          <p className="text-sm text-white/40">
+            Gerencie os setores da sua empresa para organizar os atendimentos.
+          </p>
+        </div>
       </div>
 
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary" />
-            Lista de Setores
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/6">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-base font-semibold text-white">Lista de Setores</h2>
+          </div>
+        </div>
+        <div className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-destructive/10 p-4">
-                <AlertCircle className="h-8 w-8 text-destructive" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="rounded-full bg-red-500/10 p-4">
+                <AlertCircle className="h-8 w-8 text-red-400" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
+              <h3 className="mt-4 text-lg font-semibold text-white">
                 Erro ao carregar setores
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-white/40">
                 {error}
               </p>
-              <Button onClick={fetchSetores} variant="outline" className="mt-4">
+              <Button onClick={fetchSetores} variant="outline" className="mt-4 border-white/10 text-white/60 hover:bg-white/5">
                 Tentar novamente
               </Button>
             </div>
           ) : setores.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-primary/10 p-4">
-                <Building2 className="h-8 w-8 text-primary" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="rounded-full bg-emerald-500/10 p-4">
+                <Building2 className="h-8 w-8 text-emerald-400" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
+              <h3 className="mt-4 text-lg font-semibold text-white">
                 Nenhum setor cadastrado
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-white/40">
                 Comece criando o primeiro setor da sua empresa
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Descricao</TableHead>
-                  <TableHead>Template ID</TableHead>
-                  <TableHead>Phone Number ID</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
+                <TableRow className="border-white/6 hover:bg-transparent">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Descricao</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Template ID</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Phone Number ID</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Criado em</TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                   {setores.map((setor) => (
-                    <TableRow key={setor.id}>
-                      <TableCell className="font-medium">{setor.nome}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                    <TableRow key={setor.id} className="border-white/6 hover:bg-white/[0.03] transition-colors">
+                      <TableCell className="font-medium text-white/90">{setor.nome}</TableCell>
+                      <TableCell className="text-white/50 max-w-[200px] truncate">
                         {setor.descricao || '-'}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-xs font-mono">
-                        {setor.template_id || <span className="text-muted-foreground/50">Nao configurado</span>}
+                      <TableCell className="text-white/40 text-xs font-mono">
+                        {setor.template_id || <span className="text-white/20">Nao configurado</span>}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-xs font-mono">
-                        {setor.phone_number_id || <span className="text-muted-foreground/50">Nao configurado</span>}
+                      <TableCell className="text-white/40 text-xs font-mono">
+                        {setor.phone_number_id || <span className="text-white/20">Nao configurado</span>}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-white/40">
                         {formatDate(setor.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -210,7 +215,7 @@ export default function SetoresPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEditModal(setor)}
-                          className="hover:bg-primary/20"
+                          className="text-white/40 hover:text-white hover:bg-white/5"
                         >
                           <Pencil className="mr-1 h-4 w-4" />
                           Editar
@@ -221,8 +226,8 @@ export default function SetoresPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Floating Action Button */}
       <div className="fixed right-6 bottom-6">
@@ -238,10 +243,10 @@ export default function SetoresPage() {
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0">
+        <DialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <Building2 className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Building2 className="h-5 w-5 text-emerald-400" />
               {editingSetor ? 'Editar Setor' : 'Novo Setor'}
             </DialogTitle>
           </DialogHeader>
@@ -258,7 +263,7 @@ export default function SetoresPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, nome: e.target.value })
                 }
-                className="border-border bg-card"
+                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
 
@@ -273,7 +278,7 @@ export default function SetoresPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, descricao: e.target.value })
                 }
-                className="min-h-24 resize-none border-border bg-card"
+                className="min-h-24 resize-none glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
 
@@ -292,7 +297,7 @@ export default function SetoresPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, template_id: e.target.value })
                     }
-                    className="border-border bg-card"
+                    className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
                   />
                   <p className="text-[10px] text-muted-foreground">ID do template aprovado na Meta para disparo de mensagens</p>
                 </div>
@@ -308,7 +313,7 @@ export default function SetoresPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, phone_number_id: e.target.value })
                     }
-                    className="border-border bg-card"
+                    className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
                   />
                   <p className="text-[10px] text-muted-foreground">ID do numero de telefone da API do WhatsApp Business</p>
                 </div>
@@ -320,14 +325,14 @@ export default function SetoresPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="border-border"
+              className="border-white/10 text-white/60 hover:bg-white/5"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving || !formData.nome.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-glow rounded-xl"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editingSetor ? 'Atualizar' : 'Salvar'}

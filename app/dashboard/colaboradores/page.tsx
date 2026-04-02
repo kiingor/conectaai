@@ -361,44 +361,49 @@ export default function ColaboradoresPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Colaboradores
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie usuarios, setores e permissoes
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <Users className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Colaboradores
+            </h1>
+            <p className="text-sm text-white/40">
+              Gerencie usuarios, setores e permissoes
+            </p>
+          </div>
         </div>
         <Button
           onClick={openCreateModal}
-          className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 sm:mt-0"
+          className="mt-4 btn-glow rounded-xl px-5 sm:mt-0"
         >
           <Plus className="mr-2 h-4 w-4" />
           Novo Colaborador
         </Button>
       </div>
 
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            Lista de Colaboradores
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/6">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-base font-semibold text-white">Lista de Colaboradores</h2>
+          </div>
+        </div>
+        <div className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             </div>
           ) : colaboradores.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-primary/10 p-4">
-                <Users className="h-8 w-8 text-primary" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="rounded-full bg-emerald-500/10 p-4">
+                <Users className="h-8 w-8 text-emerald-400" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
+              <h3 className="mt-4 text-lg font-semibold text-white">
                 Nenhum colaborador cadastrado
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-white/40">
                 Comece cadastrando o primeiro colaborador
               </p>
             </div>
@@ -406,13 +411,13 @@ export default function ColaboradoresPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>E-mail</TableHead>
-                    <TableHead>Setores</TableHead>
-                    <TableHead>Permissao</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Acoes</TableHead>
+                  <TableRow className="border-white/6 hover:bg-transparent">
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">E-mail</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setores</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Permissao</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
+                    <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -424,31 +429,31 @@ export default function ColaboradoresPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`border-b transition-colors hover:bg-muted/50 ${
+                        className={`border-b border-white/6 transition-colors hover:bg-white/[0.03] ${
                           !colaborador.ativo ? 'opacity-50' : ''
                         }`}
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium text-white/90">
                           {colaborador.nome}
                           {!colaborador.ativo && (
-                            <Badge variant="secondary" className="ml-2">
+                            <Badge className="ml-2 glass-badge bg-white/5 text-white/30 border-white/10">
                               Inativo
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="text-white/50">
                           {colaborador.email}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell>
                           {(() => {
                             const setorIds = getSetoresDoColaborador(colaborador.id)
-                            if (setorIds.length === 0) return <span className="text-muted-foreground">Nenhum</span>
+                            if (setorIds.length === 0) return <span className="text-white/25">Nenhum</span>
                             return (
                               <div className="flex flex-wrap gap-1">
                                 {setorIds.map((sid) => {
                                   const s = setores.find((st) => st.id === sid)
                                   return s ? (
-                                    <Badge key={sid} variant="secondary" className="text-xs">
+                                    <Badge key={sid} className="glass-badge bg-cyan-500/10 text-cyan-400/70 border-cyan-500/15 text-xs">
                                       {s.nome}
                                     </Badge>
                                   ) : null
@@ -457,19 +462,19 @@ export default function ColaboradoresPage() {
                             )
                           })()}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="text-white/50">
                           {colaborador.permissao?.nome || '-'}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Circle
-                              className={`h-3 w-3 ${
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full ${
                                 colaborador.is_online && colaborador.ativo
-                                  ? 'fill-green-500 text-green-500'
-                                  : 'fill-gray-300 text-gray-300'
+                                  ? 'status-dot-online'
+                                  : 'bg-white/20'
                               }`}
                             />
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-sm text-white/50">
                               {colaborador.is_online && colaborador.ativo
                                 ? 'Online'
                                 : 'Offline'}
@@ -482,7 +487,7 @@ export default function ColaboradoresPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => openEditModal(colaborador)}
-                              className="hover:bg-primary/20"
+                              className="text-white/40 hover:text-white hover:bg-white/5"
                             >
                               <Pencil className="mr-1 h-4 w-4" />
                               Editar
@@ -493,8 +498,8 @@ export default function ColaboradoresPage() {
                               onClick={() => openDeactivateDialog(colaborador)}
                               className={
                                 colaborador.ativo
-                                  ? 'text-destructive hover:bg-destructive/10 hover:text-destructive'
-                                  : 'text-green-600 hover:bg-green-100 hover:text-green-600'
+                                  ? 'text-red-400/60 hover:bg-red-500/10 hover:text-red-400'
+                                  : 'text-emerald-400/60 hover:bg-emerald-500/10 hover:text-emerald-400'
                               }
                             >
                               <UserX className="mr-1 h-4 w-4" />
@@ -509,15 +514,15 @@ export default function ColaboradoresPage() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0 sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <Users className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Users className="h-5 w-5 text-emerald-400" />
               {editingColaborador ? 'Editar Colaborador' : 'Novo Colaborador'}
             </DialogTitle>
           </DialogHeader>
@@ -540,7 +545,7 @@ export default function ColaboradoresPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, nome: e.target.value })
                 }
-                className="border-border bg-card"
+                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
 
@@ -557,7 +562,7 @@ export default function ColaboradoresPage() {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 disabled={!!editingColaborador}
-                className="border-border bg-card disabled:opacity-50"
+                className="glass-input rounded-xl text-white/80 placeholder:text-white/25 disabled:opacity-50"
               />
               {editingColaborador && (
                 <p className="text-xs text-muted-foreground">
@@ -579,7 +584,7 @@ export default function ColaboradoresPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, senha: e.target.value })
                   }
-                  className="border-border bg-card"
+                  className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
                 />
               </div>
             )}
@@ -626,7 +631,7 @@ export default function ColaboradoresPage() {
                   setFormData({ ...formData, permissao_id: value })
                 }
               >
-                <SelectTrigger className="border-border bg-card">
+                <SelectTrigger className="glass-input rounded-xl text-white/80 placeholder:text-white/25">
                   <SelectValue placeholder="Selecione uma permissao" />
                 </SelectTrigger>
                 <SelectContent>
@@ -644,14 +649,14 @@ export default function ColaboradoresPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="border-border"
+              className="border-white/10 text-white/60 hover:bg-white/5"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving || !formData.nome.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-glow rounded-xl"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editingColaborador ? 'Atualizar' : 'Cadastrar'}
@@ -662,7 +667,7 @@ export default function ColaboradoresPage() {
 
       {/* Deactivate Confirmation Dialog */}
       <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
-        <AlertDialogContent className="glass-card-elevated rounded-2xl border-0">
+        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {colaboradorToDeactivate?.ativo
@@ -676,7 +681,7 @@ export default function ColaboradoresPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-border">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="border-white/10 text-white/60 hover:bg-white/5">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeactivate}
               className={

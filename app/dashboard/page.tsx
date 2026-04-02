@@ -91,8 +91,10 @@ const AVAILABLE_ICONS = [
   { name: 'HelpCircle', icon: HelpCircle },
 ]
 
-// Available colors
+// Available colors - emerald/cyan focused palette
 const AVAILABLE_COLORS = [
+  { name: 'Esmeralda', value: '#10b981' },
+  { name: 'Ciano', value: '#06b6d4' },
   { name: 'Azul', value: '#3B82F6' },
   { name: 'Verde', value: '#22C55E' },
   { name: 'Amarelo', value: '#EAB308' },
@@ -100,14 +102,12 @@ const AVAILABLE_COLORS = [
   { name: 'Vermelho', value: '#EF4444' },
   { name: 'Rosa', value: '#EC4899' },
   { name: 'Roxo', value: '#8B5CF6' },
-  { name: 'Ciano', value: '#06B6D4' },
-  { name: 'Cinza', value: '#6B7280' },
 ]
 
-// Canal badge config
+// Canal badge config - dark glassmorphism style
 const CANAL_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
-  whatsapp: { label: 'WhatsApp', icon: '💬', color: '#ffffff', bg: 'rgba(34, 197, 94, 0.85)' },
-  evolution_api: { label: 'Evolution', icon: '🔗', color: '#ffffff', bg: 'rgba(14, 165, 233, 0.85)' },
+  whatsapp: { label: 'WhatsApp', icon: '💬', color: '#ffffff', bg: 'rgba(16, 185, 129, 0.7)' },
+  evolution_api: { label: 'Evolution', icon: '🔗', color: '#ffffff', bg: 'rgba(6, 182, 212, 0.7)' },
 }
 
 // Get icon component by name
@@ -152,7 +152,7 @@ export default function DashboardPage() {
   const [newSetor, setNewSetor] = useState({
     nome: '',
     descricao: '',
-    cor: '#3B82F6',
+    cor: '#10b981',
     icon_url: 'MessageCircle',
     tag_id: '' as string,
   })
@@ -163,7 +163,7 @@ export default function DashboardPage() {
   const [tags, setTags] = useState<TagItem[]>([])
   const [loadingTags, setLoadingTags] = useState(false)
   const [isTagsDialogOpen, setIsTagsDialogOpen] = useState(false)
-  const [tagForm, setTagForm] = useState({ nome: '', cor: '#6B7280', ordem: 0 })
+  const [tagForm, setTagForm] = useState({ nome: '', cor: '#10b981', ordem: 0 })
   const [editingTag, setEditingTag] = useState<TagItem | null>(null)
   const [savingTag, setSavingTag] = useState(false)
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null)
@@ -253,7 +253,7 @@ export default function DashboardPage() {
 
       if (setorError || !setorCriado) throw setorError
 
-      // Inserir horários padrão: segunda a sexta, 08:00–18:00
+      // Inserir horarios padrao: segunda a sexta, 08:00-18:00
       const horariosDefault = [0, 1, 2, 3, 4, 5, 6].map((dia) => ({
         setor_id: setorCriado.id,
         dia_semana: dia,
@@ -264,7 +264,7 @@ export default function DashboardPage() {
       await supabase.from('horarios_atendimento').insert(horariosDefault)
 
       setIsCreateOpen(false)
-      setNewSetor({ nome: '', descricao: '', cor: '#3B82F6', icon_url: 'MessageCircle', tag_id: '' })
+      setNewSetor({ nome: '', descricao: '', cor: '#10b981', icon_url: 'MessageCircle', tag_id: '' })
       mutate()
     } catch {
       toast.error('Erro ao criar setor')
@@ -296,7 +296,7 @@ export default function DashboardPage() {
         toast.success('Tag criada!')
       }
       setEditingTag(null)
-      setTagForm({ nome: '', cor: '#6B7280', ordem: 0 })
+      setTagForm({ nome: '', cor: '#10b981', ordem: 0 })
       await fetchTags()
       mutate()
     } catch {
@@ -311,7 +311,7 @@ export default function DashboardPage() {
     try {
       const { error } = await supabase.from('tags').delete().eq('id', tag.id)
       if (error) throw error
-      toast.success('Tag excluída!')
+      toast.success('Tag excluida!')
       await fetchTags()
       mutate()
     } catch {
@@ -324,10 +324,10 @@ export default function DashboardPage() {
   const isLoading = loadingColab || (colaborador && loadingSetores)
   const PreviewIcon = getIconComponent(newSetor.icon_url)
 
-  // ─── Sector Card ───
+  // --- Sector Card ---
   function SetorCard({ setor, index }: { setor: Setor; index: number }) {
     const SetorIcon = getIconComponent(setor.icon_url)
-    const setorColor = setor.cor || '#3B82F6'
+    const setorColor = setor.cor || '#10b981'
     const isNavigating = navigatingTo === setor.id && isPending
     const activeCanais: Array<{ tipo: string; ativo: boolean }> =
       (setor.setor_canais ?? []).filter((c) => c.ativo)
@@ -358,35 +358,38 @@ export default function DashboardPage() {
           {/* Color accent bar at top */}
           <div
             className="h-1 w-full"
-            style={{ background: `linear-gradient(90deg, ${setorColor}, ${hexToRgba(setorColor, 0.3)})` }}
+            style={{ background: `linear-gradient(90deg, ${setorColor}, ${hexToRgba(setorColor, 0.2)})` }}
           />
 
           {/* Subtle color tint overlay */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-[0.04] group-hover:opacity-[0.07] transition-opacity duration-500"
+            className="absolute inset-0 pointer-events-none opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500"
             style={{ background: `radial-gradient(ellipse at top left, ${setorColor} 0%, transparent 70%)` }}
           />
 
           <div className="relative p-5 space-y-4">
-            {/* ─── Top row: Icon + Name + Arrow ─── */}
+            {/* Top row: Icon + Name + Arrow */}
             <div className="flex items-start gap-3.5">
               <div
-                className="glass-icon-glow shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm"
-                style={{ backgroundColor: setorColor }}
+                className="glass-icon-glow shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg"
+                style={{
+                  backgroundColor: setorColor,
+                  boxShadow: `0 4px 20px ${hexToRgba(setorColor, 0.3)}`,
+                }}
               >
                 <SetorIcon className="h-6 w-6 text-white drop-shadow-sm" />
               </div>
 
               <div className="flex-1 min-w-0 pt-0.5">
-                <h3 className="font-semibold text-[15px] leading-snug line-clamp-1 tracking-tight">
+                <h3 className="font-semibold text-[15px] leading-snug line-clamp-1 tracking-tight text-white/90">
                   {setor.nome}
                 </h3>
                 {setor.descricao ? (
-                  <p className="text-xs text-muted-foreground/70 mt-0.5 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-white/30 mt-0.5 line-clamp-2 leading-relaxed">
                     {setor.descricao}
                   </p>
                 ) : (
-                  <p className="text-xs text-muted-foreground/35 mt-0.5 italic">Sem descrição</p>
+                  <p className="text-xs text-white/15 mt-0.5 italic">Sem descricao</p>
                 )}
               </div>
 
@@ -402,19 +405,19 @@ export default function DashboardPage() {
                 )}
               >
                 {isNavigating ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
                 ) : (
-                  <ArrowUpRight className="h-3.5 w-3.5 text-foreground/70" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-white" />
                 )}
               </div>
             </div>
 
-            {/* ─── Divider ─── */}
-            <div className="h-px bg-gradient-to-r from-border/50 via-border/20 to-transparent" />
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-r from-white/8 via-white/4 to-transparent" />
 
-            {/* ─── Channels section ─── */}
+            {/* Channels section */}
             <div className="space-y-2">
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
+              <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest">
                 Canais
               </p>
               {activeCanais.length > 0 ? (
@@ -435,7 +438,7 @@ export default function DashboardPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-[10px] text-muted-foreground/40 italic">Nenhum canal ativo</p>
+                <p className="text-[10px] text-white/15 italic">Nenhum canal ativo</p>
               )}
             </div>
           </div>
@@ -446,28 +449,28 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* ─── Header ─── */}
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
-              <Sparkles className="h-4 w-4 text-primary" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
+              <Sparkles className="h-4 w-4 text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Setores</h1>
+            <h1 className="text-2xl font-bold tracking-tight brand-gradient-text">Setores</h1>
           </div>
-          <p className="text-muted-foreground text-sm ml-[42px]">
+          <p className="text-white/35 text-sm ml-[42px]">
             Selecione um setor para gerenciar
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
             <Input
               placeholder="Buscar setor..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-10 h-10 rounded-2xl glass-input text-sm placeholder:text-muted-foreground/50"
+              className="w-64 pl-10 h-10 rounded-2xl glass-input text-sm placeholder:text-white/25"
             />
           </div>
           {colaborador?.is_master && (
@@ -476,17 +479,17 @@ export default function DashboardPage() {
                 variant="outline"
                 onClick={() => {
                   setEditingTag(null)
-                  setTagForm({ nome: '', cor: '#6B7280' })
+                  setTagForm({ nome: '', cor: '#10b981' })
                   setIsTagsDialogOpen(true)
                 }}
-                className="gap-2 h-10 rounded-2xl"
+                className="gap-2 h-10 rounded-2xl border-white/10 hover:bg-white/5 text-white/60 hover:text-white/80"
               >
                 <Tag className="h-4 w-4" />
                 Tags
               </Button>
               <Button
                 onClick={() => setIsCreateOpen(true)}
-                className="gap-2 h-10 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow"
+                className="gap-2 h-10 rounded-2xl btn-glow"
               >
                 <Plus className="h-4 w-4" />
                 Novo Setor
@@ -496,23 +499,23 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ─── Content ─── */}
+      {/* Content */}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="glass-card-elevated rounded-3xl p-5 space-y-4">
               <div className="flex items-center gap-3.5">
-                <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+                <Skeleton className="h-12 w-12 rounded-2xl shrink-0 bg-white/5" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-4 w-28 bg-white/5" />
+                  <Skeleton className="h-3 w-full bg-white/5" />
                 </div>
               </div>
               <div className="space-y-2.5 pt-1">
-                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12 bg-white/5" />
                 <div className="flex gap-2">
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                  <Skeleton className="h-6 w-24 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full bg-white/5" />
+                  <Skeleton className="h-6 w-24 rounded-full bg-white/5" />
                 </div>
               </div>
             </div>
@@ -521,14 +524,14 @@ export default function DashboardPage() {
       ) : filteredSetores.length === 0 ? (
         <div className="glass-card-elevated rounded-3xl p-20">
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-muted/40 glass-card">
-              <MessageCircle className="h-9 w-9 text-muted-foreground/60" />
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl glass-card">
+              <MessageCircle className="h-9 w-9 text-white/20" />
             </div>
-            <h3 className="text-lg font-semibold">Nenhum setor encontrado</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground max-w-xs">
+            <h3 className="text-lg font-semibold text-white/80">Nenhum setor encontrado</h3>
+            <p className="mt-1.5 text-sm text-white/35 max-w-xs">
               {colaborador?.is_master
-                ? 'Crie seu primeiro setor para começar a organizar seus atendimentos'
-                : 'Você não tem setores atribuídos no momento'}
+                ? 'Crie seu primeiro setor para comecar a organizar seus atendimentos'
+                : 'Voce nao tem setores atribuidos no momento'}
             </p>
           </div>
         </div>
@@ -542,29 +545,29 @@ export default function DashboardPage() {
                   {group.tag ? (
                     <>
                       <span
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm"
-                        style={{ backgroundColor: group.tag.cor }}
+                        className="glass-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm"
+                        style={{ backgroundColor: hexToRgba(group.tag.cor, 0.7) }}
                       >
                         <Tag className="h-3 w-3" />
                         {group.tag.nome}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-white/25">
                         {group.setores.length} {group.setores.length === 1 ? 'setor' : 'setores'}
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
+                      <span className="glass-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-white/40">
                         <Tag className="h-3 w-3" />
                         Sem Tag
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-white/25">
                         {group.setores.length} {group.setores.length === 1 ? 'setor' : 'setores'}
                       </span>
                     </>
                   )}
                 </div>
-                <div className="flex-1 h-px bg-border/30" />
+                <div className="flex-1 h-px bg-white/6" />
               </div>
 
               {/* Sectors grid */}
@@ -580,12 +583,12 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ─── Create Setor Dialog ─── */}
+      {/* Create Setor Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="glass-card-elevated rounded-2xl max-w-lg border-0">
           <DialogHeader>
-            <DialogTitle className="text-lg">Novo Setor</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg text-white/90">Novo Setor</DialogTitle>
+            <DialogDescription className="text-white/35">
               Crie um novo setor para organizar seus atendimentos
             </DialogDescription>
           </DialogHeader>
@@ -598,36 +601,39 @@ export default function DashboardPage() {
                 <div className="text-center">
                   <div
                     className="glass-icon-glow mx-auto mb-3 flex h-18 w-18 items-center justify-center rounded-3xl shadow-lg"
-                    style={{ backgroundColor: newSetor.cor }}
+                    style={{
+                      backgroundColor: newSetor.cor,
+                      boxShadow: `0 8px 30px ${hexToRgba(newSetor.cor, 0.3)}`,
+                    }}
                   >
                     <PreviewIcon className="h-9 w-9 text-white drop-shadow-sm" />
                   </div>
-                  <p className="text-sm font-semibold tracking-tight">
+                  <p className="text-sm font-semibold tracking-tight text-white/80">
                     {newSetor.nome || 'Nome do Setor'}
                   </p>
                 </div>
               </div>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+              <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
 
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome do Setor</Label>
+                <Label htmlFor="nome" className="text-white/60">Nome do Setor</Label>
                 <Input
                   id="nome"
                   value={newSetor.nome}
                   onChange={(e) => setNewSetor((prev) => ({ ...prev, nome: e.target.value }))}
-                  placeholder="Ex: Suporte Técnico"
+                  placeholder="Ex: Suporte Tecnico"
                   className="rounded-xl glass-input"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="descricao">Descrição</Label>
+                <Label htmlFor="descricao" className="text-white/60">Descricao</Label>
                 <Textarea
                   id="descricao"
                   value={newSetor.descricao}
                   onChange={(e) => setNewSetor((prev) => ({ ...prev, descricao: e.target.value }))}
-                  placeholder="Descrição do setor..."
+                  placeholder="Descricao do setor..."
                   rows={2}
                   className="rounded-xl glass-input"
                 />
@@ -636,7 +642,7 @@ export default function DashboardPage() {
               {/* Tag selector */}
               {tags.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Tag</Label>
+                  <Label className="text-white/60">Tag</Label>
                   <Select
                     value={newSetor.tag_id || 'none'}
                     onValueChange={(v) => setNewSetor((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))}
@@ -644,7 +650,7 @@ export default function DashboardPage() {
                     <SelectTrigger className="rounded-xl glass-input">
                       <SelectValue placeholder="Selecionar tag..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="glass-dropdown rounded-xl border-white/8">
                       <SelectItem value="none">Sem tag</SelectItem>
                       {tags.map((tag) => (
                         <SelectItem key={tag.id} value={tag.id}>
@@ -664,7 +670,7 @@ export default function DashboardPage() {
 
               {/* Color Picker */}
               <div className="space-y-2.5">
-                <Label>Cor do Setor</Label>
+                <Label className="text-white/60">Cor do Setor</Label>
                 <div className="grid grid-cols-9 gap-2.5">
                   {AVAILABLE_COLORS.map((color) => (
                     <button
@@ -674,7 +680,7 @@ export default function DashboardPage() {
                       className={cn(
                         'h-8 w-8 rounded-full border-2 transition-all duration-200',
                         newSetor.cor === color.value
-                          ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-foreground/20'
+                          ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
                           : 'border-transparent hover:scale-110'
                       )}
                       style={{ backgroundColor: color.value }}
@@ -686,7 +692,7 @@ export default function DashboardPage() {
 
               {/* Icon Picker */}
               <div className="space-y-2.5">
-                <Label>Ícone do Setor</Label>
+                <Label className="text-white/60">Icone do Setor</Label>
                 <div className="grid grid-cols-8 gap-2">
                   {AVAILABLE_ICONS.map((iconItem) => (
                     <button
@@ -696,12 +702,12 @@ export default function DashboardPage() {
                       className={cn(
                         'flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all duration-200',
                         newSetor.icon_url === iconItem.name
-                          ? 'border-primary bg-primary/10 shadow-sm'
-                          : 'border-border/50 hover:border-primary/40 hover:bg-muted/50'
+                          ? 'border-emerald-500/60 bg-emerald-500/10 shadow-sm shadow-emerald-500/20'
+                          : 'border-white/8 hover:border-emerald-500/30 hover:bg-white/5'
                       )}
                       title={iconItem.name}
                     >
-                      <iconItem.icon className="h-5 w-5" />
+                      <iconItem.icon className="h-5 w-5 text-white/60" />
                     </button>
                   ))}
                 </div>
@@ -714,14 +720,14 @@ export default function DashboardPage() {
               variant="outline"
               onClick={() => setIsCreateOpen(false)}
               disabled={saving}
-              className="rounded-xl"
+              className="rounded-xl border-white/10 hover:bg-white/5 text-white/60"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCreateSetor}
               disabled={saving || !newSetor.nome.trim()}
-              className="rounded-xl shadow-lg shadow-primary/20"
+              className="rounded-xl btn-glow"
             >
               {saving ? (
                 <>
@@ -736,28 +742,28 @@ export default function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── Tags Management Dialog ─── */}
+      {/* Tags Management Dialog */}
       <Dialog open={isTagsDialogOpen} onOpenChange={setIsTagsDialogOpen}>
         <DialogContent className="glass-card-elevated rounded-2xl max-w-md border-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <Tag className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-lg text-white/90">
+              <Tag className="h-5 w-5 text-emerald-400" />
               Gerenciar Tags
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/35">
               Crie tags para organizar e agrupar seus setores
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             {/* Tag form */}
-            <div className="glass-card rounded-xl p-4 space-y-3 border border-border/30">
-              <p className="text-sm font-medium">
+            <div className="glass-card rounded-xl p-4 space-y-3 border border-white/8">
+              <p className="text-sm font-medium text-white/70">
                 {editingTag ? 'Editar Tag' : 'Nova Tag'}
               </p>
               <div className="flex gap-3">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="tag-nome">Nome</Label>
+                  <Label htmlFor="tag-nome" className="text-white/50">Nome</Label>
                   <Input
                     id="tag-nome"
                     placeholder="Ex: Comercial, Suporte..."
@@ -768,7 +774,7 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div className="w-20 space-y-2">
-                  <Label htmlFor="tag-ordem">Ordem</Label>
+                  <Label htmlFor="tag-ordem" className="text-white/50">Ordem</Label>
                   <Input
                     id="tag-ordem"
                     type="number"
@@ -783,7 +789,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Cor</Label>
+                <Label className="text-white/50">Cor</Label>
                 <div className="flex flex-wrap gap-2">
                   {AVAILABLE_COLORS.map((color) => (
                     <button
@@ -793,7 +799,7 @@ export default function DashboardPage() {
                       className={cn(
                         'h-7 w-7 rounded-full border-2 transition-all duration-200',
                         tagForm.cor === color.value
-                          ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-foreground/20'
+                          ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
                           : 'border-transparent hover:scale-110'
                       )}
                       style={{ backgroundColor: color.value }}
@@ -809,8 +815,9 @@ export default function DashboardPage() {
                     size="sm"
                     onClick={() => {
                       setEditingTag(null)
-                      setTagForm({ nome: '', cor: '#6B7280', ordem: 0 })
+                      setTagForm({ nome: '', cor: '#10b981', ordem: 0 })
                     }}
+                    className="text-white/50 hover:text-white/70 hover:bg-white/5"
                   >
                     <X className="h-4 w-4 mr-1" />
                     Cancelar
@@ -820,7 +827,7 @@ export default function DashboardPage() {
                   size="sm"
                   onClick={handleSaveTag}
                   disabled={savingTag || !tagForm.nome.trim()}
-                  className="ml-auto"
+                  className="ml-auto btn-glow rounded-xl"
                 >
                   {savingTag ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -840,10 +847,10 @@ export default function DashboardPage() {
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
               {loadingTags ? (
                 <div className="flex justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
                 </div>
               ) : tags.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground">
+                <div className="text-center py-6 text-white/30">
                   <Tag className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">Nenhuma tag criada ainda</p>
                 </div>
@@ -851,32 +858,35 @@ export default function DashboardPage() {
                 tags.map((tag) => (
                   <div
                     key={tag.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-border/40 bg-muted/20"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-white/6 bg-white/3"
                   >
                     <span
-                      className="h-4 w-4 rounded-full shrink-0"
-                      style={{ backgroundColor: tag.cor }}
+                      className="h-4 w-4 rounded-full shrink-0 shadow-sm"
+                      style={{
+                        backgroundColor: tag.cor,
+                        boxShadow: `0 0 8px ${hexToRgba(tag.cor, 0.3)}`,
+                      }}
                     />
-                    <span className="flex-1 text-sm font-medium">{tag.nome}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums w-8 text-center">
+                    <span className="flex-1 text-sm font-medium text-white/70">{tag.nome}</span>
+                    <span className="text-xs text-white/25 tabular-nums w-8 text-center">
                       #{tag.ordem ?? 0}
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-7 w-7 hover:bg-white/5"
                         onClick={() => {
                           setEditingTag(tag)
                           setTagForm({ nome: tag.nome, cor: tag.cor, ordem: tag.ordem ?? 0 })
                         }}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3.5 w-3.5 text-white/40" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-7 w-7 text-red-400 hover:text-red-400 hover:bg-red-500/10"
                         disabled={deletingTagId === tag.id}
                         onClick={() => handleDeleteTag(tag)}
                       >
@@ -894,7 +904,11 @@ export default function DashboardPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTagsDialogOpen(false)} className="rounded-xl">
+            <Button
+              variant="outline"
+              onClick={() => setIsTagsDialogOpen(false)}
+              className="rounded-xl border-white/10 hover:bg-white/5 text-white/60"
+            >
               Fechar
             </Button>
           </DialogFooter>

@@ -190,10 +190,10 @@ export default function PermissoesPage() {
   function FlagBadge({ value, label }: { value: boolean; label: string }) {
     return (
       <span
-        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium glass-badge ${
           value
-            ? 'bg-green-100 text-green-700'
-            : 'bg-muted text-muted-foreground'
+            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+            : 'bg-white/5 text-white/30 border-white/10'
         }`}
       >
         {value ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -204,47 +204,52 @@ export default function PermissoesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Permissoes
-        </h1>
-        <p className="text-muted-foreground">
-          Gerencie os tipos de permissao e controle o acesso dos colaboradores.
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <Shield className="h-5 w-5 text-emerald-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Permissoes
+          </h1>
+          <p className="text-sm text-white/40">
+            Gerencie os tipos de permissao e controle o acesso dos colaboradores.
+          </p>
+        </div>
       </div>
 
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Lista de Permissoes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/6">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-base font-semibold text-white">Lista de Permissoes</h2>
+          </div>
+        </div>
+        <div className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             </div>
           ) : permissoes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-primary/10 p-4">
-                <Shield className="h-8 w-8 text-primary" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="rounded-full bg-emerald-500/10 p-4">
+                <Shield className="h-8 w-8 text-emerald-400" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
+              <h3 className="mt-4 text-lg font-semibold text-white">
                 Nenhuma permissao cadastrada
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-white/40">
                 Comece criando o primeiro tipo de permissao
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Capacidades</TableHead>
-                  <TableHead>Colaboradores</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
+                <TableRow className="border-white/6 hover:bg-transparent">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Capacidades</TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Colaboradores</TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -256,9 +261,9 @@ export default function PermissoesPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ delay: index * 0.05 }}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      className="border-b border-white/6 transition-colors hover:bg-white/[0.03]"
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-white/90">
                         {permissao.nome}
                       </TableCell>
                       <TableCell>
@@ -277,7 +282,7 @@ export default function PermissoesPage() {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-white/50">
                         {permissao._count || 0} colaborador
                         {permissao._count !== 1 ? 'es' : ''}
                       </TableCell>
@@ -287,7 +292,7 @@ export default function PermissoesPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => openEditModal(permissao)}
-                            className="hover:bg-primary/20"
+                            className="text-white/40 hover:text-white hover:bg-white/5"
                           >
                             <Pencil className="mr-1 h-4 w-4" />
                             Editar
@@ -297,7 +302,7 @@ export default function PermissoesPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => openDeleteDialog(permissao)}
-                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              className="text-red-400/60 hover:bg-red-500/10 hover:text-red-400"
                             >
                               <Trash2 className="mr-1 h-4 w-4" />
                               Excluir
@@ -311,8 +316,8 @@ export default function PermissoesPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Floating Action Button */}
       <motion.div
@@ -332,10 +337,10 @@ export default function PermissoesPage() {
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0">
+        <DialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <Shield className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Shield className="h-5 w-5 text-emerald-400" />
               {editingPermissao ? 'Editar Permissao' : 'Nova Permissao'}
             </DialogTitle>
           </DialogHeader>
@@ -352,7 +357,7 @@ export default function PermissoesPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, nome: e.target.value })
                 }
-                className="border-border bg-card"
+                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
 
@@ -422,14 +427,14 @@ export default function PermissoesPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="border-border"
+              className="border-white/10 text-white/60 hover:bg-white/5"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving || !formData.nome.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-glow rounded-xl"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editingPermissao ? 'Salvar Alteracoes' : 'Salvar Permissao'}
@@ -440,9 +445,9 @@ export default function PermissoesPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="glass-card-elevated rounded-2xl border-0">
+        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">
+            <AlertDialogTitle className="text-white">
               Excluir Permissao
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -452,7 +457,7 @@ export default function PermissoesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-border">
+            <AlertDialogCancel className="border-white/10 text-white/60 hover:bg-white/5">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction

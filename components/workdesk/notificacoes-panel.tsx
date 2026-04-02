@@ -169,7 +169,7 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
       {showNewNotification && newNotificationData && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
           <div
-            className="glass-card rounded-xl border-0 p-4 max-w-sm cursor-pointer hover:brightness-105 transition-all"
+            className="glass-card-elevated rounded-xl border border-emerald-500/20 p-4 max-w-sm cursor-pointer hover:border-emerald-500/30 transition-all"
             onClick={() => {
               setShowNewNotification(false)
               setIsOpen(true)
@@ -177,30 +177,30 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
             }}
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Bell className="h-5 w-5 text-primary" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/30">
+                <Bell className="h-4 w-4 text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">
-                  {newNotificationData.titulo || 'Nova notificação'}
+                <p className="text-sm font-medium text-white/90">
+                  {newNotificationData.titulo || 'Nova notificacao'}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-white/40">
                   De: {newNotificationData.remetente?.nome || 'Desconhecido'}
                 </p>
-                <p className="text-sm text-foreground mt-1 line-clamp-2">
+                <p className="text-xs text-white/60 mt-1 line-clamp-2">
                   {newNotificationData.mensagem}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 shrink-0"
+                className="h-6 w-6 shrink-0 text-white/30 hover:text-white/60 hover:bg-white/5"
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowNewNotification(false)
                 }}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -210,63 +210,69 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
       {/* Notification Bell */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className={cn(
+            "relative h-8 w-8 rounded-lg hover:bg-white/5 transition-all",
+            unreadCount > 0 && "text-emerald-400"
+          )}>
+            <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+              <span className={cn(
+                "absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white px-1",
+                "pulse-glow"
+              )}>
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0 glass-dropdown rounded-2xl border-0" align="end">
-          <div className="flex items-center justify-between border-b border-border p-3">
-            <h3 className="font-semibold text-sm">Notificações</h3>
+          <div className="flex items-center justify-between border-b border-white/6 p-3">
+            <h3 className="font-semibold text-sm text-white/80">Notificacoes</h3>
             {unreadCount > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {unreadCount} não lida{unreadCount > 1 ? 's' : ''}
+              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                {unreadCount} nao lida{unreadCount > 1 ? 's' : ''}
               </span>
             )}
           </div>
 
           <ScrollArea className="h-[300px]">
             {notificacoes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-8 text-white/30">
                 <Bell className="h-8 w-8 mb-2 opacity-50" />
-                <p className="text-sm">Nenhuma notificação</p>
+                <p className="text-sm">Nenhuma notificacao</p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-white/6">
                 {notificacoes.map((notif) => (
                   <div
                     key={notif.id}
                     className={cn(
-                      'p-3 cursor-pointer hover:bg-accent/50 transition-colors',
-                      !notif.lida && 'bg-primary/5'
+                      'p-3 cursor-pointer hover:bg-white/3 transition-colors',
+                      !notif.lida && 'bg-emerald-500/5'
                     )}
                     onClick={() => markAsRead(notif.id)}
                   >
                     <div className="flex items-start gap-2">
                       <div
                         className={cn(
-                          'mt-1 h-2 w-2 rounded-full shrink-0',
-                          notif.lida ? 'bg-transparent' : 'bg-primary'
+                          'mt-1.5 h-1.5 w-1.5 rounded-full shrink-0',
+                          notif.lida ? 'bg-transparent' : 'bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
                         )}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-medium text-foreground truncate">
-                            {notif.titulo || 'Sem título'}
+                          <p className="text-xs font-medium text-white/80 truncate">
+                            {notif.titulo || 'Sem titulo'}
                           </p>
-                          <span className="text-[10px] text-muted-foreground shrink-0">
+                          <span className="text-[10px] text-white/30 shrink-0">
                             {formatTime(notif.criado_em)}
                           </span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[10px] text-white/30">
                           De: {notif.remetente?.nome || 'Desconhecido'}
-                          {notif.setor && ` • ${notif.setor.nome}`}
+                          {notif.setor && ` -- ${notif.setor.nome}`}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs text-white/50 mt-1 line-clamp-2">
                           {notif.mensagem}
                         </p>
                       </div>

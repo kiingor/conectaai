@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -23,8 +22,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Menu, LogOut, User as UserIcon, ChevronDown, Bell, KeyRound } from 'lucide-react'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { Menu, LogOut, User as UserIcon, ChevronDown, Bell, KeyRound, Search } from 'lucide-react'
 import { useColaborador } from '@/lib/hooks/use-data'
 
 interface DashboardHeaderProps {
@@ -36,7 +34,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
   const router = useRouter()
   const { data: colaborador } = useColaborador()
 
-  // — Alterar senha
+  // -- Alterar senha
   const [senhaDialogOpen, setSenhaDialogOpen] = useState(false)
   const [senhaAtual, setSenhaAtual] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
@@ -90,7 +88,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
       return
     }
 
-    // Logout para forçar novo login com nova senha
+    // Logout para forcar novo login com nova senha
     await supabase.auth.signOut()
     router.push('/login')
   }
@@ -121,53 +119,64 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
-          className="lg:hidden h-9 w-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          className="lg:hidden h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5 text-white/60" />
           <span className="sr-only">Abrir menu</span>
         </Button>
 
+        {/* Page title area */}
+        <div className="hidden lg:block">
+          <span className="text-sm font-medium text-white/40">Painel</span>
+        </div>
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-1.5">
-        {/* Notifications placeholder */}
+        {/* Search button */}
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          className="relative h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
         >
-          <Bell className="h-[18px] w-[18px] text-muted-foreground" />
+          <Search className="h-[18px] w-[18px] text-white/40" />
+          <span className="sr-only">Buscar</span>
+        </Button>
+
+        {/* Notifications */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
+        >
+          <Bell className="h-[18px] w-[18px] text-white/40" />
           <span className="sr-only">Notificacoes</span>
         </Button>
 
-        {/* Theme toggle */}
-        <ThemeToggle />
-
         {/* Divider */}
-        <div className="hidden md:block h-6 w-px bg-gradient-to-b from-transparent via-black/10 to-transparent dark:via-white/10 mx-1" />
+        <div className="hidden md:block h-6 w-px bg-white/6 mx-1" />
 
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2.5 pl-2 pr-3 h-10 rounded-2xl hover:bg-black/5 dark:hover:bg-white/10 transition-all"
+              className="flex items-center gap-2.5 pl-2 pr-3 h-10 rounded-2xl hover:bg-white/5 transition-all"
             >
               <Avatar className="h-8 w-8 glass-avatar-ring">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                <AvatarFallback className="brand-gradient text-white text-xs font-bold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-foreground leading-tight capitalize">
+                <span className="text-sm font-medium text-white/90 leading-tight capitalize">
                   {userDisplayName}
                 </span>
-                <span className="text-[10px] text-muted-foreground leading-tight">
+                <span className="text-[10px] text-white/30 leading-tight">
                   {userRole}
                 </span>
               </div>
-              <ChevronDown className="hidden md:block h-3.5 w-3.5 text-muted-foreground ml-0.5" />
+              <ChevronDown className="hidden md:block h-3.5 w-3.5 text-white/30 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
 
@@ -179,67 +188,67 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
             <div className="px-3 py-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 glass-avatar-ring">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+                  <AvatarFallback className="brand-gradient text-white text-sm font-bold">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate capitalize">
+                  <p className="text-sm font-semibold text-white/90 truncate capitalize">
                     {userDisplayName}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-white/35 truncate">
                     {user.email}
                   </p>
                 </div>
               </div>
             </div>
 
-            <DropdownMenuSeparator className="bg-black/5 dark:bg-white/8 mx-1" />
+            <DropdownMenuSeparator className="bg-white/6 mx-1" />
 
-            <DropdownMenuItem className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-black/5 dark:focus:bg-white/5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
-                <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            <DropdownMenuItem className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-white/5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5">
+                <UserIcon className="h-3.5 w-3.5 text-white/50" />
               </div>
-              <span className="text-sm">Meu Perfil</span>
+              <span className="text-sm text-white/80">Meu Perfil</span>
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
-              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-black/5 dark:focus:bg-white/5"
+              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-white/5"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
-                <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5">
+                <KeyRound className="h-3.5 w-3.5 text-white/50" />
               </div>
-              <span className="text-sm">Alterar Senha</span>
+              <span className="text-sm text-white/80">Alterar Senha</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="bg-black/5 dark:bg-white/8 mx-1" />
+            <DropdownMenuSeparator className="bg-white/6 mx-1" />
 
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/5"
+              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/10">
-                <LogOut className="h-3.5 w-3.5 text-destructive" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10">
+                <LogOut className="h-3.5 w-3.5 text-red-400" />
               </div>
               <span className="text-sm">Sair da conta</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Dialog — Alterar Senha */}
+        {/* Dialog -- Alterar Senha */}
         <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md glass-card-elevated border-0 rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4" />
+              <DialogTitle className="flex items-center gap-2 text-white/90">
+                <KeyRound className="h-4 w-4 text-emerald-400" />
                 Alterar Senha
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <Label htmlFor="senha-atual">Senha atual</Label>
+                <Label htmlFor="senha-atual" className="text-white/60">Senha atual</Label>
                 <Input
                   id="senha-atual"
                   type="password"
@@ -247,21 +256,23 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                   value={senhaAtual}
                   onChange={(e) => setSenhaAtual(e.target.value)}
                   disabled={senhaLoading}
+                  className="glass-input rounded-xl"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="nova-senha">Nova senha</Label>
+                <Label htmlFor="nova-senha" className="text-white/60">Nova senha</Label>
                 <Input
                   id="nova-senha"
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Minimo 6 caracteres"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   disabled={senhaLoading}
+                  className="glass-input rounded-xl"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirmar-senha">Confirmar nova senha</Label>
+                <Label htmlFor="confirmar-senha" className="text-white/60">Confirmar nova senha</Label>
                 <Input
                   id="confirmar-senha"
                   type="password"
@@ -270,10 +281,11 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                   onChange={(e) => setConfirmarSenha(e.target.value)}
                   disabled={senhaLoading}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAlterarSenha() }}
+                  className="glass-input rounded-xl"
                 />
               </div>
               {senhaError && (
-                <p className="text-sm text-destructive">{senhaError}</p>
+                <p className="text-sm text-red-400">{senhaError}</p>
               )}
             </div>
 
@@ -282,10 +294,15 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                 variant="outline"
                 onClick={() => setSenhaDialogOpen(false)}
                 disabled={senhaLoading}
+                className="rounded-xl border-white/10 hover:bg-white/5"
               >
                 Cancelar
               </Button>
-              <Button onClick={handleAlterarSenha} disabled={senhaLoading}>
+              <Button
+                onClick={handleAlterarSenha}
+                disabled={senhaLoading}
+                className="rounded-xl btn-glow"
+              >
                 {senhaLoading ? 'Salvando...' : 'Salvar e sair'}
               </Button>
             </DialogFooter>

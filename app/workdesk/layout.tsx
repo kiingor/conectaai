@@ -53,7 +53,7 @@ export default function WorkdeskLayout({
   const pathname = usePathname()
   const { setTicketSoundType, getTicketSoundType, playAlert, playBuhBuh, initAudioContext } = useAudioAlert()
 
-  // Carregar preferência de som salva
+  // Carregar preferencia de som salva
   useEffect(() => {
     const saved = localStorage.getItem('ticketSoundType') as TicketSoundType | null
     if (saved === 'buhbuh' || saved === 'default') {
@@ -64,7 +64,7 @@ export default function WorkdeskLayout({
   const handleSoundChange = (type: TicketSoundType) => {
     setTicketSound(type)
     setTicketSoundType(type)
-    // Pré-visualizar o som selecionado
+    // Pre-visualizar o som selecionado
     initAudioContext()
     if (type === 'buhbuh') {
       playBuhBuh()
@@ -78,12 +78,12 @@ export default function WorkdeskLayout({
 
     // Skip auth check for login and reset-password pages
     if (pathname === '/workdesk/login' || pathname === '/workdesk/reset-password') {
-      console.log('[workdesk layout] página de login/reset, pulando auth check')
+      console.log('[workdesk layout] pagina de login/reset, pulando auth check')
       setLoading(false)
       return
     }
 
-    console.log('[workdesk layout] verificando sessão...')
+    console.log('[workdesk layout] verificando sessao...')
     const {
       data: { user },
       error: userError,
@@ -92,12 +92,12 @@ export default function WorkdeskLayout({
 
     if (!user) {
       const orgParam = new URLSearchParams(window.location.search).get('org')
-      console.log('[workdesk layout] sem usuário, redirecionando para login. org param:', orgParam)
+      console.log('[workdesk layout] sem usuario, redirecionando para login. org param:', orgParam)
       router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
       return
     }
 
-    // Se tem ?org= na URL e não tem cookie, resolve o org_id agora
+    // Se tem ?org= na URL e nao tem cookie, resolve o org_id agora
     let orgId = document.cookie.match(/(?:^|;\s*)org_id=([^;]+)/)?.[1] ?? null
     const orgParam = new URLSearchParams(window.location.search).get('org')
     if (!orgId && orgParam) {
@@ -124,9 +124,9 @@ export default function WorkdeskLayout({
     let { data: colaboradorData, error: colabError } = await colaboradorQuery.maybeSingle()
     console.log('[workdesk layout] colaborador resultado:', { data: colaboradorData, error: colabError?.message ?? null })
 
-    // Fallback: se não achou na org específica, busca sem filtro de org (master admin)
+    // Fallback: se nao achou na org especifica, busca sem filtro de org (master admin)
     if (!colaboradorData && orgId) {
-      console.log('[workdesk layout] não encontrado na org, tentando fallback sem filtro de org')
+      console.log('[workdesk layout] nao encontrado na org, tentando fallback sem filtro de org')
       const fallback = await supabase
         .from('colaboradores')
         .select('id, nome, email, is_online, pausa_atual_id')
@@ -138,7 +138,7 @@ export default function WorkdeskLayout({
     }
 
     if (!colaboradorData) {
-      console.log('[workdesk layout] colaborador não encontrado, redirecionando para login')
+      console.log('[workdesk layout] colaborador nao encontrado, redirecionando para login')
       router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
       return
     }
@@ -221,7 +221,7 @@ export default function WorkdeskLayout({
     router.push('/workdesk/login')
   }
 
-  // — Alterar senha
+  // -- Alterar senha
   const [senhaDialogOpen, setSenhaDialogOpen] = useState(false)
   const [senhaAtual, setSenhaAtual] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
@@ -249,7 +249,7 @@ export default function WorkdeskLayout({
       return
     }
     if (novaSenha !== confirmarSenha) {
-      setSenhaError('A confirmação não coincide com a nova senha.')
+      setSenhaError('A confirmacao nao coincide com a nova senha.')
       return
     }
 
@@ -288,10 +288,10 @@ export default function WorkdeskLayout({
 
   if (loading) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-background">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span>Carregando...</span>
+      <div className="flex min-h-svh items-center justify-center bg-[#06080f]">
+        <div className="flex items-center gap-3 text-white/50">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          <span className="text-sm">Carregando...</span>
         </div>
       </div>
     )
@@ -306,31 +306,24 @@ export default function WorkdeskLayout({
     const orgParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('org') : null
     router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
     return (
-      <div className="flex min-h-svh items-center justify-center bg-background">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="flex min-h-svh items-center justify-center bg-[#06080f]">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-svh bg-[#F0F1F5] dark:bg-[#0A0A12]">
-      {/* Decorative background blobs */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-purple-300/20 dark:bg-purple-500/10 blur-3xl" />
-        <div className="absolute top-1/3 right-0 h-[400px] w-[400px] rounded-full bg-blue-300/20 dark:bg-blue-500/10 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-[350px] w-[350px] rounded-full bg-pink-300/15 dark:bg-pink-500/10 blur-3xl" />
-      </div>
-
+    <div className="min-h-svh bg-[#06080f] ambient-glow">
       {/* Header */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between glass-header px-4 lg:px-6">
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between glass-header px-4 lg:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md">
-            <MessageCircle className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-emerald-500/20">
+            <MessageCircle className="h-4 w-4 text-white" />
           </div>
-          <h1 className="text-base font-bold text-foreground tracking-tight">WorkDesk</h1>
+          <h1 className="text-sm font-bold brand-gradient-text tracking-tight">ConectaAI</h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Status Panel */}
           <DisponibilidadePanel
             colaboradorId={colaborador.id}
@@ -345,62 +338,59 @@ export default function WorkdeskLayout({
             setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
           />
 
-          <ThemeToggle />
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 rounded-xl hover:bg-white/50 dark:hover:bg-white/10">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 ring-2 ring-primary/20">
-                  <User className="h-4 w-4 text-primary" />
+              <Button variant="ghost" className="gap-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/8 transition-all">
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+                  <User className="h-3.5 w-3.5 text-white/70" />
+                  <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f] ${colaborador.is_online ? 'status-dot-online' : 'status-dot-busy'}`} />
                 </div>
-                <span className="hidden text-sm font-medium md:inline">{colaborador.nome}</span>
+                <span className="hidden text-xs font-medium text-white/80 md:inline">{colaborador.nome}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 glass-dropdown rounded-2xl border-0">
-              <div className="px-3 py-2">
-                <p className="text-sm font-medium">{colaborador.nome}</p>
-                <p className="text-xs text-muted-foreground">{colaborador.email}</p>
+            <DropdownMenuContent align="end" className="w-64 glass-dropdown rounded-2xl border-0 p-1">
+              <div className="px-3 py-2.5">
+                <p className="text-sm font-semibold text-white/90">{colaborador.nome}</p>
+                <p className="text-xs text-white/40">{colaborador.email}</p>
               </div>
 
-              <DropdownMenuSeparator className="mx-2" />
+              <DropdownMenuSeparator className="mx-2 bg-white/6" />
 
               {/* Som de novo ticket */}
-              <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-semibold text-white/30 uppercase tracking-wider flex items-center gap-1.5">
                 <Volume2 className="h-3 w-3" />
-                Som — Novo Ticket
+                Som -- Novo Ticket
               </DropdownMenuLabel>
 
-              <div className="px-2 pb-1 space-y-0.5">
-                {/* Opção Padrão */}
+              <div className="px-1.5 pb-1 space-y-0.5">
+                {/* Opcao Padrao */}
                 <button
                   onClick={() => handleSoundChange('default')}
-                  className={`w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm transition-colors ${
+                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
                     ticketSound === 'default'
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
+                      ? 'bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20'
+                      : 'hover:bg-white/5 text-white/70'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="text-base">🔔</span>
-                    Padrão
+                    <span className="text-sm">Padrao</span>
                   </span>
                   {ticketSound === 'default' && (
                     <Play className="h-3 w-3 shrink-0 opacity-60" />
                   )}
                 </button>
 
-                {/* Opção Buh Buh */}
+                {/* Opcao Buh Buh */}
                 <button
                   onClick={() => handleSoundChange('buhbuh')}
-                  className={`w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm transition-colors ${
+                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
                     ticketSound === 'buhbuh'
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
+                      ? 'bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20'
+                      : 'hover:bg-white/5 text-white/70'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="text-base">📣</span>
-                    Buh Buh
+                    <span className="text-sm">Buh Buh</span>
                   </span>
                   {ticketSound === 'buhbuh' && (
                     <Play className="h-3 w-3 shrink-0 opacity-60" />
@@ -408,36 +398,36 @@ export default function WorkdeskLayout({
                 </button>
               </div>
 
-              <DropdownMenuSeparator className="mx-2" />
+              <DropdownMenuSeparator className="mx-2 bg-white/6" />
 
               <DropdownMenuItem
                 onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
-                className="rounded-xl mx-1"
+                className="rounded-lg mx-1 text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/5"
               >
                 <KeyRound className="mr-2 h-4 w-4" />
                 Alterar Senha
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive rounded-xl mx-1 mb-1">
+              <DropdownMenuItem onClick={handleLogout} className="text-red-400 rounded-lg mx-1 mb-1 hover:bg-red-500/10 focus:bg-red-500/10">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Dialog — Alterar Senha */}
+          {/* Dialog -- Alterar Senha */}
           <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md glass-dropdown border-white/8 bg-[#0e101a]/95">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <KeyRound className="h-4 w-4" />
+                <DialogTitle className="flex items-center gap-2 text-white/90">
+                  <KeyRound className="h-4 w-4 text-emerald-400" />
                   Alterar Senha
                 </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="wk-senha-atual">Senha atual</Label>
+                  <Label htmlFor="wk-senha-atual" className="text-white/60 text-xs">Senha atual</Label>
                   <Input
                     id="wk-senha-atual"
                     type="password"
@@ -445,21 +435,23 @@ export default function WorkdeskLayout({
                     value={senhaAtual}
                     onChange={(e) => setSenhaAtual(e.target.value)}
                     disabled={senhaLoading}
+                    className="glass-input text-white/90 placeholder:text-white/20"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="wk-nova-senha">Nova senha</Label>
+                  <Label htmlFor="wk-nova-senha" className="text-white/60 text-xs">Nova senha</Label>
                   <Input
                     id="wk-nova-senha"
                     type="password"
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Minimo 6 caracteres"
                     value={novaSenha}
                     onChange={(e) => setNovaSenha(e.target.value)}
                     disabled={senhaLoading}
+                    className="glass-input text-white/90 placeholder:text-white/20"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="wk-confirmar-senha">Confirmar nova senha</Label>
+                  <Label htmlFor="wk-confirmar-senha" className="text-white/60 text-xs">Confirmar nova senha</Label>
                   <Input
                     id="wk-confirmar-senha"
                     type="password"
@@ -468,10 +460,11 @@ export default function WorkdeskLayout({
                     onChange={(e) => setConfirmarSenha(e.target.value)}
                     disabled={senhaLoading}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAlterarSenha() }}
+                    className="glass-input text-white/90 placeholder:text-white/20"
                   />
                 </div>
                 {senhaError && (
-                  <p className="text-sm text-destructive">{senhaError}</p>
+                  <p className="text-sm text-red-400">{senhaError}</p>
                 )}
               </div>
 
@@ -480,10 +473,11 @@ export default function WorkdeskLayout({
                   variant="outline"
                   onClick={() => setSenhaDialogOpen(false)}
                   disabled={senhaLoading}
+                  className="border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80"
                 >
                   Cancelar
                 </Button>
-                <Button onClick={handleAlterarSenha} disabled={senhaLoading}>
+                <Button onClick={handleAlterarSenha} disabled={senhaLoading} className="btn-glow rounded-lg">
                   {senhaLoading ? 'Salvando...' : 'Salvar e sair'}
                 </Button>
               </DialogFooter>

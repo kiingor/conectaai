@@ -2359,9 +2359,9 @@ const saveConfig = async () => {
   const SetorIcon = getIconComponent(setor?.icon_url)
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col bg-[#06080f]">
       {/* Top Header - Simplified without tabs */}
-      <header className="flex h-14 items-center justify-between border-b glass-header px-4">
+      <header className="flex h-14 items-center justify-between border-b border-white/6 glass-header px-4">
         <div className="flex items-center gap-4">
           <button
             onClick={handleBackClick}
@@ -2439,14 +2439,14 @@ const saveConfig = async () => {
                   className={cn(
                     'flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left text-sm transition-all cursor-pointer select-none active:scale-[0.98]',
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'glass-nav-active text-emerald-400'
+                      : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80'
                   )}
                 >
                   <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                   <div>
-                    <p className={cn('font-medium', !isActive && 'text-foreground')}>{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                    <p className={cn('font-medium', isActive ? 'text-emerald-400' : 'text-white/80')}>{item.name}</p>
+                    <p className="text-xs text-white/30">{item.description}</p>
                   </div>
                 </button>
               )
@@ -2455,27 +2455,27 @@ const saveConfig = async () => {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-muted/30 p-6">
+        <main className="flex-1 overflow-y-auto bg-[#080a12] p-6">
           {/* Monitoramento Section */}
           {activeSection === 'monitoramento' && (
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold">Monitoramento de atendimento</h1>
-                  <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1">
+                  <h1 className="text-xl font-bold text-white">Monitoramento de atendimento</h1>
+                  <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
-                    <span className="text-xs font-medium text-green-600 dark:text-green-400">Ao vivo</span>
+                    <span className="text-xs font-medium text-emerald-400">Ao vivo</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-transparent">
+                  <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
                     <RefreshCw className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+                  <Button variant="outline" size="sm" className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
                     <Filter className="h-4 w-4" />
                     Filtros
                   </Button>
@@ -2484,8 +2484,8 @@ const saveConfig = async () => {
 
               {/* Quick Filters */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Filtros rápidos:</span>
-                <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">Filas</Badge>
+                <span className="text-sm text-white/40">Filtros rapidos:</span>
+                <Badge variant="secondary" className="cursor-pointer bg-white/[0.05] text-white/60 border-white/10 hover:bg-emerald-500/15 hover:text-emerald-400 hover:border-emerald-500/20">Filas</Badge>
               </div>
 
               {/* Stats Cards Row 1 */}
@@ -2625,10 +2625,10 @@ const saveConfig = async () => {
 
             {/* Quick Filters 2 */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filtros rápidos:</span>
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary/10 transition-colors">Atendentes</Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary/10 transition-colors">Contato</Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary/10 transition-colors">Status do atendente</Badge>
+              <span className="text-sm text-white/40">Filtros rapidos:</span>
+              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Atendentes</Badge>
+              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Contato</Badge>
+              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Status do atendente</Badge>
             </div>
 
             {/* Monitoramento Detalhado - Blip Style */}
@@ -2643,8 +2643,8 @@ const saveConfig = async () => {
                           variant="outline"
                           size="sm"
                           className={cn(
-                            "gap-2 bg-transparent",
-                            atendenteFilter !== 'all' && "border-primary text-primary"
+                            "gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white",
+                            atendenteFilter !== 'all' && "border-emerald-500/40 text-emerald-400"
                           )}
                         >
                           <Filter className="h-4 w-4" />
@@ -2707,12 +2707,12 @@ const saveConfig = async () => {
                       </PopoverContent>
                     </Popover>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
                       <Input
-                        placeholder="Buscar pelo Nº do ticket"
+                        placeholder="Buscar pelo No do ticket"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-52 pl-9 h-9"
+                        className="w-52 pl-9 h-9 glass-input text-white placeholder:text-white/25 border-white/10 rounded-lg"
                       />
                     </div>
                   </div>
@@ -2720,31 +2720,31 @@ const saveConfig = async () => {
               </CardHeader>
               <CardContent className="pt-4">
                 {/* Tabs */}
-                <div className="border-b border-border mb-4">
+                <div className="border-b border-white/8 mb-4">
                   <div className="flex gap-0">
                     <button
                       onClick={() => setActiveTab('em-andamento')}
                       className={cn(
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'em-andamento'
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                          ? "border-emerald-500 text-emerald-400"
+                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
                       )}
                     >
-                      Atribuído/Em andamento
+                      Atribuido/Em andamento
                     </button>
                     <button
                       onClick={() => setActiveTab('aguardando')}
                       className={cn(
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'aguardando'
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                          ? "border-emerald-500 text-emerald-400"
+                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
                       )}
                     >
                       Aguardando atendimento
                       {ticketsAguardando.length > 0 && (
-                        <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
+                        <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px] bg-emerald-500/15 text-emerald-400 border-emerald-500/20">
                           {ticketsAguardando.length}
                         </Badge>
                       )}
@@ -2754,8 +2754,8 @@ const saveConfig = async () => {
                       className={cn(
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'atendentes'
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                          ? "border-emerald-500 text-emerald-400"
+                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
                       )}
                     >
                       Atendentes
@@ -2765,8 +2765,8 @@ const saveConfig = async () => {
                       className={cn(
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'filas'
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                          ? "border-emerald-500 text-emerald-400"
+                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
                       )}
                     >
                       Filas
@@ -2781,14 +2781,14 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo na fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">1ª Resposta</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo atend.</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ticket</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contato</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Atendente</TableHead>
+                          <TableRow className="hover:bg-transparent border-white/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo na fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">1ª Resposta</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo atend.</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Ticket</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Contato</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Atendente</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -2822,13 +2822,13 @@ const saveConfig = async () => {
                                 <TableRow 
                                   key={ticket.id} 
                                   className={cn(
-                                    aguardandoResposta && "bg-yellow-50/50 dark:bg-yellow-950/20"
+                                    aguardandoResposta && "bg-yellow-950/20"
                                   )}
                                 >
                                   <TableCell className="text-sm tabular-nums text-foreground">{ticket.tempoNaFila}</TableCell>
                                   <TableCell>
                                     {aguardandoResposta ? (
-                                      <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700 text-[10px]">
+                                      <Badge variant="outline" className="bg-yellow-900/50 text-yellow-200 border-yellow-700 text-[10px]">
                                         <Clock className="mr-1 h-3 w-3" />
                                         Aguardando...
                                       </Badge>
@@ -2872,12 +2872,12 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo na fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ticket</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contato</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prioridade</TableHead>
+                          <TableRow className="hover:bg-transparent border-white/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo na fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Ticket</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Contato</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Prioridade</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -2905,9 +2905,9 @@ const saveConfig = async () => {
                             </TableRow>
                           ) : (
                             ticketsAguardando.map((ticket: any) => (
-                              <TableRow key={ticket.id} className="bg-yellow-50/50 dark:bg-yellow-950/20">
+                              <TableRow key={ticket.id} className="bg-yellow-950/20">
                                 <TableCell>
-                                  <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700 text-[10px]">
+                                  <Badge variant="outline" className="bg-yellow-900/50 text-yellow-200 border-yellow-700 text-[10px]">
                                     <Clock className="mr-1 h-3 w-3" />
                                     Aguardando...
                                   </Badge>
@@ -2953,11 +2953,11 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Atendente</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Em atendimento</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-center">Finalizados hoje</TableHead>
+                          <TableRow className="hover:bg-transparent border-white/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Atendente</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Status</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40 text-center">Em atendimento</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40 text-center">Finalizados hoje</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -2989,9 +2989,9 @@ const saveConfig = async () => {
                               const isOnPause = !!atendente.pausa_atual_id
                               const isOnline = atendente.is_online
                               const statusDisplay = isOnPause
-                                ? { color: 'bg-amber-500', textColor: 'text-amber-600 dark:text-amber-400', label: 'Ausente' }
+                                ? { color: 'bg-amber-500', textColor: 'text-amber-400', label: 'Ausente' }
                                 : isOnline
-                                  ? { color: 'bg-green-500', textColor: 'text-green-600 dark:text-green-400', label: 'Online' }
+                                  ? { color: 'bg-green-500', textColor: 'text-green-400', label: 'Online' }
                                   : { color: 'bg-gray-400', textColor: 'text-muted-foreground', label: 'Offline' }
                               const isChanging = alterandoStatusId === atendente.id
                               return (
@@ -3097,7 +3097,7 @@ const saveConfig = async () => {
 
             {/* Warning Note */}
             {ticketsEmAndamento.some((t: any) => t.status === 'em_atendimento' && !t.primeira_resposta_em) && (
-              <div className="flex items-center gap-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3 text-sm text-yellow-800 dark:text-yellow-200">
+              <div className="flex items-center gap-2 rounded-lg bg-yellow-900/20 border border-yellow-800/40 p-3 text-sm text-yellow-200">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 <span>O destaque amarelo sinaliza que um ticket foi atribuído a um atendente, mas o contato ainda não recebeu a primeira resposta.</span>
               </div>
@@ -3110,7 +3110,7 @@ const saveConfig = async () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold">Relatorios de Atendimento</h1>
+                <h1 className="text-xl font-bold text-white">Relatorios de Atendimento</h1>
               </div>
               <DatePeriodFilter
                 dateFilter={dateFilter}
@@ -3132,8 +3132,8 @@ const saveConfig = async () => {
                       <p className="text-xs text-muted-foreground">Tempo médio 1a resposta</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.tempoMedioPrimeiraResposta}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-                      <Timer className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div className="h-9 w-9 rounded-lg bg-blue-950/30 flex items-center justify-center">
+                      <Timer className="h-5 w-5 text-blue-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3147,8 +3147,8 @@ const saveConfig = async () => {
                       <p className="text-xs text-muted-foreground">Tempo médio resolução</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.tempoMedioResolucao}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-green-50 dark:bg-green-950/30 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div className="h-9 w-9 rounded-lg bg-green-950/30 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3162,8 +3162,8 @@ const saveConfig = async () => {
                       <p className="text-xs text-muted-foreground">Tickets recebidos</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.totalRecebidos}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-                      <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <div className="h-9 w-9 rounded-lg bg-amber-950/30 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-amber-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3177,8 +3177,8 @@ const saveConfig = async () => {
                       <p className="text-xs text-muted-foreground">Tickets resolvidos</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.totalResolvidos}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center">
-                      <UserCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <div className="h-9 w-9 rounded-lg bg-purple-950/30 flex items-center justify-center">
+                      <UserCheck className="h-5 w-5 text-purple-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3192,8 +3192,8 @@ const saveConfig = async () => {
                       <p className="text-xs text-muted-foreground">Taxa de resolução</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.taxaResolucao}%</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
-                      <Activity className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="h-9 w-9 rounded-lg bg-emerald-950/30 flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-emerald-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3283,9 +3283,9 @@ const saveConfig = async () => {
                                 variant="outline"
                                 className={cn(
                                   'text-[10px] whitespace-nowrap',
-                                  ticket.status === 'encerrado' && 'bg-green-100 text-green-700 border-green-300 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800',
-                                  ticket.status === 'em_atendimento' && 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800',
-                                  ticket.status === 'aberto' && 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-950/30 dark:text-yellow-400 dark:border-yellow-800'
+                                  ticket.status === 'encerrado' && 'bg-green-950/30 text-green-400 border-green-800',
+                                  ticket.status === 'em_atendimento' && 'bg-blue-950/30 text-blue-400 border-blue-800',
+                                  ticket.status === 'aberto' && 'bg-yellow-950/30 text-yellow-400 border-yellow-800'
                                 )}
                               >
                                 {ticket.status === 'encerrado' ? 'Finalizado' : ticket.status === 'em_atendimento' ? 'Em atend.' : 'Aberto'}
@@ -3320,7 +3320,7 @@ const saveConfig = async () => {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">Atendentes</h1>
+            <h1 className="text-xl font-bold text-white">Atendentes</h1>
             <Button onClick={openCreateAtendenteModal} className="gap-2">
               <Plus className="h-4 w-4" />
               Novo Atendente
@@ -3456,8 +3456,8 @@ const saveConfig = async () => {
                               <div className={cn(
                                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-opacity hover:opacity-80 select-none",
                                 atendente.is_online 
-                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                  ? "bg-green-900/30 text-green-400" 
+                                  : "bg-white/[0.05] text-white/40"
                               )}>
                                 {alterandoStatusId === atendente.id
                                   ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -3601,7 +3601,7 @@ const saveConfig = async () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">Horários de Atendimento</h1>
+            <h1 className="text-xl font-bold text-white">Horários de Atendimento</h1>
             <p className="text-muted-foreground">
               Defina quais dias e horários seus atendentes estarão disponíveis
             </p>
@@ -3668,7 +3668,7 @@ const saveConfig = async () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">Pausas</h1>
+            <h1 className="text-xl font-bold text-white">Pausas</h1>
             <p className="text-muted-foreground">
               Configure os tipos de pausas disponíveis para os atendentes
             </p>
@@ -3750,14 +3750,14 @@ const saveConfig = async () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">Configurações do Setor</h1>
+            <h1 className="text-xl font-bold text-white">Configurações do Setor</h1>
             <p className="text-muted-foreground">
               Personalize as informações e aparência do setor
             </p>
           </div>
           <div className="flex items-center gap-3">
             {hasUnsavedConfig && !saving && (
-              <span className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-1.5 text-xs text-amber-400">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
                 Alterações não salvas
               </span>
@@ -3925,11 +3925,11 @@ const saveConfig = async () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {[
-              { key: 'suporte', label: 'Suporte Tecnico', icon: Headphones, color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', desc: 'Duvidas tecnicas e problemas com o sistema' },
-              { key: 'comercial', label: 'Comercial', icon: ShoppingCart, color: 'bg-green-500/10 text-green-600 dark:text-green-400', desc: 'Vendas, propostas e negociacoes' },
-              { key: 'financeiro', label: 'Financeiro', icon: CreditCard, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', desc: 'Boletos, pagamentos e notas fiscais' },
-              { key: 'ouvidoria', label: 'Ouvidoria', icon: MessageCircle, color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', desc: 'Reclamacoes, sugestoes e elogios' },
-              { key: 'implantacao', label: 'Implantacao', icon: Rocket, color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400', desc: 'Onboarding e configuracao inicial' },
+              { key: 'suporte', label: 'Suporte Tecnico', icon: Headphones, color: 'bg-blue-500/10 text-blue-400', desc: 'Duvidas tecnicas e problemas com o sistema' },
+              { key: 'comercial', label: 'Comercial', icon: ShoppingCart, color: 'bg-green-500/10 text-green-400', desc: 'Vendas, propostas e negociacoes' },
+              { key: 'financeiro', label: 'Financeiro', icon: CreditCard, color: 'bg-amber-500/10 text-amber-400', desc: 'Boletos, pagamentos e notas fiscais' },
+              { key: 'ouvidoria', label: 'Ouvidoria', icon: MessageCircle, color: 'bg-purple-500/10 text-purple-400', desc: 'Reclamacoes, sugestoes e elogios' },
+              { key: 'implantacao', label: 'Implantacao', icon: Rocket, color: 'bg-cyan-500/10 text-cyan-400', desc: 'Onboarding e configuracao inicial' },
             ].map((tipo) => {
               const IconComponent = tipo.icon
               const selectedSetor = todosSetores.find(s => s.id === tiposAtendimentoSetor[tipo.key])
@@ -4253,7 +4253,7 @@ const saveConfig = async () => {
                         </TableCell>
                         <TableCell>
                           {canal.tipo === 'whatsapp' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-900/40 text-green-300">
                               <Wifi className="h-3 w-3" />
                               Conectado
                             </span>
@@ -4273,19 +4273,19 @@ const saveConfig = async () => {
                                 </span>
                               )
                               if (st === 'unknown') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-orange-900/40 text-orange-300">
                                   <WifiOff className="h-3 w-3" />
                                   Sem resposta
                                 </span>
                               )
                               if (st === 'open') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-900/40 text-green-300">
                                   <Wifi className="h-3 w-3" />
                                   Conectado
                                 </span>
                               )
                               if (st === 'connecting' || st === 'qrcode') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-900/40 text-yellow-300">
                                   <Loader2 className="h-3 w-3 animate-spin" />
                                   Conectando
                                 </span>
@@ -4297,7 +4297,7 @@ const saveConfig = async () => {
                                 </span>
                               )
                               return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-900/40 text-red-300">
                                   <WifiOff className="h-3 w-3" />
                                   Desconectado
                                 </span>
@@ -4335,7 +4335,7 @@ const saveConfig = async () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 px-2 text-xs text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950"
+                                className="h-7 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-950"
                                 onClick={() => openReconnect(canal)}
                               >
                                 <QrCode className="h-3.5 w-3.5 mr-1" />
@@ -4488,7 +4488,7 @@ const saveConfig = async () => {
                 </p>
               </div>
               {configForm.webhook_eventos.length > 0 && !configForm.webhook_url && (
-                <p className="text-sm text-amber-600 bg-amber-950/20 border border-amber-800/30 p-2 rounded-md">
+                <p className="text-sm text-amber-400 bg-amber-950/20 border border-amber-800/30 p-2 rounded-md">
                   Você selecionou eventos mas não informou a URL do webhook.
                 </p>
               )}
@@ -4602,8 +4602,8 @@ const saveConfig = async () => {
               {/* Switch: Setor Receptor */}
               <div className="flex items-center justify-between rounded-lg border border-border p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950">
-                    <Inbox className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950">
+                    <Inbox className="h-4 w-4 text-blue-400" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Setor Receptor</p>
@@ -4632,8 +4632,8 @@ const saveConfig = async () => {
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950">
-                      <Radio className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-950">
+                      <Radio className="h-4 w-4 text-amber-400" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">Transmissão Ativa</p>
@@ -4683,7 +4683,7 @@ const saveConfig = async () => {
                       </SelectContent>
                     </Select>
                     {todosSetores.filter((s) => s.id !== setorId && s.is_receptor).length === 0 && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                      <p className="text-xs text-amber-400">
                         Nenhum setor está configurado como receptor. Marque um setor como &quot;Setor Receptor&quot; primeiro.
                       </p>
                     )}
@@ -4888,7 +4888,7 @@ const saveConfig = async () => {
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {canalForm.tipo === 'evolution_api' && <Smartphone className="h-5 w-5 text-sky-600" />}
+              {canalForm.tipo === 'evolution_api' && <Smartphone className="h-5 w-5 text-sky-400" />}
               {editingCanal ? 'Editar Canal' : 'Novo Canal'}
             </DialogTitle>
             <DialogDescription>
@@ -4904,16 +4904,16 @@ const saveConfig = async () => {
           {evoStep === 'qrcode' && (
             <div className="flex flex-col items-center gap-5 py-6">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Smartphone className="h-4 w-4 text-sky-600" />
+                <Smartphone className="h-4 w-4 text-sky-400" />
                 <span>Abra o WhatsApp → Menu → Aparelhos conectados → Conectar</span>
               </div>
               {evoQrCode ? (
-                <div className="rounded-2xl border-2 border-sky-200 dark:border-sky-800 p-3 bg-white">
+                <div className="rounded-2xl border-2 border-sky-800 p-3 bg-[#0a0c14]">
                   <img src={evoQrCode} alt="QR Code WhatsApp" className="w-56 h-56" />
                 </div>
               ) : (
                 <div className="w-64 h-64 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted-foreground/30 gap-3">
-                  <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
+                  <Loader2 className="h-8 w-8 animate-spin text-sky-400" />
                   <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
                 </div>
               )}
@@ -4927,11 +4927,11 @@ const saveConfig = async () => {
           {/* ── STEP: Connected ── */}
           {evoStep === 'connected' && (
             <div className="flex flex-col items-center gap-4 py-8">
-              <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center ring-4 ring-green-200 dark:ring-green-800">
-                <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+              <div className="h-20 w-20 rounded-full bg-green-900/50 flex items-center justify-center ring-4 ring-green-800">
+                <CheckCircle className="h-10 w-10 text-green-400" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-xl text-green-700 dark:text-green-400">WhatsApp Conectado!</p>
+                <p className="font-bold text-xl text-green-400">WhatsApp Conectado!</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Canal <span className="font-medium">{canalForm.nome}</span> configurado com sucesso.
                 </p>
@@ -4980,8 +4980,8 @@ const saveConfig = async () => {
 
               {/* EvolutionAPI NEW: apenas nome+tipo, instância é gerada automaticamente */}
               {canalForm.tipo === 'evolution_api' && !editingCanal && (
-                <div className="rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/60 dark:bg-sky-950/40 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
+                <div className="rounded-xl border border-sky-800 bg-sky-950/40 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-sky-300">
                     <Smartphone className="h-4 w-4" />
                     EvolutionAPI — Configuração automática
                   </div>
@@ -4996,7 +4996,7 @@ const saveConfig = async () => {
               {canalForm.tipo === 'evolution_api' && !!editingCanal && (
                 <div className="rounded-xl border border-muted bg-muted/30 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
-                    <Smartphone className="h-4 w-4 text-sky-600" />
+                    <Smartphone className="h-4 w-4 text-sky-400" />
                     EvolutionAPI — Gerenciado automaticamente
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -5136,7 +5136,7 @@ const saveConfig = async () => {
         <DialogContent className="sm:max-w-sm max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-sky-600" />
+              <Smartphone className="h-5 w-5 text-sky-400" />
               Conectar {reconnectDialog.canal?.nome}
             </DialogTitle>
             <DialogDescription>
@@ -5147,19 +5147,19 @@ const saveConfig = async () => {
           <div className="flex flex-col items-center gap-5 py-4">
             {reconnectDialog.connected ? (
               <>
-                <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center ring-4 ring-green-200 dark:ring-green-800">
-                  <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                <div className="h-20 w-20 rounded-full bg-green-900/50 flex items-center justify-center ring-4 ring-green-800">
+                  <CheckCircle className="h-10 w-10 text-green-400" />
                 </div>
-                <p className="font-bold text-lg text-green-700 dark:text-green-400">WhatsApp Conectado!</p>
+                <p className="font-bold text-lg text-green-400">WhatsApp Conectado!</p>
               </>
             ) : reconnectDialog.loading ? (
               <div className="flex flex-col items-center gap-3 py-6">
-                <Loader2 className="h-10 w-10 animate-spin text-sky-600" />
+                <Loader2 className="h-10 w-10 animate-spin text-sky-400" />
                 <p className="text-sm text-muted-foreground">Obtendo QR Code...</p>
               </div>
             ) : reconnectDialog.qr ? (
               <>
-                <div className="rounded-2xl border-2 border-sky-200 dark:border-sky-800 p-3 bg-white">
+                <div className="rounded-2xl border-2 border-sky-800 p-3 bg-[#0a0c14]">
                   <img src={reconnectDialog.qr} alt="QR Code WhatsApp" className="w-56 h-56" />
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
@@ -5376,22 +5376,22 @@ const saveConfig = async () => {
                     <p className="text-xs text-muted-foreground">O email nao pode ser alterado</p>
                   )}
                   {!editingAtendente && existingColaborador && !existingColaborador.alreadyInThisSetor && (
-                    <div className="rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 mt-2">
-                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                    <div className="rounded-lg bg-blue-950 border border-blue-800 p-3 mt-2">
+                      <p className="text-sm text-blue-300 font-medium">
                         Este email ja esta cadastrado no sistema
                       </p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      <p className="text-xs text-blue-400 mt-1">
                         <span className="font-medium">{existingColaborador.nome}</span> atende em:{' '}
                         {existingColaborador.setores?.map((s: any) => s.setores?.nome).filter(Boolean).join(', ') || 'Nenhum setor'}
                       </p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      <p className="text-xs text-blue-400 mt-1">
                         Clique em Adicionar para que ele tambem atenda neste setor.
                       </p>
                     </div>
                   )}
                   {!editingAtendente && existingColaborador?.alreadyInThisSetor && (
-                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3 mt-2">
-                      <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+                    <div className="rounded-lg bg-amber-950 border border-amber-800 p-3 mt-2">
+                      <p className="text-sm text-amber-300 font-medium">
                         Este atendente ja faz parte deste setor
                       </p>
                     </div>
@@ -5604,11 +5604,11 @@ const saveConfig = async () => {
                             <div className={cn(
                               "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] max-w-[90%]",
                               msg.conteudo.startsWith('Transferido')
-                                ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                                ? "bg-blue-950/30 border-blue-800 text-blue-300"
                                 : "bg-muted/80 border-border text-muted-foreground"
                             )}>
                               {msg.conteudo.startsWith('Transferido') ? (
-                                <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                                <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                               ) : (
                                 <Megaphone className="h-3.5 w-3.5 shrink-0 text-primary" />
                               )}
@@ -5632,7 +5632,7 @@ const saveConfig = async () => {
                               msg.remetente === 'cliente'
                                 ? "bg-muted"
                                 : msg.remetente === 'bot'
-                                ? "bg-blue-100 dark:bg-blue-900/30"
+                                ? "bg-blue-900/30"
                                 : "bg-primary text-primary-foreground"
                             )}
                           >
@@ -5730,7 +5730,7 @@ const saveConfig = async () => {
                                 return (
                                   <SelectItem key={a.id} value={a.id}>
                                     <div className="flex items-center gap-2">
-                                      <span className={`h-2 w-2 rounded-full ${online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                      <span className={`h-2 w-2 rounded-full ${online ? 'bg-green-500' : 'bg-white/20'}`} />
                                       {a.nome}
                                       {!online && <span className="text-xs text-muted-foreground">(offline)</span>}
                                     </div>

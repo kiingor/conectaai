@@ -749,13 +749,18 @@ export default function MonitoramentoPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-foreground">Monitoramento</h1>
-          <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <Activity className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Monitoramento</h1>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">Ao vivo</span>
+            <span className="text-xs font-medium text-emerald-400">Ao vivo</span>
           </div>
         </div>
 
@@ -885,118 +890,94 @@ export default function MonitoramentoPage() {
       {/* Stats Cards Row 1 */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-[2fr_1fr]">
         {/* Atendimentos em tempo real */}
-        <Card className="glass-card-elevated rounded-2xl border-0 border-l-4 border-l-primary">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Atendimentos em tempo real
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3 text-center sm:grid-cols-6">
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-foreground tabular-nums">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">Total</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-orange-500 tabular-nums">{stats.naFila}</p>
-                <p className="text-xs text-muted-foreground">Na fila</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-primary tabular-nums">{stats.emAtendimento}</p>
-                <p className="text-xs text-muted-foreground">Em atend.</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-green-500 tabular-nums">{stats.finalizados}</p>
-                <p className="text-xs text-muted-foreground">Finalizados</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xl font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoFila}</p>
-                <p className="text-xs text-muted-foreground">Max. fila</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xl font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoResposta}</p>
-                <p className="text-xs text-muted-foreground">Max. resp.</p>
-              </div>
+        <div className="glass-card-elevated rounded-2xl p-5 border-l-4 border-l-emerald-500">
+          <p className="text-sm font-medium text-white/40 mb-3">
+            Atendimentos em tempo real
+          </p>
+          <div className="grid grid-cols-3 gap-3 text-center sm:grid-cols-6">
+            <div className="space-y-1">
+              <p className="text-2xl font-bold brand-gradient-text tabular-nums">{stats.total}</p>
+              <p className="text-xs text-white/40">Total</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-orange-400 tabular-nums">{stats.naFila}</p>
+              <p className="text-xs text-white/40">Na fila</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</p>
+              <p className="text-xs text-white/40">Em atend.</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-emerald-400 tabular-nums">{stats.finalizados}</p>
+              <p className="text-xs text-white/40">Finalizados</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xl font-bold text-white/80 tabular-nums whitespace-nowrap">{stats.tempoMaximoFila}</p>
+              <p className="text-xs text-white/40">Max. fila</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xl font-bold text-white/80 tabular-nums whitespace-nowrap">{stats.tempoMaximoResposta}</p>
+              <p className="text-xs text-white/40">Max. resp.</p>
+            </div>
+          </div>
+        </div>
 
         {/* Status dos atendentes */}
-        <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Status dos atendentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-around text-center gap-2">
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-green-500 tabular-nums">{atendentesStats.online}</p>
-                <div className="flex items-center justify-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  <p className="text-xs text-muted-foreground">Online</p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-amber-500 tabular-nums">{atendentesStats.pausa}</p>
-                <div className="flex items-center justify-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                  <p className="text-xs text-muted-foreground">Pausa</p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-muted-foreground tabular-nums">{atendentesStats.offline}</p>
-                <div className="flex items-center justify-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-gray-400" />
-                  <p className="text-xs text-muted-foreground">Offline</p>
-                </div>
+        <div className="glass-card-elevated rounded-2xl p-5">
+          <p className="text-sm font-medium text-white/40 mb-3">
+            Status dos atendentes
+          </p>
+          <div className="flex justify-around text-center gap-2">
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</p>
+              <div className="flex items-center justify-center gap-1">
+                <span className="h-2 w-2 rounded-full status-dot-online" />
+                <p className="text-xs text-white/40">Online</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</p>
+              <div className="flex items-center justify-center gap-1">
+                <span className="h-2 w-2 rounded-full status-dot-away" />
+                <p className="text-xs text-white/40">Pausa</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-white/30 tabular-nums">{atendentesStats.offline}</p>
+              <div className="flex items-center justify-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-white/20" />
+                <p className="text-xs text-white/40">Offline</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards Row 2 */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground">Tempo med. 1a resposta</p>
-              <p className="text-2xl font-bold text-foreground">{temposHoje.tempoMedioPrimeiraResposta}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground">Tempo med. resolucao</p>
-              <p className="text-2xl font-bold text-foreground">{temposHoje.tempoMedioResolucao}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground">Tickets recebidos (Hoje)</p>
-              <p className="text-2xl font-bold text-foreground">{temposHoje.totalRecebidos}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground">Tickets resolvidos (Hoje)</p>
-              <p className="text-2xl font-bold text-green-500">{temposHoje.totalResolvidos}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
+          <p className="text-xs text-white/40">Tempo med. 1a resposta</p>
+          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.tempoMedioPrimeiraResposta}</p>
+        </div>
+        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
+          <p className="text-xs text-white/40">Tempo med. resolucao</p>
+          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.tempoMedioResolucao}</p>
+        </div>
+        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
+          <p className="text-xs text-white/40">Tickets recebidos (Hoje)</p>
+          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.totalRecebidos}</p>
+        </div>
+        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
+          <p className="text-xs text-white/40">Tickets resolvidos (Hoje)</p>
+          <p className="text-2xl font-bold text-emerald-400">{temposHoje.totalResolvidos}</p>
+        </div>
       </div>
 
       {/* Monitoramento Detalhado */}
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardHeader className="pb-0">
+      <div className="glass-card rounded-2xl">
+        <div className="px-5 pt-5 pb-0">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">Monitoramento detalhado</CardTitle>
+            <h2 className="text-lg font-semibold text-white">Monitoramento detalhado</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -1007,8 +988,8 @@ export default function MonitoramentoPage() {
               />
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-4">
+        </div>
+        <div className="px-5 pt-4 pb-5">
           {/* Tabs + Filtro de colaborador */}
           <div className="border-b border-border mb-4">
             <div className="flex items-end justify-between gap-2">
@@ -1074,13 +1055,13 @@ export default function MonitoramentoPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">1ª Resposta</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo atend.</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ticket</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Número</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contato</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Setor / Subsetor</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Atendente</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">1ª Resposta</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tempo atend.</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Ticket</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Número</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Contato</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor / Subsetor</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Atendente</TableHead>
                       <TableHead className="text-xs w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1242,11 +1223,11 @@ export default function MonitoramentoPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo de espera</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ticket</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Número</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contato</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Setor / Subsetor</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tempo de espera</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Ticket</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Número</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Contato</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor / Subsetor</TableHead>
                       <TableHead className="text-xs w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1306,12 +1287,12 @@ export default function MonitoramentoPage() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Encerrar Dialog */}
       <AlertDialog open={encerrarDialogOpen} onOpenChange={setEncerrarDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>⚠️ Encerrar ticket?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1332,7 +1313,7 @@ export default function MonitoramentoPage() {
 
       {/* Transfer Dialog */}
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5" />

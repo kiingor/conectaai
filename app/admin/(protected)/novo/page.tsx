@@ -2,12 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, ArrowLeft, Loader2, Copy, CheckCircle2 } from 'lucide-react'
+import { Shield, ArrowLeft, Loader2, Copy, CheckCircle2, Building2, User, Mail, Tag, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function NovaOrganizacaoPage() {
@@ -64,120 +59,193 @@ export default function NovaOrganizacaoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-      <header className="border-b border-white/10 px-6 py-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/admin')} className="text-white/60 hover:text-white">
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="glass-header sticky top-0 z-30 px-6 py-4 flex items-center gap-3">
+        <button
+          onClick={() => router.push('/admin')}
+          className="flex items-center justify-center h-9 w-9 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all"
+        >
           <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <span className="font-semibold">Nova Organização</span>
+        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-emerald-500/20">
+            <Shield className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-semibold brand-gradient-text">Nova Organização</h1>
+            <p className="text-xs text-white/30">Cadastrar nova empresa na plataforma</p>
+          </div>
         </div>
       </header>
 
       <div className="p-6 max-w-lg mx-auto">
         {result ? (
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-400">
-                <CheckCircle2 className="h-5 w-5" />
-                Organização criada!
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-2 font-mono text-sm">
-                <p><span className="text-white/50">URL:</span> <span className="text-white">{result.login_url}</span></p>
-                <p><span className="text-white/50">Email:</span> <span className="text-white">{result.admin_email}</span></p>
-                <p><span className="text-white/50">Senha:</span> <span className="text-emerald-300">{result.senha}</span></p>
+          /* ---- Result card ---- */
+          <div className="glass-card-elevated rounded-2xl overflow-hidden">
+            {/* Success banner */}
+            <div className="brand-gradient px-6 py-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                <CheckCircle2 className="h-5 w-5 text-white" />
               </div>
-              <p className="text-xs text-white/40">Compartilhe essas credenciais com o admin da empresa. A senha deve ser trocada no primeiro acesso.</p>
-              <div className="flex gap-2">
-                <Button onClick={copyCredentials} variant="outline" className="border-white/10 text-white hover:bg-white/5 flex-1">
-                  {copied ? <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-400" /> : <Copy className="h-4 w-4 mr-2" />}
+              <div>
+                <p className="font-semibold text-white">Organização criada!</p>
+                <p className="text-xs text-white/70">Credenciais de acesso geradas</p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Credentials block */}
+              <div className="rounded-xl bg-black/30 border border-white/8 p-4 space-y-3 font-mono text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-white/40 shrink-0 w-14">URL:</span>
+                  <span className="text-emerald-400 break-all">{result.login_url}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white/40 shrink-0 w-14">Email:</span>
+                  <span className="text-white">{result.admin_email}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white/40 shrink-0 w-14">Senha:</span>
+                  <span className="text-cyan-300 font-semibold">{result.senha}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-white/30 leading-relaxed">
+                Compartilhe essas credenciais com o admin da empresa. A senha deve ser trocada no primeiro acesso.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={copyCredentials}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl glass-card text-sm font-medium text-white/80 hover:text-white transition-all"
+                >
+                  {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                   {copied ? 'Copiado!' : 'Copiar credenciais'}
-                </Button>
-                <Button onClick={() => router.push('/admin')} className="flex-1">
+                </button>
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="flex-1 btn-glow px-4 py-2.5 rounded-xl text-sm"
+                >
                   Voltar ao painel
-                </Button>
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Dados da nova organização</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-white/70">Nome da empresa</Label>
-                  <Input
-                    placeholder="Ex: Softcom Tecnologia"
-                    value={form.nome}
-                    onChange={e => setForm(prev => ({ ...prev, nome: e.target.value }))}
-                    required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                  />
+          /* ---- Form card ---- */
+          <div className="glass-card-elevated rounded-2xl overflow-hidden">
+            {/* Form header */}
+            <div className="px-6 pt-6 pb-4 border-b border-white/6">
+              <h2 className="font-semibold text-white text-lg">Dados da nova organização</h2>
+              <p className="text-xs text-white/30 mt-1">Preencha as informações para criar uma nova empresa</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Nome da empresa */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Nome da empresa
+                </label>
+                <input
+                  placeholder="Ex: Softcom Tecnologia"
+                  value={form.nome}
+                  onChange={e => setForm(prev => ({ ...prev, nome: e.target.value }))}
+                  required
+                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
+                />
+              </div>
+
+              {/* Slug */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
+                  <Tag className="h-3.5 w-3.5" />
+                  Slug (subdomínio)
+                </label>
+                <input
+                  placeholder="softcom"
+                  value={form.slug}
+                  onChange={e => handleSlugChange(e.target.value)}
+                  required
+                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none font-mono"
+                />
+                {form.slug && (
+                  <p className="text-xs text-white/30">
+                    Acesso: <span className="text-emerald-400/80">{process.env.NEXT_PUBLIC_APP_URL || 'https://multihub-one.vercel.app'}/login?org={form.slug}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Plano */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  Plano
+                </label>
+                <select
+                  value={form.plano}
+                  onChange={e => setForm(prev => ({ ...prev, plano: e.target.value }))}
+                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none bg-transparent appearance-none cursor-pointer"
+                >
+                  <option value="basic" className="bg-[#0e1019] text-white">Basic</option>
+                  <option value="pro" className="bg-[#0e1019] text-white">Pro</option>
+                  <option value="enterprise" className="bg-[#0e1019] text-white">Enterprise</option>
+                </select>
+              </div>
+
+              {/* Divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/6" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-white/70">Slug (subdomínio)</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="softcom"
-                      value={form.slug}
-                      onChange={e => handleSlugChange(e.target.value)}
-                      required
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                    />
-                  </div>
-                  {form.slug && (
-                    <p className="text-xs text-white/40">Acesso: <span className="text-primary">{process.env.NEXT_PUBLIC_APP_URL || 'https://multihub-one.vercel.app'}/login?org={form.slug}</span></p>
-                  )}
+                <div className="relative flex justify-center">
+                  <span className="bg-[#06080f] px-3 text-xs text-white/30 font-medium">Admin da empresa</span>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-white/70">Plano</Label>
-                  <Select value={form.plano} onValueChange={v => setForm(prev => ({ ...prev, plano: v }))}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="pro">Pro</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="border-t border-white/10 pt-4 space-y-4">
-                  <p className="text-sm font-medium text-white/70">Admin da empresa</p>
-                  <div className="space-y-2">
-                    <Label className="text-white/70">Nome do admin</Label>
-                    <Input
-                      placeholder="Ex: João Silva"
-                      value={form.admin_nome}
-                      onChange={e => setForm(prev => ({ ...prev, admin_nome: e.target.value }))}
-                      required
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/70">Email do admin</Label>
-                    <Input
-                      type="email"
-                      placeholder="admin@empresa.com"
-                      value={form.admin_email}
-                      onChange={e => setForm(prev => ({ ...prev, admin_email: e.target.value }))}
-                      required
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Criar organização
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+
+              {/* Nome do admin */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
+                  <User className="h-3.5 w-3.5" />
+                  Nome do admin
+                </label>
+                <input
+                  placeholder="Ex: João Silva"
+                  value={form.admin_nome}
+                  onChange={e => setForm(prev => ({ ...prev, admin_nome: e.target.value }))}
+                  required
+                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
+                />
+              </div>
+
+              {/* Email do admin */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
+                  <Mail className="h-3.5 w-3.5" />
+                  Email do admin
+                </label>
+                <input
+                  type="email"
+                  placeholder="admin@empresa.com"
+                  value={form.admin_email}
+                  onChange={e => setForm(prev => ({ ...prev, admin_email: e.target.value }))}
+                  required
+                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-glow w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Criar organização
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>

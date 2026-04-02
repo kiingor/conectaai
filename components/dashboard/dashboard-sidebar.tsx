@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Bug,
   Briefcase,
+  Zap,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -64,18 +65,17 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="flex h-full flex-col relative z-10">
-      {/* Logo Section */}
+      {/* Brand Section */}
       <div className="flex h-16 items-center justify-between px-5">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-primary shadow-md transition-transform duration-300 group-hover:scale-105">
-            <MessageCircle className="h-5 w-5 text-primary-foreground" />
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/30 to-transparent pointer-events-none" />
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl brand-gradient shadow-lg shadow-emerald-500/20 transition-transform duration-300 group-hover:scale-105">
+            <Zap className="h-5 w-5 text-white drop-shadow-sm" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-foreground tracking-tight text-base leading-tight">
-              Portal Hub
+            <span className="font-bold brand-gradient-text tracking-tight text-base leading-tight">
+              ConectaAI
             </span>
-            <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">
+            <span className="text-[10px] text-white/30 font-medium tracking-wide uppercase">
               Gestao de atendimento
             </span>
           </div>
@@ -85,20 +85,20 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="lg:hidden rounded-xl hover:bg-black/5 dark:hover:bg-white/10"
+            className="lg:hidden rounded-xl hover:bg-white/5 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 text-white/60" />
             <span className="sr-only">Fechar menu</span>
           </Button>
         )}
       </div>
 
       {/* Separator */}
-      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent dark:via-white/8" />
+      <div className="mx-5 h-px bg-white/6" />
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
-        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
           Menu
         </p>
         {navigation.map((item) => {
@@ -112,8 +112,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               className={cn(
                 'group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer select-none active:scale-[0.97]',
                 isActive
-                  ? 'text-foreground'
-                  : 'text-muted-foreground glass-nav-hover hover:text-foreground',
+                  ? 'text-white'
+                  : 'text-white/45 glass-nav-hover hover:text-white/80',
                 isLoading && 'opacity-70'
               )}
             >
@@ -129,8 +129,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 className={cn(
                   'relative z-10 flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300',
                   isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground group-hover:text-foreground'
+                    ? 'bg-emerald-500/15 text-emerald-400'
+                    : 'text-white/40 group-hover:text-white/70'
                 )}
               >
                 {isLoading ? (
@@ -146,7 +146,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="relative z-10 h-1.5 w-1.5 rounded-full bg-primary"
+                  className="relative z-10 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"
                 />
               )}
             </a>
@@ -155,20 +155,20 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* Separator */}
-      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent dark:via-white/8" />
+      <div className="mx-5 h-px bg-white/6" />
 
       {/* Footer - Support Card */}
       <div className="p-4">
         <div className="glass-card-elevated rounded-2xl p-4 overflow-hidden">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <HelpCircle className="h-4 w-4 text-primary" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+              <HelpCircle className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground">
+              <p className="text-xs font-semibold text-white/90">
                 Precisa de ajuda?
               </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+              <p className="mt-0.5 text-[11px] text-white/35 leading-relaxed">
                 Acesse nossa central de suporte
               </p>
             </div>
@@ -176,7 +176,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full mt-3 h-8 rounded-xl text-xs font-medium text-primary hover:bg-primary/10 hover:text-primary gap-1.5"
+            className="w-full mt-3 h-8 rounded-xl text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 gap-1.5"
           >
             Central de Ajuda
             <ExternalLink className="h-3 w-3" />

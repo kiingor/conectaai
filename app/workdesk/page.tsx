@@ -266,20 +266,20 @@ function ContactCard({ conteudo, isOutgoing }: { conteudo: string; isOutgoing: b
               'flex items-center gap-3 rounded-xl p-3 border',
               isOutgoing
                 ? 'bg-white/15 border-white/20'
-                : 'bg-background/60 border-border/50'
+                : 'bg-white/[0.04] border-white/8'
             )}
           >
             <div className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-              isOutgoing ? 'bg-white/20' : 'bg-primary/10'
+              isOutgoing ? 'bg-white/20' : 'bg-emerald-500/10'
             )}>
-              <User className={cn('h-5 w-5', isOutgoing ? 'text-white' : 'text-primary')} />
+              <User className={cn('h-5 w-5', isOutgoing ? 'text-white' : 'text-emerald-400')} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={cn('text-sm font-semibold truncate', isOutgoing ? 'text-white' : 'text-foreground')}>
+              <p className={cn('text-sm font-semibold truncate', isOutgoing ? 'text-white' : 'text-white/90')}>
                 {contact.name}
               </p>
-              <p className={cn('text-xs truncate', isOutgoing ? 'text-white/70' : 'text-muted-foreground')}>
+              <p className={cn('text-xs truncate', isOutgoing ? 'text-white/70' : 'text-white/40')}>
                 {formattedPhone}
               </p>
             </div>
@@ -307,7 +307,7 @@ function ContactCard({ conteudo, isOutgoing }: { conteudo: string; isOutgoing: b
                 'flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all shrink-0',
                 isOutgoing
                   ? 'bg-white/20 hover:bg-white/30 text-white'
-                  : 'bg-primary/10 hover:bg-primary/20 text-primary'
+                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400'
               )}
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -334,18 +334,18 @@ interface MessageMediaProps {
 function getFileInfo(ext: string, mediaType?: string | null) {
   const e = ext.toLowerCase()
   if (e === 'pdf' || mediaType === 'application/pdf')
-    return { icon: FileText, label: 'PDF', color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800' }
+    return { icon: FileText, label: 'PDF', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' }
   if (['doc', 'docx'].includes(e) || mediaType?.includes('word'))
-    return { icon: FileText, label: 'Word', color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800' }
+    return { icon: FileText, label: 'Word', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' }
   if (['xls', 'xlsx', 'csv'].includes(e) || mediaType?.includes('spreadsheet') || mediaType?.includes('excel'))
-    return { icon: FileSpreadsheet, label: 'Planilha', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800' }
+    return { icon: FileSpreadsheet, label: 'Planilha', color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20' }
   if (['zip', 'rar', '7z', 'tar', 'gz'].includes(e))
-    return { icon: FileArchive, label: e.toUpperCase(), color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-950/30', border: 'border-orange-200 dark:border-orange-800' }
+    return { icon: FileArchive, label: e.toUpperCase(), color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' }
   if (['xml', 'json', 'html', 'htm', 'css', 'js', 'ts', 'txt', 'csv'].includes(e) || mediaType?.startsWith('text/'))
-    return { icon: FileCode, label: e.toUpperCase() || 'Texto', color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30', border: 'border-purple-200 dark:border-purple-800' }
+    return { icon: FileCode, label: e.toUpperCase() || 'Texto', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' }
   if (['cer', 'crt', 'pem', 'p12', 'pfx', 'key'].includes(e))
-    return { icon: ShieldCheck, label: 'Certificado', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30', border: 'border-emerald-200 dark:border-emerald-800' }
-  return { icon: FileIcon, label: e.toUpperCase() || 'Arquivo', color: 'text-muted-foreground', bg: 'bg-muted/50', border: 'border-border' }
+    return { icon: ShieldCheck, label: 'Certificado', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
+  return { icon: FileIcon, label: e.toUpperCase() || 'Arquivo', color: 'text-white/40', bg: 'bg-white/[0.03]', border: 'border-white/8' }
 }
 
 function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMediaProps) {
@@ -382,7 +382,7 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
             'inline-flex items-center gap-1.5 text-[11px] rounded-md px-2 py-1 transition-colors',
             isOutgoing
               ? 'bg-white/20 hover:bg-white/30 text-white'
-              : 'bg-muted hover:bg-muted/80 text-foreground'
+              : 'bg-white/5 hover:bg-white/8 text-white/70'
           )}
         >
           <Download className="h-3 w-3" />
@@ -396,7 +396,7 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
     return (
       <div className={cn(
         'mb-2 flex items-center gap-2 rounded-xl px-3 py-2',
-        isOutgoing ? 'bg-white/15' : 'bg-muted/60'
+        isOutgoing ? 'bg-white/15' : 'bg-white/[0.04]'
       )}>
         <Music className="h-4 w-4 shrink-0 opacity-70" />
         <audio controls className="flex-1 h-8 min-w-0" preload="metadata" style={{ height: '32px' }}>
@@ -409,7 +409,7 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
           rel="noreferrer"
           className={cn(
             'shrink-0 rounded p-1 transition-colors',
-            isOutgoing ? 'hover:bg-white/20 text-white' : 'hover:bg-muted text-foreground'
+            isOutgoing ? 'hover:bg-white/20 text-white' : 'hover:bg-white/8 text-white/60'
           )}
           title="Baixar áudio"
         >
@@ -447,10 +447,10 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
     >
       <Icon className={cn('h-6 w-6 shrink-0', color)} />
       <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-sm font-medium text-foreground truncate">{fileName}</span>
-        <span className="text-[10px] text-muted-foreground">{label} · Clique para baixar</span>
+        <span className="text-sm font-medium text-white/80 truncate">{fileName}</span>
+        <span className="text-[10px] text-white/40">{label} · Clique para baixar</span>
       </div>
-      <Download className="h-4 w-4 text-muted-foreground shrink-0" />
+      <Download className="h-4 w-4 text-white/40 shrink-0" />
     </a>
   )
 }
@@ -468,7 +468,7 @@ function renderTextWithLinks(text: string, isOutgoing: boolean) {
         rel="noopener noreferrer"
         className={cn(
           'underline break-all hover:opacity-80',
-          isOutgoing ? 'text-primary-foreground' : 'text-blue-500 dark:text-blue-400'
+          isOutgoing ? 'text-white' : 'text-cyan-400'
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -506,7 +506,7 @@ function DisparoTimer({ dispatchTime }: { dispatchTime: string }) {
   }, [dispatchTime])
 
   return (
-    <div className="flex items-center gap-2 mt-2 text-xs text-blue-600 dark:text-blue-400">
+    <div className="flex items-center gap-2 mt-2 text-xs text-blue-400">
       <Timer className="h-3 w-3" />
       <span>Tempo para encerrar: {timeLeft}</span>
     </div>
@@ -2610,24 +2610,24 @@ const tempId = `temp-${Date.now()}`
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100svh-4rem)] items-center justify-center">
+      <div className="flex h-[calc(100svh-3.5rem)] items-center justify-center bg-[#06080f]">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Carregando tickets...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+          <p className="text-white/40 text-sm">Carregando tickets...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-[calc(100svh-4rem)] flex-col overflow-hidden">
+    <div className="flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden">
       <div className="flex flex-1 overflow-hidden w-full max-w-full">
         {/* Ticket List Column - responsive width */}
-        <aside className="w-52 shrink-0 border-r border-white/30 dark:border-white/8 bg-white/55 dark:bg-white/4 backdrop-blur-xl lg:w-60 xl:w-72 h-full overflow-hidden flex flex-col">
+        <aside className="w-52 shrink-0 border-r border-white/6 glass-panel lg:w-60 xl:w-72 h-full overflow-hidden flex flex-col">
           {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
           {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
             setorCanalConfig !== 'evolution_api') && (
-          <div className="p-2 border-b border-white/30 dark:border-white/8 shrink-0">
+          <div className="p-2 border-b border-white/6 shrink-0">
   <Button
   onClick={async () => {
     // Check dispatch limit before opening
@@ -2650,7 +2650,7 @@ const tempId = `temp-${Date.now()}`
     resetDisparo()
     setDisparoDialogOpen(true)
   }}
-  className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-8 text-xs"
+  className="w-full gap-2 btn-glow h-8 text-xs rounded-lg"
   size="sm"
   >
   <Megaphone className="h-3.5 w-3.5" />
@@ -2660,17 +2660,17 @@ const tempId = `temp-${Date.now()}`
           )}
           {/* Subsetor Picker */}
           {subsetoresDisponiveis.length > 0 && (
-            <div className="px-2 py-1.5 border-b border-white/30 dark:border-white/8 shrink-0">
+            <div className="px-2 py-1.5 border-b border-white/6 shrink-0">
               <Popover open={subsetorPickerOpen} onOpenChange={setSubsetorPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-between h-8 text-xs px-2 font-normal hover:bg-muted/50"
+                    className="w-full justify-between h-8 text-xs px-2 font-normal hover:bg-white/5 text-white/50"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <Layers className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <span className="truncate text-muted-foreground">
+                      <Layers className="h-3.5 w-3.5 shrink-0 text-white/40" />
+                      <span className="truncate text-white/40">
                         {meusSubsetorIds.length === 0
                           ? 'Nenhum subsetor'
                           : meusSubsetorIds.length === subsetoresDisponiveis.length
@@ -2678,11 +2678,11 @@ const tempId = `temp-${Date.now()}`
                           : `${meusSubsetorIds.length} subsetor${meusSubsetorIds.length > 1 ? 'es' : ''}`}
                       </span>
                     </div>
-                    <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    <ChevronDown className="h-3 w-3 shrink-0 text-white/40" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="start">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                  <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 px-1">
                     Meus Subsetores
                   </p>
                   <div className="space-y-0.5">
@@ -2691,7 +2691,7 @@ const tempId = `temp-${Date.now()}`
                       return (
                         <label
                           key={subsetor.id}
-                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted cursor-pointer"
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-white/[0.05] cursor-pointer"
                         >
                           <Checkbox
                             checked={isActive}
@@ -2737,15 +2737,15 @@ const tempId = `temp-${Date.now()}`
           {selectedTicket ? (
             <>
               {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-white/30 dark:border-white/8 bg-white/70 dark:bg-white/5 backdrop-blur-xl px-3 py-2 gap-2">
+              <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-3 py-2 gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10">
-                    <User className="h-4 w-4 text-primary" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                    <User className="h-4 w-4 text-emerald-400" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs font-sans font-bold text-muted-foreground shrink-0">#{selectedTicket.numero}</span>
-                      <h2 className="text-xs font-semibold text-foreground truncate max-w-[180px]">{selectedTicket.clientes.nome}</h2>
+                      <span className="text-xs font-sans font-bold text-white/40 shrink-0">#{selectedTicket.numero}</span>
+                      <h2 className="text-xs font-semibold text-white/90 truncate max-w-[180px]">{selectedTicket.clientes.nome}</h2>
                     </div>
                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       {selectedTicket.setores && (
@@ -2764,8 +2764,8 @@ const tempId = `temp-${Date.now()}`
                         variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
                         className={cn(
                           'text-[9px] px-1 py-0',
-                          selectedTicket.status === 'aberto' && 'bg-blue-100 text-blue-700',
-                          selectedTicket.status === 'em_atendimento' && 'bg-yellow-100 text-yellow-700'
+                          selectedTicket.status === 'aberto' && 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                          selectedTicket.status === 'em_atendimento' && 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         )}
                       >
                         {selectedTicket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
@@ -2826,7 +2826,7 @@ const tempId = `temp-${Date.now()}`
               </div>
 
               {/* Chat Info Bar */}
-              <div className="flex items-center justify-between border-b border-white/30 dark:border-white/8 bg-white/40 dark:bg-white/3 backdrop-blur-sm px-4 py-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.02] backdrop-blur-sm px-4 py-2 text-xs text-white/40">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
@@ -2838,7 +2838,7 @@ const tempId = `temp-${Date.now()}`
                     </span>
                     {selectedTicket.primeira_resposta_em && (
                       <span className="flex items-center gap-1">
-                        <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
                         Primeira resposta{' '}
                         {formatDistanceToNow(new Date(selectedTicket.primeira_resposta_em), {
                           locale: ptBR,
@@ -2858,7 +2858,7 @@ const tempId = `temp-${Date.now()}`
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     </div>
                   ) : mensagens.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                    <div className="flex h-full flex-col items-center justify-center text-white/40">
                       <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
                       <p>Nenhuma mensagem ainda</p>
                     </div>
@@ -2890,7 +2890,7 @@ const tempId = `temp-${Date.now()}`
                                 {isPreviousTicket && (
                                   <div className="flex items-center gap-3 py-3">
                                     <div className="flex-1 h-px bg-border" />
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/8 text-xs text-white/40">
                                       <History className="h-3 w-3" />
                                       <span>
                                         Atendimento anterior -{' '}
@@ -2903,7 +2903,7 @@ const tempId = `temp-${Date.now()}`
                                           : 'Data desconhecida'}
                                       </span>
                                       {msg.tickets?.status === 'encerrado' && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                                           Finalizado
                                         </Badge>
                                       )}
@@ -2914,12 +2914,12 @@ const tempId = `temp-${Date.now()}`
                                 {/* Current ticket separator */}
                                 {isNewTicket && isCurrentTicket && index > 0 && (
                                   <div className="flex items-center gap-3 py-3">
-                                    <div className="flex-1 h-px bg-primary/30" />
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
+                                    <div className="flex-1 h-px bg-emerald-500/30" />
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-medium">
                                       <MessageCircle className="h-3 w-3" />
                                       <span>Atendimento atual</span>
                                     </div>
-                                    <div className="flex-1 h-px bg-primary/30" />
+                                    <div className="flex-1 h-px bg-emerald-500/30" />
                                   </div>
                                 )}
                                 {msg.remetente === 'sistema' ? (
@@ -2931,13 +2931,13 @@ const tempId = `temp-${Date.now()}`
                                     <div className={cn(
                                       "flex items-center gap-2 px-4 py-2 rounded-lg border text-xs max-w-[90%]",
                                       msg.conteudo.startsWith('Transferido')
-                                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
-                                        : "bg-muted/80 border-border text-muted-foreground"
+                                        ? "bg-blue-500/5 border-blue-500/20 text-blue-400"
+                                        : "bg-white/[0.03] border-white/8 text-white/40"
                                     )}>
                                       {msg.conteudo.startsWith('Transferido') ? (
-                                        <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                                        <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                                       ) : (
-                                        <Megaphone className="h-3.5 w-3.5 shrink-0 text-primary" />
+                                        <Megaphone className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
                                       )}
                                       <span>{msg.conteudo}</span>
                                       {msg.enviado_em && (
@@ -2964,8 +2964,8 @@ const tempId = `temp-${Date.now()}`
                                     className={cn(
                                       'max-w-[85%] lg:max-w-[75%] rounded-2xl px-3 py-2 lg:px-4 lg:py-2.5 break-all overflow-hidden',
                                       isOutgoingMessage(msg.remetente)
-                                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                                        : 'bg-secondary text-secondary-foreground rounded-bl-md',
+                                        ? 'brand-gradient text-white rounded-br-md shadow-lg shadow-emerald-500/10'
+                                        : 'bg-white/[0.05] text-white/90 rounded-bl-md border border-white/6',
                                       msgStatus === 'error' && 'bg-red-500 text-white'
                                     )}
                                   >
@@ -3018,15 +3018,15 @@ const tempId = `temp-${Date.now()}`
               </div>
 
   {/* Input Area */}
-  <div className="border-t border-white/30 dark:border-white/8 bg-white/70 dark:bg-white/5 backdrop-blur-xl p-3">
+  <div className="border-t border-white/6 glass-header p-3">
   {/* Disparo locked warning */}
   {selectedTicket?.is_disparo && isDisparoLocked(selectedTicket) && (
-  <div className="mb-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
-  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+  <div className="mb-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+  <div className="flex items-center gap-2 text-blue-400">
   <Lock className="h-4 w-4" />
   <span className="text-sm font-medium">Aguardando resposta do cliente</span>
   </div>
-  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+  <p className="text-xs text-blue-400/60 mt-1">
   O template foi enviado. O chat sera liberado quando o cliente responder.
   </p>
   {selectedTicket.disparo_em && (
@@ -3036,12 +3036,12 @@ const tempId = `temp-${Date.now()}`
   )}
   {/* 24h Window Expired Warning */}
   {isWindowExpired && !(selectedTicket?.is_disparo && isDisparoLocked(selectedTicket)) && (
-  <div className="mb-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800">
-  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+  <div className="mb-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+  <div className="flex items-center gap-2 text-amber-400">
   <AlertTriangle className="h-4 w-4" />
   <span className="text-sm font-medium">Janela de 24 horas expirada</span>
   </div>
-  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+  <p className="text-xs text-amber-400/60 mt-1">
   A ultima mensagem foi ha mais de 24 horas. Encerre este ticket e aguarde um novo contato do cliente.
   </p>
   </div>
@@ -3049,17 +3049,17 @@ const tempId = `temp-${Date.now()}`
 
                 {/* Template Suggestions */}
                 {showTemplates && filteredTemplates.length > 0 && (
-                  <div className="mb-2 max-h-48 overflow-y-auto rounded-lg border bg-background shadow-lg">
+                  <div className="mb-2 max-h-48 overflow-y-auto rounded-lg border border-white/8 bg-[#0a0d16] shadow-lg shadow-black/40">
                     {filteredTemplates.map((template) => (
                       <button
                         key={template.id}
                         onClick={() => selectTemplate(template)}
-                        className="w-full px-3 py-2 text-left hover:bg-muted transition-colors border-b last:border-b-0"
+                        className="w-full px-3 py-2 text-left hover:bg-white/[0.05] transition-colors border-b border-white/6 last:border-b-0"
                       >
                         <div className="flex items-center gap-2">
-                          <code className="text-xs font-semibold text-primary">/{template.atalho}</code>
+                          <code className="text-xs font-semibold text-emerald-400">/{template.atalho}</code>
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        <p className="text-xs text-white/50 line-clamp-1 mt-0.5">
                           {template.mensagem}
                         </p>
                       </button>
@@ -3069,12 +3069,12 @@ const tempId = `temp-${Date.now()}`
 
 {/* Emoji Picker */}
                   {showEmojiPicker && (
-                    <div className="mb-2 flex flex-wrap gap-1 rounded-lg border bg-muted/50 p-2">
+                    <div className="mb-2 flex flex-wrap gap-1 rounded-lg border bg-white/[0.03] p-2">
                       {commonEmojis.map((emoji) => (
                         <button
                           key={emoji}
                           onClick={() => insertEmoji(emoji)}
-                          className="rounded p-1.5 text-lg hover:bg-secondary transition-colors"
+                          className="rounded p-1.5 text-lg hover:bg-white/[0.08] transition-colors"
                         >
                           {emoji}
                         </button>
@@ -3093,18 +3093,18 @@ const tempId = `temp-${Date.now()}`
 
 {/* File Preview */}
                     {filePreview && (
-                      <div className="mb-2 p-2 bg-muted/30 rounded-lg border">
+                      <div className="mb-2 p-2 bg-white/[0.02] rounded-lg border border-white/6">
                         <div className="relative inline-block">
   {filePreview.startsWith('file:') ? (
   (() => { const { icon: FIcon, label, color, bg, border } = getFileInfo(filePreview.replace('file:', '').split('.').pop() || '', selectedFile?.type); return (
   <div className={cn('flex items-center gap-2 px-3 py-2 rounded border', bg, border)}>
     <FIcon className={cn('h-6 w-6', color)} />
-    <span className="text-sm text-foreground max-w-[200px] truncate">{filePreview.replace('file:', '')}</span>
+    <span className="text-sm text-white/80 max-w-[200px] truncate">{filePreview.replace('file:', '')}</span>
   </div>) })()
   ) : filePreview.startsWith('video:') ? (
-  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
-  <Video className="h-6 w-6 text-blue-600" />
-  <span className="text-sm text-foreground">{filePreview.replace('video:', '')}</span>
+  <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 rounded border border-blue-500/20">
+  <Video className="h-6 w-6 text-blue-400" />
+  <span className="text-sm text-white/80">{filePreview.replace('video:', '')}</span>
   </div>
   ) : (
   <img
@@ -3132,7 +3132,7 @@ const tempId = `temp-${Date.now()}`
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         className="shrink-0"
                       >
-                        <Smile className="h-5 w-5 text-muted-foreground" />
+                        <Smile className="h-5 w-5 text-white/40" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -3141,7 +3141,7 @@ const tempId = `temp-${Date.now()}`
   className="shrink-0"
   disabled={isWindowExpired || (selectedTicket?.is_disparo === true && isDisparoLocked(selectedTicket))}
                       >
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                        <ImageIcon className="h-5 w-5 text-white/40" />
                       </Button>
                       <div className="relative flex-1">
                   <Input
@@ -3178,10 +3178,12 @@ const tempId = `temp-${Date.now()}`
                 </div>
             </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <div className="text-6xl mb-4">{'💬'}</div>
-              <h2 className="text-xl font-semibold">Selecione um ticket</h2>
-              <p className="mt-1 text-sm">Escolha um ticket na lista para iniciar o atendimento</p>
+            <div className="flex h-full flex-col items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.03] border border-white/6 mb-4">
+                <MessageCircle className="h-8 w-8 text-white/20" />
+              </div>
+              <h2 className="text-lg font-semibold text-white/50">Selecione um ticket</h2>
+              <p className="mt-1 text-sm text-white/25">Escolha um ticket na lista para iniciar o atendimento</p>
             </div>
           )}
         </main>
@@ -3189,21 +3191,21 @@ const tempId = `temp-${Date.now()}`
 {/* Client Info Sidebar */}
         {selectedTicket && (
           <aside className={cn(
-            "w-56 shrink-0 border-l border-white/30 dark:border-white/8 bg-white/55 dark:bg-white/4 backdrop-blur-xl overflow-y-auto transition-all duration-200 lg:w-64 xl:w-72",
+            "w-56 shrink-0 border-l border-white/6 glass-panel overflow-y-auto transition-all duration-200 lg:w-64 xl:w-72",
             showClientInfo ? "hidden xl:block" : "hidden"
           )}>
             <div className="p-4">
               {/* Header Dados do Cliente */}
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
+                <h3 className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-emerald-400" />
                   Dados do Cliente
                 </h3>
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] px-2 gap-1 border-amber-400/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                    className="h-6 text-[10px] px-2 gap-1 border-amber-400/30 text-amber-400 hover:bg-amber-500/10"
                     onClick={handleAbrirEditarCliente}
                   >
                     <Pencil className="h-3 w-3" />
@@ -3212,7 +3214,7 @@ const tempId = `temp-${Date.now()}`
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] px-2 gap-1 border-primary/40 text-primary hover:bg-primary/10"
+                    className="h-6 text-[10px] px-2 gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
                     onClick={() => {
                       setSelecionarClienteCnpj('')
                       setSelecionarClienteData(null)
@@ -3226,18 +3228,18 @@ const tempId = `temp-${Date.now()}`
               </div>
 
               {/* Campo linha: label + valor + copy */}
-              <div className="rounded-lg border border-border bg-muted/30 divide-y divide-border overflow-hidden text-xs">
+              <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
                 {/* Nome */}
                 <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-muted-foreground shrink-0 w-16">Nome</span>
-                  <span className="font-medium text-foreground flex-1 text-right truncate">
+                  <span className="text-white/40 shrink-0 w-16">Nome</span>
+                  <span className="font-medium text-white/80 flex-1 text-right truncate">
                     {selectedTicket.clientes.nome || '—'}
                   </span>
                   {selectedTicket.clientes.nome && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selectedTicket.clientes.nome, 'Nome')}
-                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
                     >
                       <Copy className="h-3 w-3" />
                     </button>
@@ -3246,15 +3248,15 @@ const tempId = `temp-${Date.now()}`
 
                 {/* Telefone */}
                 <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-muted-foreground shrink-0 w-16">Telefone</span>
-                  <span className="font-medium text-foreground flex-1 text-right truncate">
+                  <span className="text-white/40 shrink-0 w-16">Telefone</span>
+                  <span className="font-medium text-white/80 flex-1 text-right truncate">
                     {selectedTicket.clientes.telefone ? formatPhone(selectedTicket.clientes.telefone) : '—'}
                   </span>
                   {selectedTicket.clientes.telefone && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selectedTicket.clientes.telefone!, 'Telefone')}
-                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
                     >
                       <Copy className="h-3 w-3" />
                     </button>
@@ -3263,15 +3265,15 @@ const tempId = `temp-${Date.now()}`
 
                 {/* Registro */}
                 <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-muted-foreground shrink-0 w-16">Registro</span>
-                  <span className="font-medium text-foreground flex-1 text-right truncate">
+                  <span className="text-white/40 shrink-0 w-16">Registro</span>
+                  <span className="font-medium text-white/80 flex-1 text-right truncate">
                     {selectedTicket.clientes.Registro || '—'}
                   </span>
                   {selectedTicket.clientes.Registro && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selectedTicket.clientes.Registro!, 'Registro')}
-                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
                     >
                       <Copy className="h-3 w-3" />
                     </button>
@@ -3280,15 +3282,15 @@ const tempId = `temp-${Date.now()}`
 
                 {/* CNPJ */}
                 <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-muted-foreground shrink-0 w-16">CNPJ</span>
-                  <span className="font-medium text-foreground flex-1 text-right truncate">
+                  <span className="text-white/40 shrink-0 w-16">CNPJ</span>
+                  <span className="font-medium text-white/80 flex-1 text-right truncate">
                     {selectedTicket.clientes.CNPJ ? formatCNPJ(selectedTicket.clientes.CNPJ) : '—'}
                   </span>
                   {selectedTicket.clientes.CNPJ && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selectedTicket.clientes.CNPJ!.replace(/\D/g, ''), 'CNPJ')}
-                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
                     >
                       <Copy className="h-3 w-3" />
                     </button>
@@ -3297,8 +3299,8 @@ const tempId = `temp-${Date.now()}`
 
                 {/* PDV */}
                 <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-muted-foreground shrink-0 w-16">PDV</span>
-                  <span className="font-medium text-foreground flex-1 text-right truncate">
+                  <span className="text-white/40 shrink-0 w-16">PDV</span>
+                  <span className="font-medium text-white/80 flex-1 text-right truncate">
                     {selectedTicket.clientes.PDV || '—'}
                   </span>
                 </div>
@@ -3306,8 +3308,8 @@ const tempId = `temp-${Date.now()}`
                 {/* Cliente Desde */}
                 {selectedTicket.clientes.created_at && (
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground shrink-0 w-16">Desde</span>
-                    <span className="font-medium text-foreground flex-1 text-right">
+                    <span className="text-white/40 shrink-0 w-16">Desde</span>
+                    <span className="font-medium text-white/80 flex-1 text-right">
                       {format(new Date(selectedTicket.clientes.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                     </span>
                   </div>
@@ -3315,29 +3317,29 @@ const tempId = `temp-${Date.now()}`
               </div>
 
               {/* Ticket Info Section */}
-              <div className="mt-4 pt-4 border-t border-border">
-                <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" />
+              <div className="mt-4 pt-4 border-t border-white/6">
+                <h3 className="text-xs font-semibold text-white/70 mb-2 flex items-center gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
                   Info do Ticket
                 </h3>
 
-                <div className="rounded-lg border border-border bg-muted/30 divide-y divide-border overflow-hidden text-xs">
+                <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
                   {/* Número */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground shrink-0 w-16">Número</span>
-                    <span className="font-bold text-foreground flex-1 text-right select-all">
+                    <span className="text-white/40 shrink-0 w-16">Número</span>
+                    <span className="font-bold text-white/90 flex-1 text-right select-all">
                       #{selectedTicket.numero}
                     </span>
                   </div>
 
                   {/* Prioridade */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground shrink-0 w-16">Prioridade</span>
+                    <span className="text-white/40 shrink-0 w-16">Prioridade</span>
                     <Badge
                       variant="outline"
                       className={cn(
                         'text-[10px] px-1.5 py-0 h-4',
-                        selectedTicket.prioridade === 'urgente' && 'border-red-300 text-red-600'
+                        selectedTicket.prioridade === 'urgente' && 'border-red-500/30 text-red-400'
                       )}
                     >
                       {selectedTicket.prioridade === 'urgente' ? 'Urgente' : 'Normal'}
@@ -3346,14 +3348,14 @@ const tempId = `temp-${Date.now()}`
 
                   {/* Canal */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground shrink-0 w-16">Canal</span>
-                    <span className="font-medium text-foreground capitalize">{selectedTicket.canal}</span>
+                    <span className="text-white/40 shrink-0 w-16">Canal</span>
+                    <span className="font-medium text-white/80 capitalize">{selectedTicket.canal}</span>
                   </div>
 
                   {/* Criado em */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground shrink-0 w-16">Criado em</span>
-                    <span className="font-medium text-foreground">
+                    <span className="text-white/40 shrink-0 w-16">Criado em</span>
+                    <span className="font-medium text-white/80">
                       {new Date(selectedTicket.criado_em).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -3377,19 +3379,19 @@ const tempId = `temp-${Date.now()}`
           {selectedTicket && (
             <div className="flex h-full flex-col">
               {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-white/30 dark:border-white/8 bg-white/70 dark:bg-white/5 backdrop-blur-xl px-4 py-3">
+              <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                    <User className="h-5 w-5 text-secondary-foreground" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                    <User className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-foreground">{selectedTicket.clientes.nome}</h2>
+                    <h2 className="font-semibold text-white/90">{selectedTicket.clientes.nome}</h2>
                     <Badge
                       variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
                       className={cn(
                         'text-[10px] px-1.5 py-0',
-                        selectedTicket.status === 'aberto' && 'bg-blue-100 text-blue-700',
-                        selectedTicket.status === 'em_atendimento' && 'bg-yellow-100 text-yellow-700'
+                        selectedTicket.status === 'aberto' && 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                        selectedTicket.status === 'em_atendimento' && 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                       )}
                     >
                       {selectedTicket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
@@ -3412,7 +3414,7 @@ onClick={() => {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 {mensagens.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                  <div className="flex h-full flex-col items-center justify-center text-white/40">
                     <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
                     <p>Nenhuma mensagem ainda</p>
                   </div>
@@ -3441,7 +3443,7 @@ onClick={() => {
                                 {isPreviousTicket && (
                                   <div className="flex items-center gap-2 py-2">
                                     <div className="flex-1 h-px bg-border" />
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/50 border border-border text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/[0.03] border border-white/8 text-[10px] text-white/40">
                                       <History className="h-2.5 w-2.5" />
                                       <span>
                                         {(msg.tickets?.criado_em || msg.enviado_em)
@@ -3458,12 +3460,12 @@ onClick={() => {
                                 {/* Current ticket separator */}
                                 {isNewTicket && isCurrentTicket && index > 0 && (
                                   <div className="flex items-center gap-2 py-2">
-                                    <div className="flex-1 h-px bg-primary/30" />
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] text-primary font-medium">
+                                    <div className="flex-1 h-px bg-emerald-500/30" />
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 font-medium">
                                       <MessageCircle className="h-2.5 w-2.5" />
                                       <span>Atual</span>
                                     </div>
-                                    <div className="flex-1 h-px bg-primary/30" />
+                                    <div className="flex-1 h-px bg-emerald-500/30" />
                                   </div>
                                 )}
                                 {msg.remetente === 'sistema' ? (
@@ -3471,13 +3473,13 @@ onClick={() => {
                                     <div className={cn(
                                       "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] max-w-[90%]",
                                       msg.conteudo.startsWith('Transferido')
-                                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
-                                        : "bg-muted/80 border-border text-muted-foreground"
+                                        ? "bg-blue-500/5 border-blue-500/20 text-blue-400"
+                                        : "bg-white/[0.03] border-white/8 text-white/40"
                                     )}>
                                       {msg.conteudo.startsWith('Transferido') ? (
-                                        <ArrowRightLeft className="h-3 w-3 shrink-0 text-blue-600 dark:text-blue-400" />
+                                        <ArrowRightLeft className="h-3 w-3 shrink-0 text-blue-400" />
                                       ) : (
-                                        <Megaphone className="h-3 w-3 shrink-0 text-primary" />
+                                        <Megaphone className="h-3 w-3 shrink-0 text-emerald-400" />
                                       )}
                                       <span>{msg.conteudo}</span>
                                       {msg.enviado_em && (
@@ -3499,8 +3501,8 @@ onClick={() => {
                                     className={cn(
 'max-w-[85%] rounded-2xl px-3 py-2 break-all overflow-hidden',
                     isOutgoingMessage(msg.remetente)
-                      ? 'bg-primary text-primary-foreground rounded-br-md'
-                      : 'bg-secondary text-secondary-foreground rounded-bl-md',
+                      ? 'brand-gradient text-white rounded-br-md shadow-lg shadow-emerald-500/10'
+                      : 'bg-white/[0.05] text-white/90 rounded-bl-md border border-white/6',
                     msgStatus === 'error' && 'bg-red-500 text-white'
                                     )}
                                   >
@@ -3544,11 +3546,11 @@ onClick={() => {
                   </ScrollArea>
 
             {/* Input Area Mobile */}
-            <div className="border-t border-white/30 dark:border-white/8 bg-white/70 dark:bg-white/5 backdrop-blur-xl p-3 space-y-2">
+            <div className="border-t border-white/6 glass-header p-3 space-y-2">
               {selectedTicket.status === 'aberto' && (
                 <Button
                   onClick={handleMarcarEmAtendimento}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+                  className="w-full btn-glow gap-2"
                 >
                     <CheckCircle className="h-4 w-4" />
                     ✨ Iniciar Atendimento
@@ -3557,18 +3559,18 @@ onClick={() => {
                 
 {/* File Preview Mobile */}
                     {filePreview && (
-                      <div className="mb-2 p-2 bg-muted/30 rounded-lg border">
+                      <div className="mb-2 p-2 bg-white/[0.02] rounded-lg border border-white/6">
                         <div className="relative inline-block">
   {filePreview.startsWith('file:') ? (
   (() => { const { icon: FIcon, label, color, bg, border } = getFileInfo(filePreview.replace('file:', '').split('.').pop() || '', selectedFile?.type); return (
   <div className={cn('flex items-center gap-2 px-2 py-1.5 rounded border', bg, border)}>
     <FIcon className={cn('h-5 w-5', color)} />
-    <span className="text-xs text-foreground max-w-[100px] truncate">{filePreview.replace('file:', '')}</span>
+    <span className="text-xs text-white/80 max-w-[100px] truncate">{filePreview.replace('file:', '')}</span>
   </div>) })()
   ) : filePreview.startsWith('video:') ? (
-  <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
-  <Video className="h-5 w-5 text-blue-600" />
-  <span className="text-xs text-foreground">{filePreview.replace('video:', '')}</span>
+  <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-500/10 rounded border border-blue-500/20">
+  <Video className="h-5 w-5 text-blue-400" />
+  <span className="text-xs text-white/80">{filePreview.replace('video:', '')}</span>
   </div>
   ) : (
   <img
@@ -3595,7 +3597,7 @@ onClick={() => {
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         className="shrink-0"
                       >
-                        <Smile className="h-5 w-5 text-muted-foreground" />
+                        <Smile className="h-5 w-5 text-white/40" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -3603,7 +3605,7 @@ onClick={() => {
                         onClick={() => fileInputRef.current?.click()}
                         className="shrink-0"
                       >
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                        <ImageIcon className="h-5 w-5 text-white/40" />
                       </Button>
                   <Input
                   value={messageInput}
@@ -3732,10 +3734,10 @@ onClick={() => {
                                   <span
                                     className={cn(
                                       'h-2 w-2 rounded-full shrink-0',
-                                      online ? 'bg-green-500' : 'bg-gray-400'
+                                      online ? 'bg-green-500' : 'bg-white/30'
                                     )}
                                   />
-                                  <span className={cn('flex-1', !online ? 'text-muted-foreground' : '')}>
+                                  <span className={cn('flex-1', !online ? 'text-white/40' : '')}>
                                     {atendente.nome}
                                   </span>
                                   {atendente.handlesSubsetor && selectedTicket?.subsetor_id && (
@@ -3744,7 +3746,7 @@ onClick={() => {
                                     </Badge>
                                   )}
                                   {!online && (
-                                    <span className="text-xs text-muted-foreground">(Offline)</span>
+                                    <span className="text-xs text-white/40">(Offline)</span>
                                   )}
                                 </div>
                               </SelectItem>
@@ -3753,7 +3755,7 @@ onClick={() => {
                         </SelectContent>
                       </Select>
                       {atendentesDisponiveis.length === 0 && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-white/40">
                           Nenhum outro atendente neste setor.
                         </p>
                       )}
@@ -3793,7 +3795,7 @@ onClick={() => {
                         </SelectTrigger>
                         <SelectContent>
                           {setores.length === 0 ? (
-                            <div className="p-3 text-sm text-muted-foreground text-center">
+                            <div className="p-3 text-sm text-white/40 text-center">
                               Nenhum setor habilitado para transferência. Configure em Configurações do Setor.
                             </div>
                           ) : (
@@ -3806,7 +3808,7 @@ onClick={() => {
                         </SelectContent>
                       </Select>
                       {setores.length === 0 && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-white/40">
                           Nenhum setor habilitado. Configure os destinos em Configurações do Setor.
                         </p>
                       )}
@@ -3841,14 +3843,14 @@ onClick={() => {
                                     <span
                                       className={cn(
                                         'h-2 w-2 rounded-full',
-                                        online ? 'bg-green-500' : 'bg-gray-400'
+                                        online ? 'bg-green-500' : 'bg-white/30'
                                       )}
                                     />
-                                    <span className={!online ? 'text-muted-foreground' : ''}>
+                                    <span className={!online ? 'text-white/40' : ''}>
                                       {atendente.nome}
                                     </span>
                                     {!online && (
-                                      <span className="text-xs text-muted-foreground">(Offline)</span>
+                                      <span className="text-xs text-white/40">(Offline)</span>
                                     )}
                                   </div>
                                 </SelectItem>
@@ -3862,7 +3864,7 @@ onClick={() => {
                     {selectedSetorTransfer !== 'all' &&
                       atendentesDisponiveis.length > 0 &&
                       !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
-                        <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
+                        <p className="text-sm text-blue-400 bg-blue-500/5 p-2 rounded-md border border-blue-500/10">
                           Nenhum atendente online neste setor. O ticket ira para a fila e sera
                           atribuido automaticamente quando alguem ficar online.
                         </p>
@@ -3888,7 +3890,7 @@ onClick={() => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-primary" />
+              <Megaphone className="h-5 w-5 text-emerald-400" />
               Novo Disparo
               {disparoLimitInfo && (
                 <Badge variant="outline" className="ml-2 text-xs font-normal">
@@ -3937,16 +3939,16 @@ onClick={() => {
 
                 {/* Client data found */}
                 {disparoCliente && (
-                  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-1.5">
-                    <p className="text-sm font-medium text-foreground">{disparoCliente.nome}</p>
+                  <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-1.5">
+                    <p className="text-sm font-medium text-white/90">{disparoCliente.nome}</p>
                     {disparoCliente.cnpj && (
-                      <p className="text-xs text-muted-foreground">CNPJ: {formatCNPJ(disparoCliente.cnpj)}</p>
+                      <p className="text-xs text-white/40">CNPJ: {formatCNPJ(disparoCliente.cnpj)}</p>
                     )}
                     {disparoCliente.registro && (
-                      <p className="text-xs text-muted-foreground">Registro: {disparoCliente.registro}</p>
+                      <p className="text-xs text-white/40">Registro: {disparoCliente.registro}</p>
                     )}
                     {disparoCliente.telefone && (
-                      <p className="text-xs text-muted-foreground">Telefone: {formatPhone(disparoCliente.telefone)}</p>
+                      <p className="text-xs text-white/40">Telefone: {formatPhone(disparoCliente.telefone)}</p>
                     )}
                     <Button
                       variant="ghost"
@@ -4003,9 +4005,9 @@ onClick={() => {
             {disparoStep === 'canal' && (
               <div className="space-y-3">
                 {/* Client summary */}
-                <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-0.5">
+                <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-0.5">
                   <p className="text-sm font-medium">{disparoCliente?.nome}</p>
-                  <p className="text-xs text-muted-foreground">{formatPhone(disparoTelefone)}</p>
+                  <p className="text-xs text-white/40">{formatPhone(disparoTelefone)}</p>
                 </div>
 
                 <Label className="text-sm font-medium">Escolha o canal de envio</Label>
@@ -4015,14 +4017,14 @@ onClick={() => {
                   <button
                     onClick={() => handleDisparoSelectCanal('whatsapp')}
                     disabled={disparoSending}
-                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 p-4 hover:border-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition-all"
+                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-green-500/20 bg-green-500/5 p-4 hover:border-green-400/40 hover:bg-green-500/10 transition-all"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white text-lg font-bold">
                       W
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold text-green-700 dark:text-green-400">WhatsApp</p>
-                      <p className="text-[10px] text-muted-foreground">Oficial (template)</p>
+                      <p className="text-sm font-semibold text-green-400">WhatsApp</p>
+                      <p className="text-[10px] text-white/40">Oficial (template)</p>
                     </div>
                   </button>
 
@@ -4030,14 +4032,14 @@ onClick={() => {
                   <button
                     onClick={() => handleDisparoSelectCanal('evolution_api')}
                     disabled={disparoSending}
-                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-4 hover:border-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all"
+                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-blue-500/20 bg-blue-500/5 p-4 hover:border-blue-400/40 hover:bg-blue-500/10 transition-all"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white">
                       <Zap className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">Não Oficial</p>
-                      <p className="text-[10px] text-muted-foreground">Evolution API</p>
+                      <p className="text-sm font-semibold text-blue-400">Não Oficial</p>
+                      <p className="text-[10px] text-white/40">Evolution API</p>
                     </div>
                   </button>
                 </div>
@@ -4045,7 +4047,7 @@ onClick={() => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-muted-foreground"
+                  className="w-full text-white/40"
                   onClick={() => setDisparoStep('telefone')}
                 >
                   ← Voltar
@@ -4057,10 +4059,10 @@ onClick={() => {
             {disparoStep === 'mensagem_evolution' && (
               <div className="space-y-3">
                 {/* Client summary */}
-                <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-0.5">
+                <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-0.5">
                   <p className="text-sm font-medium">{disparoCliente?.nome}</p>
-                  <p className="text-xs text-muted-foreground">{formatPhone(disparoTelefone)}</p>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-400">
+                  <p className="text-xs text-white/40">{formatPhone(disparoTelefone)}</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-400">
                     <Zap className="h-2.5 w-2.5" />
                     Evolution API
                   </span>
@@ -4069,12 +4071,12 @@ onClick={() => {
                 <div className="space-y-1.5">
                   <Label>Mensagem de abertura</Label>
                   <textarea
-                    className="w-full min-h-[120px] resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full min-h-[120px] resize-none rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30"
                     placeholder="Digite a mensagem..."
                     value={disparoMensagemEvolution}
                     onChange={(e) => setDisparoMensagemEvolution(e.target.value)}
                   />
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[10px] text-white/40">
                     O ticket será criado e atribuído a você imediatamente. Você poderá enviar mais mensagens sem aguardar a resposta do cliente.
                   </p>
                 </div>
@@ -4140,7 +4142,7 @@ onClick={() => {
                 setSelecionarClienteData(null)
                 setSelecionarClienteDialogOpen(true)
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
               Sim, informar cliente
             </AlertDialogAction>
@@ -4159,7 +4161,7 @@ onClick={() => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary" />
+              <Search className="h-5 w-5 text-emerald-400" />
               Selecionar Cliente
             </DialogTitle>
             <DialogDescription>
@@ -4196,16 +4198,16 @@ onClick={() => {
 
             {/* Cliente encontrado */}
             {selecionarClienteData && (
-              <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-1.5">
-                <p className="text-sm font-semibold text-foreground">{selecionarClienteData.nome}</p>
+              <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-1.5">
+                <p className="text-sm font-semibold text-white/90">{selecionarClienteData.nome}</p>
                 {selecionarClienteData.cnpj && (
-                  <p className="text-xs text-muted-foreground">CNPJ: {formatCNPJ(selecionarClienteData.cnpj)}</p>
+                  <p className="text-xs text-white/40">CNPJ: {formatCNPJ(selecionarClienteData.cnpj)}</p>
                 )}
                 {selecionarClienteData.registro && (
-                  <p className="text-xs text-muted-foreground">Registro: {selecionarClienteData.registro}</p>
+                  <p className="text-xs text-white/40">Registro: {selecionarClienteData.registro}</p>
                 )}
                 {selecionarClienteData.telefone && (
-                  <p className="text-xs text-muted-foreground">Telefone: {formatPhone(selecionarClienteData.telefone)}</p>
+                  <p className="text-xs text-white/40">Telefone: {formatPhone(selecionarClienteData.telefone)}</p>
                 )}
                 <Button
                   variant="ghost"
@@ -4328,11 +4330,11 @@ onClick={() => {
             if (e.target === e.currentTarget) setTicketIframeTicket(null)
           }}
         >
-          <div className="relative w-full max-w-[96vw] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-background flex flex-col" style={{ height: 'calc(100vh - 88px)' }}>
+          <div className="relative w-full max-w-[96vw] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-[#06080f] flex flex-col" style={{ height: 'calc(100vh - 88px)' }}>
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-white/70 dark:bg-white/5 backdrop-blur-xl shrink-0">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl shrink-0">
               <div className="flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5 text-primary" />
+                <Ticket className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="text-xs font-semibold">
                   Ticket #{ticketIframeTicket.numero} — {ticketIframeTicket.clientes.nome}
                 </span>
@@ -4412,23 +4414,23 @@ function TicketList({
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Filters Toggle */}
-      <div className="shrink-0 border-b border-white/30 dark:border-white/8 px-4 py-2">
+      <div className="shrink-0 border-b border-white/6 px-4 py-2">
         <button
           type="button"
           onClick={() => setFiltersOpen(!filtersOpen)}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full py-1"
+          className="flex items-center gap-2 text-xs text-white/40 hover:text-white/60 transition-colors w-full py-1"
         >
           <Filter className="h-3 w-3" />
           <span>Filtros</span>
           {(hasActiveFilter || searchTerm) && (
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           )}
           <ChevronDown className={cn('h-3 w-3 ml-auto transition-transform', filtersOpen && 'rotate-180')} />
         </button>
         {filtersOpen && (
           <div className="space-y-2 pt-2 pb-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
               <Input
                 placeholder="Buscar cliente..."
                 value={searchTerm}
@@ -4479,12 +4481,12 @@ function TicketList({
       {/* Ticket List */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {tickets.length === 0 ? (
-          <div className="flex h-40 flex-col items-center justify-center text-muted-foreground">
-            <MessageCircle className="mb-2 h-8 w-8 opacity-50" />
+          <div className="flex h-40 flex-col items-center justify-center text-white/30">
+            <MessageCircle className="mb-2 h-8 w-8 opacity-30" />
             <p className="text-sm">Nenhum ticket encontrado</p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-white/6">
             {tickets.map((ticket) => {
               const unreadCount = unreadCounts.get(ticket.id) || 0
               const isWaitingResponse = ticket.ultima_mensagem_remetente && isOutgoingMessage(ticket.ultima_mensagem_remetente)
@@ -4504,16 +4506,16 @@ function TicketList({
                   key={ticket.id}
                   role="button"
                   tabIndex={0}
-                  whileHover={{ backgroundColor: isSelected ? undefined : 'rgba(0,0,0,0.02)' }}
+                  whileHover={{ backgroundColor: isSelected ? undefined : 'rgba(255,255,255,0.03)' }}
                   onClick={() => onSelectTicket(ticket)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTicket(ticket) }}
                   className={cn(
                     'w-full px-3 py-2.5 text-left transition-colors border-l-3 cursor-pointer',
-                    isSelected 
-                      ? 'bg-primary/10 border-l-primary'
+                    isSelected
+                      ? 'glass-nav-active border-l-emerald-500'
                       : isExpiredWait
-                      ? 'bg-amber-50 dark:bg-amber-950/30 border-l-amber-500'
-                      : 'border-l-transparent hover:bg-muted/50'
+                      ? 'bg-amber-500/5 border-l-amber-500'
+                      : 'border-l-transparent hover:bg-white/[0.03]'
                   )}
                 >
                   <div className="flex flex-col gap-1">
@@ -4522,29 +4524,29 @@ function TicketList({
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={cn(
                           "text-xs font-semibold shrink-0",
-                          isSelected ? "text-primary" : "text-foreground"
+                          isSelected ? "text-emerald-400" : "text-white/70"
                         )}>
                           #{ticket.numero}
                         </span>
                         {ticket.prioridade === 'urgente' && (
                           <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
                         )}
-                        <span className="text-muted-foreground">-</span>
+                        <span className="text-white/40">-</span>
                         {/* Status badges */}
                         {isExpiredWait ? (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500 text-white border-0 animate-pulse">
+                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/20 text-amber-400 border-0 animate-pulse">
                             Sem resposta
                           </Badge>
                         ) : isWaitingResponse && unreadCount === 0 ? (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-100 text-amber-700 border-0">
+                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-400 border-0">
                             Aguardando
                           </Badge>
                         ) : (
                           <Badge
                             className={cn(
                               'text-[9px] px-1.5 py-0 h-4 border-0',
-                              ticket.status === 'aberto' && 'bg-blue-100 text-blue-700',
-                              ticket.status === 'em_atendimento' && 'bg-emerald-100 text-emerald-700'
+                              ticket.status === 'aberto' && 'bg-blue-500/10 text-blue-400',
+                              ticket.status === 'em_atendimento' && 'bg-emerald-500/10 text-emerald-400'
                             )}
                           >
                             {ticket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
@@ -4554,7 +4556,7 @@ function TicketList({
                       <div className="flex items-center gap-1 shrink-0">
                         {/* Unread badge */}
                         {unreadCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/30">
                             {unreadCount > 99 ? '99+' : unreadCount}
                           </span>
                         )}
@@ -4566,7 +4568,7 @@ function TicketList({
                             e.stopPropagation()
                             onOpenTicketIframe(ticket)
                           }}
-                          className="flex h-7 w-7 items-center justify-center rounded-md text-primary opacity-70 hover:opacity-100 hover:bg-primary/10 transition-all"
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-emerald-400 opacity-50 hover:opacity-100 hover:bg-emerald-500/10 transition-all"
                         >
                           <Ticket className="h-5 w-5" />
                         </button>
@@ -4576,13 +4578,13 @@ function TicketList({
                     {/* Row 2: Nome do Cliente */}
                     <p className={cn(
                       "text-sm font-medium line-clamp-1",
-                      isSelected ? "text-primary" : "text-foreground"
+                      isSelected ? "text-emerald-300" : "text-white/80"
                     )}>
   {ticket.clientes.nome}
   </p>
   
   {/* Row 3: Tempo */}
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-white/40">
                       {formatDistanceToNow(new Date(ticket.ultima_mensagem_em || ticket.criado_em), {
                         locale: ptBR,
                         addSuffix: true,

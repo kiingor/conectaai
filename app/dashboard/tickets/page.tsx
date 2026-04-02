@@ -128,9 +128,9 @@ interface Mensagem {
 }
 
 const statusColors = {
-  aberto: 'bg-blue-100 text-blue-800',
-  em_atendimento: 'bg-yellow-100 text-yellow-800',
-  encerrado: 'bg-green-100 text-green-800',
+  aberto: 'glass-badge bg-blue-500/15 text-blue-400 border-blue-500/20',
+  em_atendimento: 'glass-badge bg-amber-500/15 text-amber-400 border-amber-500/20',
+  encerrado: 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
 }
 
 const statusLabels = {
@@ -140,9 +140,9 @@ const statusLabels = {
 }
 
 const prioridadeColors = {
-  baixa: 'bg-gray-100 text-gray-800',
-  media: 'bg-orange-100 text-orange-800',
-  alta: 'bg-red-100 text-red-800',
+  baixa: 'glass-badge bg-white/5 text-white/60 border-white/10',
+  media: 'glass-badge bg-orange-500/15 text-orange-400 border-orange-500/20',
+  alta: 'glass-badge bg-red-500/15 text-red-400 border-red-500/20',
 }
 
 const prioridadeLabels = {
@@ -178,7 +178,7 @@ function LiveTimer({ startDate }: { startDate: string }) {
   }, [])
 
   return (
-    <span className="text-amber-600 font-mono text-xs font-medium tabular-nums">
+    <span className="text-amber-400 font-mono text-xs font-medium tabular-nums">
       {formatTimeDiff(startDate)}
     </span>
   )
@@ -603,13 +603,18 @@ export default function TicketsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Tickets</h1>
-          <p className="text-muted-foreground">Gerencie todos os tickets de atendimento</p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <Ticket className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Tickets</h1>
+            <p className="text-sm text-white/40">Gerencie todos os tickets de atendimento</p>
+          </div>
         </div>
         <Button
           onClick={() => setCreateModalOpen(true)}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
+          className="btn-glow rounded-xl px-5 py-2.5"
         >
           <Plus className="mr-2 h-4 w-4" />
           Novo Ticket
@@ -617,23 +622,22 @@ export default function TicketsPage() {
       </div>
 
       {/* Filters */}
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardContent className="pt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="glass-card rounded-2xl p-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
               <Input
                 placeholder="Buscar por cliente, telefone ou assunto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="glass-input rounded-xl text-white/70">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0e1019] border-white/8">
                 <SelectItem value="all">Todos os Status</SelectItem>
                 <SelectItem value="aberto">Aberto</SelectItem>
                 <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
@@ -641,10 +645,10 @@ export default function TicketsPage() {
               </SelectContent>
             </Select>
             <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="glass-input rounded-xl text-white/70">
                 <SelectValue placeholder="Prioridade" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0e1019] border-white/8">
                 <SelectItem value="all">Todas as Prioridades</SelectItem>
                 <SelectItem value="baixa">Baixa</SelectItem>
                 <SelectItem value="media">Media</SelectItem>
@@ -652,10 +656,10 @@ export default function TicketsPage() {
               </SelectContent>
             </Select>
             <Select value={setorFilter} onValueChange={setSetorFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="glass-input rounded-xl text-white/70">
                 <SelectValue placeholder="Setor" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0e1019] border-white/8">
                 <SelectItem value="all">Todos os Setores</SelectItem>
                 {setores.map((setor) => (
                   <SelectItem key={setor.id} value={setor.id}>
@@ -665,27 +669,26 @@ export default function TicketsPage() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Table */}
-      <Card className="glass-card-elevated rounded-2xl border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-primary" />
-            Lista de Tickets
-            <Badge variant="secondary" className="ml-2">
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/6">
+          <div className="flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-base font-semibold text-white">Lista de Tickets</h2>
+            <span className="glass-badge bg-white/5 text-white/50 border-white/10 px-2 py-0.5 rounded-full text-xs ml-2">
               {tickets.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+            </span>
+          </div>
+        </div>
+        <div className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             </div>
           ) : tickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center py-16 text-white/30">
               <Ticket className="mb-4 h-12 w-12" />
               <p>Nenhum ticket encontrado</p>
             </div>
@@ -693,35 +696,35 @@ export default function TicketsPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Assunto</TableHead>
-                    <TableHead>Setor</TableHead>
-                    <TableHead>Atendente</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Prioridade</TableHead>
-                <TableHead>Canal</TableHead>
-                <TableHead>1a Resposta</TableHead>
-                <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Acoes</TableHead>
+                  <TableRow className="border-white/6 hover:bg-transparent">
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Cliente</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Assunto</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Atendente</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Prioridade</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Canal</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">1a Resposta</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Data</TableHead>
+                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40 text-right">Acoes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                     {tickets.map((ticket) => (
-                      <TableRow key={ticket.id}>
+                      <TableRow key={ticket.id} className="border-white/6 hover:bg-white/[0.03] transition-colors">
                         <TableCell>
                           <div>
-                            <p className="font-medium">{ticket.cliente?.nome || 'N/A'}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-medium text-white/90">{ticket.cliente?.nome || 'N/A'}</p>
+                            <p className="text-xs text-white/30">
                               {ticket.cliente?.telefone}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="max-w-[200px] truncate">
+                        <TableCell className="max-w-[200px] truncate text-white/70">
                           {ticket.assunto || '-'}
                         </TableCell>
-                        <TableCell>{ticket.setor?.nome || '-'}</TableCell>
-                        <TableCell>{ticket.colaborador?.nome || '-'}</TableCell>
+                        <TableCell className="text-white/70">{ticket.setor?.nome || '-'}</TableCell>
+                        <TableCell className="text-white/70">{ticket.colaborador?.nome || '-'}</TableCell>
                         <TableCell>
                           <Badge className={statusColors[ticket.status]}>
                             {statusLabels[ticket.status]}
@@ -732,25 +735,26 @@ export default function TicketsPage() {
                             {prioridadeLabels[ticket.prioridade]}
                           </Badge>
                         </TableCell>
-                        <TableCell className="capitalize">{ticket.canal}</TableCell>
+                        <TableCell className="capitalize text-white/60">{ticket.canal}</TableCell>
                         <TableCell>
                           {ticket.primeira_resposta_em ? (
-                            <span className="text-green-600 font-mono text-xs font-medium">
+                            <span className="text-emerald-400 font-mono text-xs font-medium">
                               {formatTimeDiff(ticket.criado_em, ticket.primeira_resposta_em)}
                             </span>
                           ) : ticket.status === 'encerrado' ? (
-                            <span className="text-muted-foreground text-xs">-</span>
+                            <span className="text-white/30 text-xs">-</span>
                           ) : (
                             <LiveTimer startDate={ticket.criado_em} />
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-sm text-white/40">
                           {format(new Date(ticket.criado_em || ticket.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="text-white/40 hover:text-white hover:bg-white/5"
                             onClick={() => openDetailsModal(ticket)}
                           >
                             <Eye className="h-4 w-4" />
@@ -762,29 +766,29 @@ export default function TicketsPage() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Create Ticket Modal */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0 sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Plus className="h-5 w-5 text-emerald-400" />
               Novo Ticket
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Cliente *</Label>
+              <Label className="text-white/70">Cliente *</Label>
               <Select
                 value={createFormData.cliente_id}
                 onValueChange={(v) => setCreateFormData({ ...createFormData, cliente_id: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="glass-input rounded-xl text-white/80">
                   <SelectValue placeholder="Selecione um cliente" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#0e1019] border-white/8">
                   {clientes.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.nome} - {c.telefone}
@@ -794,15 +798,15 @@ export default function TicketsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Setor</Label>
+              <Label className="text-white/70">Setor</Label>
               <Select
                 value={createFormData.setor_id}
                 onValueChange={(v) => setCreateFormData({ ...createFormData, setor_id: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="glass-input rounded-xl text-white/80">
                   <SelectValue placeholder="Selecione um setor" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#0e1019] border-white/8">
                   {setores.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.nome}
@@ -813,7 +817,7 @@ export default function TicketsPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Prioridade</Label>
+                <Label className="text-white/70">Prioridade</Label>
                 <Select
                   value={createFormData.prioridade}
                   onValueChange={(v) =>
@@ -823,10 +827,10 @@ export default function TicketsPage() {
                     })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="glass-input rounded-xl text-white/80">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#0e1019] border-white/8">
                     <SelectItem value="baixa">Baixa</SelectItem>
                     <SelectItem value="media">Media</SelectItem>
                     <SelectItem value="alta">Alta</SelectItem>
@@ -834,15 +838,15 @@ export default function TicketsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Canal</Label>
+                <Label className="text-white/70">Canal</Label>
                 <Select
                   value={createFormData.canal}
                   onValueChange={(v) => setCreateFormData({ ...createFormData, canal: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="glass-input rounded-xl text-white/80">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#0e1019] border-white/8">
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
                     <SelectItem value="instagram">Instagram</SelectItem>
                     <SelectItem value="email">Email</SelectItem>
@@ -852,22 +856,23 @@ export default function TicketsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Assunto</Label>
+              <Label className="text-white/70">Assunto</Label>
               <Input
                 value={createFormData.assunto}
                 onChange={(e) => setCreateFormData({ ...createFormData, assunto: e.target.value })}
                 placeholder="Descricao breve do ticket"
+                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)} className="border-white/10 text-white/60 hover:bg-white/5">
               Cancelar
             </Button>
             <Button
               onClick={handleCreateTicket}
               disabled={saving}
-              className="bg-primary text-primary-foreground"
+              className="btn-glow rounded-xl"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Criar Ticket
@@ -878,11 +883,11 @@ export default function TicketsPage() {
 
       {/* Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0 sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[700px] bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-primary" />
-              Detalhes do Ticket
+              <Eye className="h-5 w-5 text-emerald-400" />
+              <span className="text-white">Detalhes do Ticket</span>
             </DialogTitle>
           </DialogHeader>
           {selectedTicket && (
@@ -1081,10 +1086,10 @@ export default function TicketsPage() {
           setTransferAtendentes([])
         }
       }}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0 sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[480px] bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <ArrowRight className="h-5 w-5 text-emerald-400" />
               Transferir Ticket
             </DialogTitle>
           </DialogHeader>
@@ -1198,10 +1203,10 @@ export default function TicketsPage() {
 
       {/* Observation Modal */}
       <Dialog open={observationModalOpen} onOpenChange={setObservationModalOpen}>
-        <DialogContent className="glass-card-elevated rounded-3xl border-0 sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[400px] bg-[#0e1019] border border-white/8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <MessageSquare className="h-5 w-5 text-emerald-400" />
               Adicionar Observacao
             </DialogTitle>
           </DialogHeader>

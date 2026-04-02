@@ -132,74 +132,76 @@ export default function LogsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-            <Bug className="h-5 w-5 text-destructive" />
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center border border-white/10">
+            <Bug className="h-5 w-5 text-red-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Logs de Erros</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold text-white">Logs de Erros</h1>
+            <p className="text-sm text-white/40">
               Monitoramento de erros da plataforma
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="destructive" className="gap-1">
+          <span className="glass-badge bg-red-500/15 text-red-400 border-red-500/20 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium">
             <AlertTriangle className="h-3 w-3" />
             {pendingCount} pendentes
-          </Badge>
-          <Badge variant="secondary" className="gap-1">
+          </span>
+          <span className="glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium">
             <CheckCircle2 className="h-3 w-3" />
             {resolvedCount} resolvidos
-          </Badge>
+          </span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={filterTela} onValueChange={setFilterTela}>
-            <SelectTrigger className="w-[180px] h-9">
-              <SelectValue placeholder="Todas as telas" />
+      <div className="glass-card rounded-2xl p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-white/30" />
+            <Select value={filterTela} onValueChange={setFilterTela}>
+              <SelectTrigger className="w-[180px] h-9 glass-input rounded-xl text-white/70">
+                <SelectValue placeholder="Todas as telas" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0e1019] border-white/8">
+                <SelectItem value="all">Todas as telas</SelectItem>
+                {uniqueTelas.map(t => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[150px] h-9 glass-input rounded-xl text-white/70">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as telas</SelectItem>
-              {uniqueTelas.map(t => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
+            <SelectContent className="bg-[#0e1019] border-white/8">
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="pendente">Pendentes</SelectItem>
+              <SelectItem value="resolvido">Resolvidos</SelectItem>
             </SelectContent>
           </Select>
-        </div>
 
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[150px] h-9">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pendente">Pendentes</SelectItem>
-            <SelectItem value="resolvido">Resolvidos</SelectItem>
-          </SelectContent>
-        </Select>
+          <Input
+            placeholder="Buscar no log..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-[250px] h-9 glass-input rounded-xl text-white/80 placeholder:text-white/25"
+          />
 
-        <Input
-          placeholder="Buscar no log..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-[250px] h-9"
-        />
-
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
-            <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin")} />
-            Atualizar
-          </Button>
-          {resolvedCount > 0 && (
-            <Button variant="outline" size="sm" onClick={clearResolved} className="text-destructive hover:text-destructive">
-              <Trash2 className="h-4 w-4 mr-1" />
-              Limpar resolvidos
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading} className="border-white/10 text-white/60 hover:bg-white/5">
+              <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin")} />
+              Atualizar
             </Button>
-          )}
+            {resolvedCount > 0 && (
+              <Button variant="outline" size="sm" onClick={clearResolved} className="border-red-500/20 text-red-400 hover:bg-red-500/10">
+                <Trash2 className="h-4 w-4 mr-1" />
+                Limpar resolvidos
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -207,13 +209,13 @@ export default function LogsPage() {
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+            <RefreshCw className="h-6 w-6 animate-spin text-emerald-400" />
           </div>
         ) : filteredLogs.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-16 text-white/30">
             <Bug className="h-10 w-10 mx-auto mb-3 opacity-30" />
             <p className="font-medium">Nenhum log encontrado</p>
-            <p className="text-sm mt-1">Os erros da plataforma aparecerão aqui automaticamente.</p>
+            <p className="text-sm mt-1 text-white/20">Os erros da plataforma aparecerão aqui automaticamente.</p>
           </div>
         ) : (
           filteredLogs.map((log) => {
@@ -222,20 +224,20 @@ export default function LogsPage() {
               <div
                 key={log.id}
                 className={cn(
-                  'border rounded-xl transition-all',
+                  'glass-card rounded-xl transition-all',
                   log.resolvido
-                    ? 'bg-muted/30 border-muted opacity-70'
-                    : 'bg-card border-border'
+                    ? 'opacity-60'
+                    : ''
                 )}
               >
                 {/* Row Header */}
                 <div
-                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/30 rounded-xl"
+                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/[0.03] rounded-xl"
                   onClick={() => setExpandedId(isExpanded ? null : log.id)}
                 >
                   <div className={cn(
-                    'h-2 w-2 rounded-full shrink-0',
-                    log.resolvido ? 'bg-green-500' : 'bg-destructive'
+                    'h-2.5 w-2.5 rounded-full shrink-0',
+                    log.resolvido ? 'status-dot-online' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'
                   )} />
 
                   <div className="flex-1 min-w-0">
@@ -260,7 +262,7 @@ export default function LogsPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-foreground mt-1 truncate font-mono">
+                    <p className="text-sm text-white/70 mt-1 truncate font-mono">
                       {log.log.split('\n')[0].slice(0, 120)}
                     </p>
                   </div>
@@ -280,22 +282,22 @@ export default function LogsPage() {
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-border/50">
+                  <div className="px-4 pb-4 space-y-3 border-t border-white/6">
                     <div className="mt-3">
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
                         Log completo
                       </p>
-                      <pre className="text-xs font-mono bg-muted/50 rounded-lg p-3 overflow-x-auto max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">
+                      <pre className="text-xs font-mono bg-white/[0.03] rounded-lg border border-white/5 p-3 overflow-x-auto max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">
                         {log.log}
                       </pre>
                     </div>
 
                     {log.metadata && Object.keys(log.metadata).length > 0 && (
                       <div>
-                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                        <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
                           Metadata
                         </p>
-                        <pre className="text-xs font-mono bg-muted/50 rounded-lg p-3 overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                        <pre className="text-xs font-mono bg-white/[0.03] rounded-lg border border-white/5 p-3 overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
                           {JSON.stringify(log.metadata, null, 2)}
                         </pre>
                       </div>
@@ -303,7 +305,7 @@ export default function LogsPage() {
 
                     {log.navegador && (
                       <div>
-                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                        <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
                           Navegador
                         </p>
                         <p className="text-xs text-muted-foreground font-mono">{log.navegador}</p>

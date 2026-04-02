@@ -276,49 +276,54 @@ export default function UsuariosPage() {
     <div className="flex flex-col gap-6 h-[calc(100vh-130px)]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Usuários Master</h1>
-          <p className="text-muted-foreground">
-            Gerencie usuários e defina quais setores cada um pode acessar
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <UserCog className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Usuarios Master</h1>
+            <p className="text-sm text-white/40">
+              Gerencie usuarios e defina quais setores cada um pode acessar
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
             <Input
-              placeholder="Buscar usuário..."
+              placeholder="Buscar usuario..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-9 rounded-2xl glass-input"
+              className="w-64 pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
             />
           </div>
-          <Button onClick={openCreateModal} className="gap-2">
+          <Button onClick={openCreateModal} className="btn-glow rounded-xl gap-2 px-5">
             <Plus className="h-4 w-4" />
-            Novo Usuário
+            Novo Usuario
           </Button>
         </div>
       </div>
 
       {/* Users Table */}
-      <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col flex-1 min-h-0">
-        <CardContent className="p-0 overflow-y-auto flex-1">
+      <div className="glass-card rounded-2xl flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="p-0 overflow-y-auto flex-1">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="pl-5">Nome</TableHead>
-                <TableHead>E-mail</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Permissão</TableHead>
-                <TableHead>Setores</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-24">Ações</TableHead>
+              <TableRow className="border-white/6 hover:bg-transparent">
+                <TableHead className="pl-5 text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
+                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">E-mail</TableHead>
+                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tipo</TableHead>
+                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Permissao</TableHead>
+                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setores</TableHead>
+                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
+                <TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
+                  <TableRow key={i} className="border-white/6">
                     <TableCell className="pl-5"><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
@@ -331,9 +336,9 @@ export default function UsuariosPage() {
               ) : filteredColaboradores.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center text-white/30">
                       <UserCog className="mb-2 h-8 w-8" />
-                      <p>Nenhum usuário encontrado</p>
+                      <p>Nenhum usuario encontrado</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -350,53 +355,52 @@ export default function UsuariosPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="border-b"
+                      className="border-b border-white/6 hover:bg-white/[0.03] transition-colors"
                     >
-                      <TableCell className="font-medium pl-5">{user.nome}</TableCell>
-                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="font-medium pl-5 text-white/90">{user.nome}</TableCell>
+                      <TableCell className="text-white/60">{user.email}</TableCell>
                       <TableCell>
                         {user.is_master ? (
-                          <Badge className="bg-primary text-primary-foreground">
+                          <Badge className="glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20">
                             Admin
                           </Badge>
                         ) : (
-                          <Badge variant="outline">Usuário</Badge>
+                          <Badge className="glass-badge bg-white/5 text-white/50 border-white/10">Usuario</Badge>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-white/60">
                         {user.permissoes?.nome || (
-                          <span className="text-muted-foreground">-</span>
+                          <span className="text-white/25">-</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {user.is_master ? (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-white/40">
                             Todos os setores
                           </span>
                         ) : setorNames.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {setorNames.slice(0, 2).map((nome) => (
-                              <Badge key={nome} variant="secondary" className="text-xs">
+                              <Badge key={nome} className="glass-badge bg-cyan-500/10 text-cyan-400/70 border-cyan-500/15 text-xs">
                                 {nome}
                               </Badge>
                             ))}
                             {setorNames.length > 2 && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge className="glass-badge bg-white/5 text-white/40 border-white/10 text-xs">
                                 +{setorNames.length - 2}
                               </Badge>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">Nenhum</span>
+                          <span className="text-white/25">Nenhum</span>
                         )}
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={user.ativo ? 'default' : 'secondary'}
                           className={
                             user.ativo
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-600'
+                              ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+                              : 'glass-badge bg-white/5 text-white/30 border-white/10'
                           }
                         >
                           {user.ativo ? 'Ativo' : 'Inativo'}
@@ -407,6 +411,7 @@ export default function UsuariosPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="text-white/40 hover:text-white hover:bg-white/5"
                             onClick={() => openEditModal(user)}
                           >
                             <Pencil className="h-4 w-4" />
@@ -414,7 +419,7 @@ export default function UsuariosPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
                             onClick={() => setDeletingUser(user)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -427,12 +432,12 @@ export default function UsuariosPage() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar usuário</AlertDialogTitle>
             <AlertDialogDescription>
@@ -456,7 +461,7 @@ export default function UsuariosPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[88vh] p-0 gap-0">
+        <DialogContent className="max-w-2xl bg-[#0e1019] border border-white/8 rounded-2xl flex flex-col max-h-[88vh] p-0 gap-0">
           {/* Header fixo */}
           <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-border/50">
             <DialogTitle>

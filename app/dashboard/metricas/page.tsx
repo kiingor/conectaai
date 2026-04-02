@@ -56,7 +56,7 @@ interface DailyVolume {
   count: number
 }
 
-const COLORS = ['#F97316', '#FB923C', '#FDBA74', '#FBC02D', '#F9A825', '#F57F17', '#FFD54F', '#FFEB3B', '#FFF176', '#84CC16', '#22D3EE', '#818CF8']
+const COLORS = ['#10b981', '#06b6d4', '#34d399', '#22d3ee', '#6ee7b7', '#67e8f9', '#a7f3d0', '#a5f3fc', '#059669', '#0891b2', '#047857', '#0e7490']
 
 const ITEMS_PER_PAGE = 10
 
@@ -408,13 +408,16 @@ export default function MetricasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Métricas
-        </h1>
-        <p className="text-muted-foreground">
-          Acompanhe os indicadores de desempenho da operação
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <Ticket className="h-5 w-5 text-emerald-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Metricas</h1>
+          <p className="text-sm text-white/40">
+            Acompanhe os indicadores de desempenho da operacao
+          </p>
+        </div>
       </div>
 
       {/* Metric Cards */}
@@ -426,20 +429,18 @@ export default function MetricasPage() {
       >
         {metrics.map((metric, index) => (
           <motion.div key={metric.title} variants={itemVariants}>
-            <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-foreground">{metric.title}</CardTitle>
-                <div className={`rounded-lg ${metric.color} p-2`}>
-                  <metric.icon className="h-4 w-4 text-foreground" />
+            <div className="glass-card-elevated rounded-2xl overflow-hidden p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-white/60">{metric.title}</span>
+                <div className="rounded-lg bg-gradient-to-br from-emerald-500/15 to-cyan-500/15 p-2 border border-white/5">
+                  <metric.icon className="h-4 w-4 text-emerald-400" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-foreground">{metric.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {metric.description}
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="text-3xl font-bold brand-gradient-text">{metric.value}</div>
+              <p className="text-xs text-white/30 mt-1">
+                {metric.description}
+              </p>
+            </div>
           </motion.div>
         ))}
       </motion.div>
@@ -447,9 +448,9 @@ export default function MetricasPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">Setor:</span>
+          <span className="text-sm font-medium text-white/60">Setor:</span>
           <Select value={setorFilter} onValueChange={setSetorFilter}>
-            <SelectTrigger className="w-52 bg-card border-border">
+            <SelectTrigger className="w-52 glass-input rounded-xl text-white/70">
               <SelectValue placeholder="Todos os setores" />
             </SelectTrigger>
             <SelectContent>
@@ -461,7 +462,7 @@ export default function MetricasPage() {
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">Periodo:</span>
+          <span className="text-sm font-medium text-white/60">Periodo:</span>
           <DatePeriodFilter
             dateFilter={dateFilter}
             onDateFilterChange={setDateFilter}
@@ -480,15 +481,15 @@ export default function MetricasPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="glass-card-elevated rounded-2xl border-0">
+          <div className="glass-card rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-foreground">Tickets por Setor</CardTitle>
+                  <CardTitle className="text-white">Tickets por Setor</CardTitle>
                   <CardDescription>Distribuição de tickets por departamento</CardDescription>
                 </div>
                 <Select value={chartSetorFilter} onValueChange={(v) => { setChartSetorFilter(v); setSetorPage(0) }}>
-                  <SelectTrigger className="w-44 h-8 text-xs bg-card border-border">
+                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
                     <SelectValue placeholder="Filtrar setor" />
                   </SelectTrigger>
                   <SelectContent>
@@ -507,7 +508,7 @@ export default function MetricasPage() {
                     config={{
                       count: {
                         label: 'Tickets',
-                        color: '#F97316',
+                        color: '#10b981',
                       },
                     }}
                     className="w-full"
@@ -574,7 +575,7 @@ export default function MetricasPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </div>
         </motion.div>
 
         {/* Tickets by Collaborator */}
@@ -583,15 +584,15 @@ export default function MetricasPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="glass-card-elevated rounded-2xl border-0">
+          <div className="glass-card rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-foreground">Atendimentos por Colaborador</CardTitle>
+                  <CardTitle className="text-white">Atendimentos por Colaborador</CardTitle>
                   <CardDescription>Tickets encerrados por cada colaborador</CardDescription>
                 </div>
                 <Select value={chartColaboradorFilter} onValueChange={(v) => { setChartColaboradorFilter(v); setColaboradorPage(0) }}>
-                  <SelectTrigger className="w-44 h-8 text-xs bg-card border-border">
+                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
                     <SelectValue placeholder="Filtrar colaborador" />
                   </SelectTrigger>
                   <SelectContent>
@@ -610,7 +611,7 @@ export default function MetricasPage() {
                     config={{
                       count: {
                         label: 'Tickets',
-                        color: '#F97316',
+                        color: '#10b981',
                       },
                     }}
                     className="w-full"
@@ -677,7 +678,7 @@ export default function MetricasPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </div>
         </motion.div>
       </div>
 
@@ -687,9 +688,9 @@ export default function MetricasPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <Card className="glass-card-elevated rounded-2xl border-0">
+        <div className="glass-card rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-foreground">Volume Diário de Tickets</CardTitle>
+            <CardTitle className="text-white">Volume Diário de Tickets</CardTitle>
             <CardDescription>Quantidade de tickets criados por dia</CardDescription>
           </CardHeader>
           <CardContent>
@@ -698,7 +699,7 @@ export default function MetricasPage() {
                 config={{
                   count: {
                     label: 'Tickets',
-                    color: '#FBC02D',
+                    color: '#06b6d4',
                   },
                 }}
                 className="h-[400px] w-full"
@@ -717,10 +718,10 @@ export default function MetricasPage() {
                       type="monotone"
                       dataKey="count"
                       name="Tickets"
-                      stroke="#F97316"
+                      stroke="#10b981"
                       strokeWidth={3}
-                      dot={{ fill: '#F97316', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, fill: '#EA580C' }}
+                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, fill: '#06b6d4' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -731,7 +732,7 @@ export default function MetricasPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </div>
       </motion.div>
     </div>
   )

@@ -55,17 +55,17 @@ export async function GET() {
 /**
  * POST /api/super-admin/organizacoes
  * Cria nova organização + setor + usuário admin
- * Body: { slug, nome, plano?, admin_email, admin_nome }
+ * Body: { slug, nome, plano?, admin_email, admin_nome, admin_senha }
  */
 export async function POST(request: NextRequest) {
   const user = await verifySuperAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { slug, nome, plano = 'basic', admin_email, admin_nome } = body
+  const { slug, nome, plano = 'basic', admin_email, admin_nome, admin_senha } = body
 
-  if (!slug || !nome || !admin_email || !admin_nome) {
-    return NextResponse.json({ error: 'slug, nome, admin_email e admin_nome são obrigatórios' }, { status: 400 })
+  if (!slug || !nome || !admin_email || !admin_nome || !admin_senha) {
+    return NextResponse.json({ error: 'slug, nome, admin_email, admin_nome e admin_senha são obrigatórios' }, { status: 400 })
   }
 
   // Validar slug (apenas letras, números e hífens)
@@ -121,11 +121,10 @@ export async function POST(request: NextRequest) {
     permissaoId = novaPerm?.id ?? null
   }
 
-  // 3. Criar usuário no Supabase Auth
-  const tempPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-4).toUpperCase() + '!'
+  // 3. Criar usuário no Supabase Auth com senha definida e email confirmado
   const { data: authUser, error: authError } = await service.auth.admin.createUser({
     email: admin_email,
-    password: tempPassword,
+    password: admin_senha,
     email_confirm: true,
     user_metadata: { nome: admin_nome },
   })
@@ -154,7 +153,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     success: true,
     organizacao: org,
-    admin: { email: admin_email, senha_temporaria: tempPassword },
+    admin: { email: admin_email },
     login_url: `${process.env.NEXT_PUBLIC_APP_URL || 'multihub-one.vercel.app'}/login?org=${slug}`,
   }, { status: 201 })
 }

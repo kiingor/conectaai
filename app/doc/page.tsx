@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { ChevronRight, Copy, Check, Lock, Server, Users, BarChart3, Ticket, Menu, X } from 'lucide-react'
 
-const BASE_URL = 'https://www.softcomhub.com'
+const BASE_URL = 'https://www.conectaai.com'
 
 const NAV_ITEMS = [
-  { id: 'auth', label: 'Autenticação', icon: Lock },
+  { id: 'auth', label: 'Autenticacao', icon: Lock },
   { id: 'setores', label: 'Setores', icon: Server },
   { id: 'atendentes', label: 'Atendentes', icon: Users },
   { id: 'produtividade', label: 'Produtividade', icon: BarChart3 },
@@ -22,31 +22,38 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-gray-200"
+      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/[0.04] hover:bg-white/[0.08] transition-colors text-white/30 hover:text-white/60 border border-white/6"
       title="Copiar"
     >
-      {copied ? <Check size={14} /> : <Copy size={14} />}
+      {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
     </button>
   )
 }
 
 function CodeBlock({ children, lang = 'bash' }: { children: string; lang?: string }) {
   return (
-    <div className="relative group rounded-lg bg-[#1a1d27] border border-white/5 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02]">
-        <span className="text-xs text-gray-500 uppercase tracking-wider">{lang}</span>
+    <div className="relative group rounded-xl bg-[#080a14] border border-white/6 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/6 bg-white/[0.02]">
+        <span className="text-xs text-white/30 uppercase tracking-wider font-mono">{lang}</span>
         <CopyButton text={children.trim()} />
       </div>
       <pre className="p-4 overflow-x-auto text-[13px] leading-relaxed font-mono">
-        <code className="text-gray-300 font-mono">{children.trim()}</code>
+        <code className="text-emerald-300/80 font-mono">{children.trim()}</code>
       </pre>
     </div>
   )
 }
 
 function Badge({ method = 'GET' }: { method?: string }) {
+  const colors: Record<string, string> = {
+    GET: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+    POST: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20',
+    PUT: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    PATCH: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    DELETE: 'bg-red-500/15 text-red-400 border-red-500/20',
+  }
   return (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${colors[method] || colors.GET}`}>
       {method}
     </span>
   )
@@ -54,31 +61,31 @@ function Badge({ method = 'GET' }: { method?: string }) {
 
 function ParamTable({ params }: { params: { name: string; type: string; required: boolean; description: string }[] }) {
   return (
-    <div className="rounded-lg border border-white/5 overflow-hidden">
+    <div className="rounded-xl border border-white/6 overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-white/[0.03] border-b border-white/5">
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Parâmetro</th>
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Tipo</th>
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Obrigatório</th>
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Descrição</th>
+          <tr className="bg-white/[0.03] border-b border-white/6">
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Parametro</th>
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Tipo</th>
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Obrigatorio</th>
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Descricao</th>
           </tr>
         </thead>
         <tbody>
           {params.map((p) => (
-            <tr key={p.name} className="border-b border-white/5 last:border-0">
+            <tr key={p.name} className="border-b border-white/6 last:border-0 hover:bg-white/[0.02] transition-colors">
               <td className="px-4 py-2.5">
-                <code className="text-violet-400 text-xs bg-violet-500/10 px-1.5 py-0.5 rounded">{p.name}</code>
+                <code className="text-cyan-400 text-xs bg-cyan-500/10 px-1.5 py-0.5 rounded">{p.name}</code>
               </td>
-              <td className="px-4 py-2.5 text-gray-400 text-xs">{p.type}</td>
+              <td className="px-4 py-2.5 text-white/40 text-xs font-mono">{p.type}</td>
               <td className="px-4 py-2.5">
                 {p.required ? (
-                  <span className="text-amber-400 text-xs">Sim</span>
+                  <span className="text-amber-400 text-xs font-medium">Sim</span>
                 ) : (
-                  <span className="text-gray-500 text-xs">Não</span>
+                  <span className="text-white/25 text-xs">Nao</span>
                 )}
               </td>
-              <td className="px-4 py-2.5 text-gray-300 text-xs">{p.description}</td>
+              <td className="px-4 py-2.5 text-white/60 text-xs">{p.description}</td>
             </tr>
           ))}
         </tbody>
@@ -89,23 +96,23 @@ function ParamTable({ params }: { params: { name: string; type: string; required
 
 function ResponseField({ fields }: { fields: { name: string; type: string; description: string }[] }) {
   return (
-    <div className="rounded-lg border border-white/5 overflow-hidden">
+    <div className="rounded-xl border border-white/6 overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-white/[0.03] border-b border-white/5">
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Campo</th>
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Tipo</th>
-            <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Descrição</th>
+          <tr className="bg-white/[0.03] border-b border-white/6">
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Campo</th>
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Tipo</th>
+            <th className="text-left px-4 py-2.5 text-white/40 font-medium text-xs uppercase tracking-wider">Descricao</th>
           </tr>
         </thead>
         <tbody>
           {fields.map((f) => (
-            <tr key={f.name} className="border-b border-white/5 last:border-0">
+            <tr key={f.name} className="border-b border-white/6 last:border-0 hover:bg-white/[0.02] transition-colors">
               <td className="px-4 py-2.5">
                 <code className="text-emerald-400 text-xs bg-emerald-500/10 px-1.5 py-0.5 rounded">{f.name}</code>
               </td>
-              <td className="px-4 py-2.5 text-gray-400 text-xs">{f.type}</td>
-              <td className="px-4 py-2.5 text-gray-300 text-xs">{f.description}</td>
+              <td className="px-4 py-2.5 text-white/40 text-xs font-mono">{f.type}</td>
+              <td className="px-4 py-2.5 text-white/60 text-xs">{f.description}</td>
             </tr>
           ))}
         </tbody>
@@ -118,7 +125,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
   return (
     <section id={id} className="scroll-mt-20">
       <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-        <ChevronRight size={20} className="text-violet-400" />
+        <ChevronRight size={20} className="text-emerald-400" />
         {title}
       </h2>
       <div className="space-y-6">{children}</div>
@@ -128,54 +135,64 @@ function Section({ id, title, children }: { id: string; title: string; children:
 
 export default function DocPage() {
   const [mobileNav, setMobileNav] = useState(false)
+  const [activeNav, setActiveNav] = useState('auth')
 
   return (
     <div className="flex">
       {/* Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 fixed top-0 left-0 h-screen border-r border-white/5 bg-[#0b0d13]">
-        <div className="p-6 border-b border-white/5">
-          <h1 className="text-lg font-bold text-white">SoftcomHub</h1>
-          <p className="text-xs text-gray-500 mt-1">API Documentation v1.0</p>
+      <aside className="hidden lg:flex flex-col w-64 fixed top-0 left-0 h-screen glass-panel">
+        <div className="p-6 border-b border-white/6">
+          <h1 className="text-lg font-bold brand-gradient-text">ConectaAI</h1>
+          <p className="text-xs text-white/30 mt-1">API Documentation v1.0</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              onClick={() => setActiveNav(item.id)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                activeNav === item.id
+                  ? 'glass-nav-active text-emerald-400 font-medium'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+              }`}
             >
               <item.icon size={16} />
               {item.label}
             </a>
           ))}
         </nav>
-        <div className="p-4 border-t border-white/5">
-          <p className="text-xs text-gray-600">Base URL</p>
-          <code className="text-xs text-violet-400 break-all">{BASE_URL}</code>
+        <div className="p-4 border-t border-white/6">
+          <p className="text-xs text-white/25">Base URL</p>
+          <code className="text-xs text-emerald-400/80 break-all font-mono">{BASE_URL}</code>
         </div>
       </aside>
 
       {/* Mobile nav toggle */}
       <button
         onClick={() => setMobileNav(!mobileNav)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#1a1d27] border border-white/10 text-gray-400"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg glass border border-white/10 text-white/60"
       >
         {mobileNav ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       {/* Mobile nav overlay */}
       {mobileNav && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMobileNav(false)}>
-          <aside className="w-64 h-full bg-[#0b0d13] border-r border-white/5 p-6" onClick={(e) => e.stopPropagation()}>
-            <h1 className="text-lg font-bold text-white mb-1">SoftcomHub</h1>
-            <p className="text-xs text-gray-500 mb-6">API Documentation v1.0</p>
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={() => setMobileNav(false)}>
+          <aside className="w-64 h-full glass-panel p-6" onClick={(e) => e.stopPropagation()}>
+            <h1 className="text-lg font-bold brand-gradient-text mb-1">ConectaAI</h1>
+            <p className="text-xs text-white/30 mb-6">API Documentation v1.0</p>
             <nav className="space-y-1">
               {NAV_ITEMS.map((item) => (
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  onClick={() => setMobileNav(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                  onClick={() => { setMobileNav(false); setActiveNav(item.id) }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                    activeNav === item.id
+                      ? 'glass-nav-active text-emerald-400 font-medium'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                  }`}
                 >
                   <item.icon size={16} />
                   {item.label}
@@ -190,38 +207,38 @@ export default function DocPage() {
       <main className="flex-1 lg:ml-64 px-6 py-12 lg:px-16 max-w-4xl mx-auto space-y-16">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold text-white mb-3">API do Painel de Atendimentos</h1>
-          <p className="text-gray-400 text-lg leading-relaxed">
-            Endpoints para integração com o painel de atendimentos da plataforma SoftcomHub.
-            Todos os endpoints retornam JSON e requerem autenticação via HTTP Basic Auth.
+          <h1 className="text-4xl font-bold text-white mb-3">API do Painel de <span className="brand-gradient-text">Atendimentos</span></h1>
+          <p className="text-white/40 text-lg leading-relaxed">
+            Endpoints para integracao com o painel de atendimentos da plataforma ConectaAI.
+            Todos os endpoints retornam JSON e requerem autenticacao via HTTP Basic Auth.
           </p>
           <div className="mt-6 flex items-center gap-3 text-sm">
-            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs">
-              Produção
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
+              Producao
             </span>
-            <code className="text-gray-400 text-xs">{BASE_URL}/api/painel</code>
+            <code className="text-white/40 text-xs font-mono">{BASE_URL}/api/painel</code>
           </div>
         </div>
 
-        {/* Autenticação */}
-        <Section id="auth" title="Autenticação">
-          <p className="text-gray-400 leading-relaxed">
+        {/* Autenticacao */}
+        <Section id="auth" title="Autenticacao">
+          <p className="text-white/50 leading-relaxed">
             Todos os endpoints utilizam <strong className="text-white">HTTP Basic Authentication</strong>.
-            Inclua o header <code className="text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded text-sm">Authorization</code> em
-            todas as requisições com suas credenciais codificadas em Base64.
+            Inclua o header <code className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded text-sm">Authorization</code> em
+            todas as requisicoes com suas credenciais codificadas em Base64.
           </p>
 
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+          <div className="glass-card rounded-xl border-amber-500/20 bg-amber-500/5 p-4">
             <p className="text-amber-400 text-sm font-medium mb-1">Importante</p>
-            <p className="text-gray-400 text-sm">
-              Requisições sem autenticação ou com credenciais inválidas retornam <code className="text-white">401 Unauthorized</code>.
+            <p className="text-white/40 text-sm">
+              Requisicoes sem autenticacao ou com credenciais invalidas retornam <code className="text-white font-mono">401 Unauthorized</code>.
             </p>
           </div>
 
-          <h3 className="text-lg font-semibold text-white mt-4">Formato da requisição (cURL)</h3>
-          <p className="text-gray-400 text-sm mb-3">
-            Todas as requisições seguem este formato. O header <code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">Authorization</code> deve
-            conter <code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">Basic</code> seguido das credenciais em Base64 (<code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">usuario:senha</code>).
+          <h3 className="text-lg font-semibold text-white mt-4">Formato da requisicao (cURL)</h3>
+          <p className="text-white/40 text-sm mb-3">
+            Todas as requisicoes seguem este formato. O header <code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">Authorization</code> deve
+            conter <code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">Basic</code> seguido das credenciais em Base64 (<code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">usuario:senha</code>).
           </p>
           <CodeBlock lang="bash">{`curl --request GET \\
   --url "${BASE_URL}/api/painel/setores" \\
@@ -234,20 +251,20 @@ export default function DocPage() {
         <Section id="setores" title="Setores">
           <div className="flex items-center gap-3 mb-4">
             <Badge />
-            <code className="text-gray-300 text-sm">/api/painel/setores</code>
+            <code className="text-white/60 text-sm font-mono">/api/painel/setores</code>
           </div>
-          <p className="text-gray-400">Retorna a lista de todos os setores cadastrados na plataforma.</p>
+          <p className="text-white/50">Retorna a lista de todos os setores cadastrados na plataforma.</p>
 
-          <h3 className="text-lg font-semibold text-white mt-4">Parâmetros</h3>
-          <p className="text-gray-500 text-sm italic">Nenhum parâmetro necessário.</p>
+          <h3 className="text-lg font-semibold text-white mt-4">Parametros</h3>
+          <p className="text-white/30 text-sm italic">Nenhum parametro necessario.</p>
 
           <h3 className="text-lg font-semibold text-white mt-4">Campos da resposta</h3>
           <ResponseField
             fields={[
-              { name: 'id', type: 'UUID', description: 'Identificador único do setor' },
+              { name: 'id', type: 'UUID', description: 'Identificador unico do setor' },
               { name: 'nome', type: 'string', description: 'Nome do setor' },
-              { name: 'descricao', type: 'string | null', description: 'Descrição do setor' },
-              { name: 'created_at', type: 'ISO 8601', description: 'Data de criação' },
+              { name: 'descricao', type: 'string | null', description: 'Descricao do setor' },
+              { name: 'created_at', type: 'ISO 8601', description: 'Data de criacao' },
             ]}
           />
 
@@ -256,7 +273,7 @@ export default function DocPage() {
   "setores": [
     {
       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "nome": "Suporte Técnico",
+      "nome": "Suporte Tecnico",
       "descricao": "Atendimento de suporte ao cliente",
       "created_at": "2025-01-15T10:30:00.000Z"
     }
@@ -274,40 +291,40 @@ export default function DocPage() {
         <Section id="atendentes" title="Atendentes">
           <div className="flex items-center gap-3 mb-4">
             <Badge />
-            <code className="text-gray-300 text-sm">/api/painel/atendentes</code>
+            <code className="text-white/60 text-sm font-mono">/api/painel/atendentes</code>
           </div>
-          <p className="text-gray-400">
-            Retorna a lista de atendentes com métricas de atendimento. Permite filtrar por setor e período
-            para cálculo de tickets abertos, fechados e tempos médios.
+          <p className="text-white/50">
+            Retorna a lista de atendentes com metricas de atendimento. Permite filtrar por setor e periodo
+            para calculo de tickets abertos, fechados e tempos medios.
           </p>
 
-          <h3 className="text-lg font-semibold text-white mt-4">Parâmetros (query string)</h3>
+          <h3 className="text-lg font-semibold text-white mt-4">Parametros (query string)</h3>
           <ParamTable
             params={[
               { name: 'setor_id', type: 'UUID', required: false, description: 'Filtra atendentes vinculados a este setor' },
-              { name: 'date_from', type: 'ISO 8601', required: false, description: 'Início do período para métricas de tickets (default: início do dia atual)' },
-              { name: 'date_to', type: 'ISO 8601', required: false, description: 'Fim do período para métricas de tickets (default: agora)' },
+              { name: 'date_from', type: 'ISO 8601', required: false, description: 'Inicio do periodo para metricas de tickets (default: inicio do dia atual)' },
+              { name: 'date_to', type: 'ISO 8601', required: false, description: 'Fim do periodo para metricas de tickets (default: agora)' },
             ]}
           />
 
           <h3 className="text-lg font-semibold text-white mt-4">Campos da resposta</h3>
           <ResponseField
             fields={[
-              { name: 'identity', type: 'UUID', description: 'Identificador único do atendente' },
+              { name: 'identity', type: 'UUID', description: 'Identificador unico do atendente' },
               { name: 'full_name', type: 'string', description: 'Nome completo do atendente' },
               { name: 'email', type: 'string', description: 'E-mail do atendente' },
               { name: 'status', type: 'string', description: 'Status atual: "Online", "Pausa" ou "Offline"' },
-              { name: 'is_enabled', type: 'boolean', description: 'Se o atendente está ativo no sistema' },
+              { name: 'is_enabled', type: 'boolean', description: 'Se o atendente esta ativo no sistema' },
               { name: 'team', type: 'array', description: 'Lista de setores vinculados (objetos com id e nome)' },
-              { name: 'current_status_at', type: 'ISO 8601 | null', description: 'Data/hora da última atualização de status' },
-              { name: 'synced_at', type: 'ISO 8601 | null', description: 'Data/hora do último heartbeat/sincronização' },
-              { name: 'opened_tickets', type: 'number', description: 'Tickets abertos no período' },
-              { name: 'closed_tickets', type: 'number', description: 'Tickets fechados no período' },
-              { name: 'break_reason', type: 'string | null', description: 'Motivo da pausa atual (ex: "Almoço")' },
-              { name: 'break_duration_seconds', type: 'number | null', description: 'Duração da pausa atual em segundos' },
-              { name: 'avg_attendance_time_seconds', type: 'number | null', description: 'Tempo médio de atendimento (TMA) em segundos' },
-              { name: 'avg_response_time_seconds', type: 'number | null', description: 'Tempo médio de resposta (TMR) em segundos' },
-              { name: 'tickets_count', type: 'number', description: 'Total de tickets no período' },
+              { name: 'current_status_at', type: 'ISO 8601 | null', description: 'Data/hora da ultima atualizacao de status' },
+              { name: 'synced_at', type: 'ISO 8601 | null', description: 'Data/hora do ultimo heartbeat/sincronizacao' },
+              { name: 'opened_tickets', type: 'number', description: 'Tickets abertos no periodo' },
+              { name: 'closed_tickets', type: 'number', description: 'Tickets fechados no periodo' },
+              { name: 'break_reason', type: 'string | null', description: 'Motivo da pausa atual (ex: "Almoco")' },
+              { name: 'break_duration_seconds', type: 'number | null', description: 'Duracao da pausa atual em segundos' },
+              { name: 'avg_attendance_time_seconds', type: 'number | null', description: 'Tempo medio de atendimento (TMA) em segundos' },
+              { name: 'avg_response_time_seconds', type: 'number | null', description: 'Tempo medio de resposta (TMR) em segundos' },
+              { name: 'tickets_count', type: 'number', description: 'Total de tickets no periodo' },
             ]}
           />
 
@@ -316,12 +333,12 @@ export default function DocPage() {
   "atendentes": [
     {
       "identity": "f1e2d3c4-b5a6-7890-abcd-ef1234567890",
-      "full_name": "João Silva",
+      "full_name": "Joao Silva",
       "email": "joao@empresa.com",
       "status": "Online",
       "is_enabled": true,
       "team": [
-        { "id": "a1b2c3d4-...", "nome": "Suporte Técnico" }
+        { "id": "a1b2c3d4-...", "nome": "Suporte Tecnico" }
       ],
       "current_status_at": "2025-03-27T14:30:00.000Z",
       "synced_at": "2025-03-27T14:30:00.000Z",
@@ -343,7 +360,7 @@ curl --request GET \\
   --header "Content-Type: application/json" \\
   --header "Authorization: Basic $(echo -n 'usuario:senha' | base64)"
 
-# Filtrar por setor e período
+# Filtrar por setor e periodo
 curl --request GET \\
   --url "${BASE_URL}/api/painel/atendentes?setor_id=UUID&date_from=2025-03-01T00:00:00Z&date_to=2025-03-31T23:59:59Z" \\
   --header "Content-Type: application/json" \\
@@ -354,33 +371,33 @@ curl --request GET \\
         <Section id="produtividade" title="Atendentes - Produtividade">
           <div className="flex items-center gap-3 mb-4">
             <Badge />
-            <code className="text-gray-300 text-sm">/api/painel/atendentes/produtividade</code>
+            <code className="text-white/60 text-sm font-mono">/api/painel/atendentes/produtividade</code>
           </div>
-          <p className="text-gray-400">
-            Retorna dados de produtividade dos atendentes para uma data específica,
+          <p className="text-white/50">
+            Retorna dados de produtividade dos atendentes para uma data especifica,
             incluindo tempo de login, tempo online, pausas e tempo offline.
           </p>
 
-          <h3 className="text-lg font-semibold text-white mt-4">Parâmetros (query string)</h3>
+          <h3 className="text-lg font-semibold text-white mt-4">Parametros (query string)</h3>
           <ParamTable
             params={[
               { name: 'setor_id', type: 'UUID', required: false, description: 'Filtra atendentes vinculados a este setor' },
-              { name: 'date', type: 'YYYY-MM-DD', required: false, description: 'Data de referência (default: hoje)' },
+              { name: 'date', type: 'YYYY-MM-DD', required: false, description: 'Data de referencia (default: hoje)' },
             ]}
           />
 
           <h3 className="text-lg font-semibold text-white mt-4">Campos da resposta</h3>
           <ResponseField
             fields={[
-              { name: 'identity', type: 'UUID', description: 'Identificador único do atendente' },
+              { name: 'identity', type: 'UUID', description: 'Identificador unico do atendente' },
               { name: 'full_name', type: 'string', description: 'Nome completo do atendente' },
               { name: 'email', type: 'string', description: 'E-mail do atendente' },
-              { name: 'date', type: 'YYYY-MM-DD', description: 'Data de referência dos dados' },
+              { name: 'date', type: 'YYYY-MM-DD', description: 'Data de referencia dos dados' },
               { name: 'login_minutes', type: 'number', description: 'Minutos totais logado (online + pausa)' },
               { name: 'online_minutes', type: 'number', description: 'Minutos com status "Online" (descontando pausas)' },
               { name: 'paused_minutes', type: 'number', description: 'Minutos em pausa' },
               { name: 'offline_minutes', type: 'number', description: 'Minutos offline no dia' },
-              { name: 'current_status_at', type: 'ISO 8601 | null', description: 'Data/hora da última atualização de status' },
+              { name: 'current_status_at', type: 'ISO 8601 | null', description: 'Data/hora da ultima atualizacao de status' },
             ]}
           />
 
@@ -389,7 +406,7 @@ curl --request GET \\
   "produtividade": [
     {
       "identity": "f1e2d3c4-b5a6-7890-abcd-ef1234567890",
-      "full_name": "João Silva",
+      "full_name": "Joao Silva",
       "email": "joao@empresa.com",
       "date": "2025-03-27",
       "login_minutes": 420,
@@ -408,7 +425,7 @@ curl --request GET \\
   --header "Content-Type: application/json" \\
   --header "Authorization: Basic $(echo -n 'usuario:senha' | base64)"
 
-# Produtividade de uma data específica, filtrada por setor
+# Produtividade de uma data especifica, filtrada por setor
 curl --request GET \\
   --url "${BASE_URL}/api/painel/atendentes/produtividade?date=2025-03-15&setor_id=UUID" \\
   --header "Content-Type: application/json" \\
@@ -419,54 +436,54 @@ curl --request GET \\
         <Section id="tickets" title="Tickets">
           <div className="flex items-center gap-3 mb-4">
             <Badge />
-            <code className="text-gray-300 text-sm">/api/painel/tickets</code>
+            <code className="text-white/60 text-sm font-mono">/api/painel/tickets</code>
           </div>
-          <p className="text-gray-400">
-            Retorna a lista de tickets com informações do atendente, cliente e setor.
-            Suporta paginação e filtros por setor, status e período.
+          <p className="text-white/50">
+            Retorna a lista de tickets com informacoes do atendente, cliente e setor.
+            Suporta paginacao e filtros por setor, status e periodo.
           </p>
 
-          <h3 className="text-lg font-semibold text-white mt-4">Parâmetros (query string)</h3>
+          <h3 className="text-lg font-semibold text-white mt-4">Parametros (query string)</h3>
           <ParamTable
             params={[
               { name: 'setor_id', type: 'UUID', required: false, description: 'Filtra tickets deste setor' },
               { name: 'status', type: 'string', required: false, description: 'Filtra por status: "aberto", "em_atendimento" ou "encerrado"' },
-              { name: 'date_from', type: 'ISO 8601', required: false, description: 'Início do período (filtra por data de abertura)' },
-              { name: 'date_to', type: 'ISO 8601', required: false, description: 'Fim do período' },
-              { name: 'page', type: 'number', required: false, description: 'Página (default: 1)' },
-              { name: 'per_page', type: 'number', required: false, description: 'Itens por página (default: 50, max: 100)' },
+              { name: 'date_from', type: 'ISO 8601', required: false, description: 'Inicio do periodo (filtra por data de abertura)' },
+              { name: 'date_to', type: 'ISO 8601', required: false, description: 'Fim do periodo' },
+              { name: 'page', type: 'number', required: false, description: 'Pagina (default: 1)' },
+              { name: 'per_page', type: 'number', required: false, description: 'Itens por pagina (default: 50, max: 100)' },
             ]}
           />
 
           <h3 className="text-lg font-semibold text-white mt-4">Campos da resposta</h3>
           <ResponseField
             fields={[
-              { name: 'id', type: 'UUID', description: 'Identificador único do ticket' },
-              { name: 'ticket', type: 'number', description: 'Número sequencial do ticket' },
+              { name: 'id', type: 'UUID', description: 'Identificador unico do ticket' },
+              { name: 'ticket', type: 'number', description: 'Numero sequencial do ticket' },
               { name: 'status', type: 'string', description: 'Status: "aberto", "em_atendimento" ou "encerrado"' },
-              { name: 'team', type: 'object | null', description: 'Setor responsável (id e nome)' },
-              { name: 'attendant_identity', type: 'UUID | null', description: 'ID do atendente responsável' },
+              { name: 'team', type: 'object | null', description: 'Setor responsavel (id e nome)' },
+              { name: 'attendant_identity', type: 'UUID | null', description: 'ID do atendente responsavel' },
               { name: 'attendant_name', type: 'string | null', description: 'Nome do atendente' },
               { name: 'customer_identity', type: 'UUID', description: 'ID do cliente' },
               { name: 'requester_name', type: 'string | null', description: 'Nome do cliente/solicitante' },
               { name: 'provider', type: 'string', description: 'Canal de origem (ex: "whatsapp", "evolutionapi")' },
               { name: 'open_at', type: 'ISO 8601', description: 'Data/hora de abertura' },
-              { name: 'status_at', type: 'ISO 8601', description: 'Data/hora da última mudança de status' },
+              { name: 'status_at', type: 'ISO 8601', description: 'Data/hora da ultima mudanca de status' },
               { name: 'closed_at', type: 'ISO 8601 | null', description: 'Data/hora de encerramento' },
-              { name: 'closed', type: 'boolean', description: 'Se o ticket está encerrado' },
+              { name: 'closed', type: 'boolean', description: 'Se o ticket esta encerrado' },
               { name: 'closed_by', type: 'UUID | null', description: 'ID do atendente que encerrou' },
               { name: 'messages', type: 'number', description: 'Quantidade de mensagens no ticket' },
               { name: 'first_response_at', type: 'ISO 8601 | null', description: 'Data/hora da primeira resposta' },
               { name: 'priority', type: 'string', description: 'Prioridade: "normal" ou "urgente"' },
-              { name: 'automatic_distribution', type: 'boolean', description: 'Se foi distribuído automaticamente' },
+              { name: 'automatic_distribution', type: 'boolean', description: 'Se foi distribuido automaticamente' },
             ]}
           />
 
-          <h3 className="text-lg font-semibold text-white mt-4">Paginação</h3>
-          <p className="text-gray-400 text-sm">
-            A resposta inclui os campos <code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">total</code>,{' '}
-            <code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">page</code> e{' '}
-            <code className="text-violet-400 bg-violet-500/10 px-1 py-0.5 rounded text-xs">per_page</code> para controle de paginação.
+          <h3 className="text-lg font-semibold text-white mt-4">Paginacao</h3>
+          <p className="text-white/40 text-sm">
+            A resposta inclui os campos <code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">total</code>,{' '}
+            <code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">page</code> e{' '}
+            <code className="text-cyan-400 bg-cyan-500/10 px-1 py-0.5 rounded text-xs">per_page</code> para controle de paginacao.
           </p>
 
           <h3 className="text-lg font-semibold text-white mt-4">Exemplo de resposta</h3>
@@ -476,9 +493,9 @@ curl --request GET \\
       "id": "d4e5f6a7-b8c9-0123-def4-567890abcdef",
       "ticket": 1234,
       "status": "em_atendimento",
-      "team": { "id": "a1b2c3d4-...", "nome": "Suporte Técnico" },
+      "team": { "id": "a1b2c3d4-...", "nome": "Suporte Tecnico" },
       "attendant_identity": "f1e2d3c4-...",
-      "attendant_name": "João Silva",
+      "attendant_name": "Joao Silva",
       "customer_identity": "c1d2e3f4-...",
       "requester_name": "Maria Souza",
       "provider": "whatsapp",
@@ -505,7 +522,7 @@ curl --request GET \\
   --header "Content-Type: application/json" \\
   --header "Authorization: Basic $(echo -n 'usuario:senha' | base64)"
 
-# Tickets encerrados em março, página 2
+# Tickets encerrados em marco, pagina 2
 curl --request GET \\
   --url "${BASE_URL}/api/painel/tickets?status=encerrado&date_from=2025-03-01T00:00:00Z&date_to=2025-03-31T23:59:59Z&page=2&per_page=25" \\
   --header "Content-Type: application/json" \\
@@ -513,9 +530,9 @@ curl --request GET \\
         </Section>
 
         {/* Footer */}
-        <footer className="border-t border-white/5 pt-8 pb-12 text-center">
-          <p className="text-gray-600 text-sm">
-            SoftcomHub API v1.0
+        <footer className="border-t border-white/6 pt-8 pb-12 text-center">
+          <p className="text-white/20 text-sm">
+            <span className="brand-gradient-text font-medium">ConectaAI</span> API v1.0
           </p>
         </footer>
       </main>

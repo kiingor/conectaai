@@ -17,41 +17,19 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
 
   return (
     <>
-      {/* ─── Liquid Glass ambient background (fixed, fora do fluxo) ─── */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -top-40 -left-40 h-[600px] w-[600px] rounded-full opacity-25 dark:opacity-[0.07] blur-[100px]"
-        style={{ background: 'radial-gradient(circle, #c084fc 0%, #818cf8 40%, transparent 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed top-[40%] -right-48 h-[700px] w-[700px] rounded-full opacity-20 dark:opacity-[0.06] blur-[120px]"
-        style={{ background: 'radial-gradient(circle, #60a5fa 0%, #38bdf8 40%, transparent 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -bottom-40 left-[25%] h-[500px] w-[500px] rounded-full opacity-15 dark:opacity-[0.05] blur-[100px]"
-        style={{ background: 'radial-gradient(circle, #f9a8d4 0%, #fb923c 50%, transparent 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed top-[20%] left-[50%] -translate-x-1/2 h-[800px] w-[800px] rounded-full opacity-[0.08] dark:opacity-[0.03] blur-[150px]"
-        style={{ background: 'radial-gradient(circle, #e9d5ff 0%, transparent 60%)' }}
-      />
+      {/* Fixed dark background */}
+      <div className="fixed inset-0 -z-20" style={{ backgroundColor: '#06080f' }} />
 
-      {/* Background base — fixed, não afeta o fluxo */}
-      <div className="fixed inset-0 -z-10 bg-[#F0F1F5] dark:bg-[#0A0A12]" />
-
-      {/* Sidebar — fixed via inline style, garantido fora do fluxo */}
+      {/* Sidebar — fixed via glass-panel */}
       <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
 
-      {/* Conteúdo principal — bloco simples, padding-left compensa a sidebar */}
-      <div className="flex min-h-screen flex-col lg:pl-64">
+      {/* Main content area with ambient glow */}
+      <div className="flex min-h-screen flex-col lg:pl-64 ambient-glow">
         <DashboardHeader
           user={user}
           onMenuClick={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 px-6 py-8 lg:px-10">
+        <main className="relative z-10 flex-1 px-6 py-8 lg:px-10">
           {children}
         </main>
       </div>

@@ -27,12 +27,12 @@ interface WorkdeskSidebarProps {
   onStatusChange: (status: boolean) => void
 }
 
-function SidebarContent({ 
+function SidebarContent({
   onClose,
   colaboradorId,
   isOnline,
   onStatusChange,
-}: { 
+}: {
   onClose?: () => void
   colaboradorId: string
   isOnline: boolean
@@ -52,20 +52,20 @@ function SidebarContent({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+    <div className="flex h-full flex-col bg-[#06080f]">
+      <div className="flex h-14 items-center justify-between border-b border-white/6 px-4">
         <Link href="/workdesk" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md">
-            <MessageCircle className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-emerald-500/20">
+            <MessageCircle className="h-4 w-4 text-white" />
           </div>
-          <span className="font-bold text-sidebar-foreground">WorkDesk</span>
+          <span className="text-sm font-bold brand-gradient-text">ConectaAI</span>
         </Link>
         {onClose && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="lg:hidden"
+            className="lg:hidden text-white/40 hover:text-white/60 hover:bg-white/5"
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Fechar menu</span>
@@ -73,7 +73,7 @@ function SidebarContent({
         )}
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 p-3">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -82,22 +82,22 @@ function SidebarContent({
               href={item.href}
               onClick={onClose}
               className={cn(
-                'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
+                'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                 isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  ? 'glass-nav-active text-emerald-400'
+                  : 'text-white/50 hover:text-white/70 glass-nav-hover'
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeNavWorkdesk"
-                  className="absolute inset-0 rounded-xl bg-sidebar-accent"
+                  className="absolute inset-0 rounded-lg glass-nav-active"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
               <item.icon className={cn(
-                'relative z-10 h-5 w-5 transition-colors',
-                isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70'
+                'relative z-10 h-4.5 w-4.5 transition-colors',
+                isActive ? 'text-emerald-400' : 'text-white/40'
               )} />
               <span className="relative z-10">{item.name}</span>
             </Link>
@@ -105,10 +105,10 @@ function SidebarContent({
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-4 space-y-3">
+      <div className="border-t border-white/6 p-3 space-y-3">
         {/* Disponibilidade Panel */}
-        <div className="rounded-xl bg-card p-3 border border-border">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Status</p>
+        <div className="rounded-lg bg-white/3 p-3 border border-white/6">
+          <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider mb-2">Status</p>
           <DisponibilidadePanel
             colaboradorId={colaboradorId}
             isOnline={isOnline}
@@ -119,10 +119,10 @@ function SidebarContent({
         {/* Logout Button */}
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="w-full justify-start gap-3 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 rounded-lg"
           onClick={handleLogout}
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           Sair
         </Button>
       </div>
@@ -130,8 +130,8 @@ function SidebarContent({
   )
 }
 
-export function WorkdeskSidebar({ 
-  open, 
+export function WorkdeskSidebar({
+  open,
   onOpenChange,
   colaboradorId,
   isOnline,
@@ -140,8 +140,8 @@ export function WorkdeskSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-sidebar-border bg-sidebar lg:block">
-        <SidebarContent 
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 glass-panel lg:block">
+        <SidebarContent
           colaboradorId={colaboradorId}
           isOnline={isOnline}
           onStatusChange={onStatusChange}
@@ -150,9 +150,9 @@ export function WorkdeskSidebar({
 
       {/* Mobile sidebar */}
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="left" className="w-64 bg-sidebar p-0">
+        <SheetContent side="left" className="w-64 p-0 bg-[#06080f] border-r border-white/6">
           <SheetTitle className="sr-only">Menu de navegacao</SheetTitle>
-          <SidebarContent 
+          <SidebarContent
             onClose={() => onOpenChange(false)}
             colaboradorId={colaboradorId}
             isOnline={isOnline}
