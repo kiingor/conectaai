@@ -63,7 +63,7 @@ const ITEMS_PER_PAGE = 10
 export default function MetricasPage() {
   const supabase = createClient()
   const { data: colaborador } = useColaborador()
-  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master)
+  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master, colaborador?.organizacao_id)
   const setorIdsAcessiveis = useMemo(() => setoresAcessiveis.map((s: any) => s.id), [setoresAcessiveis])
   const [dateFilter, setDateFilter] = useState('30')
   const [customRange, setCustomRange] = useState<DateRange | undefined>()
@@ -136,16 +136,19 @@ export default function MetricasPage() {
 
   // CRITICAL FIX: Only fetch metrics when setorIdsAcessiveis is loaded (prevents counting ALL tickets)
   React.useEffect(() => {
-    if (colaborador && setorIdsAcessiveis.length > 0) {
+    if (colaborador?.organizacao_id && setorIdsAcessiveis.length > 0) {
       fetchMetrics()
     }
-  }, [dateFilter, customRange, setorFilter, subsetorFilter, colaborador, setorIdsAcessiveis.length])
+  }, [dateFilter, customRange, setorFilter, subsetorFilter, colaborador?.organizacao_id, setorIdsAcessiveis.length])
 
   // Reset chart pages when data changes
   React.useEffect(() => { setSetorPage(0) }, [ticketsBySetor.length])
   React.useEffect(() => { setColaboradorPage(0) }, [ticketsByColaborador.length])
 
   async function fetchMetrics() {
+    if (!colaborador?.organizacao_id) return
+    const orgId = colaborador.organizacao_id
+
     // Always require setorIdsAcessiveis to be loaded - prevents counting all tickets
     if (setorIdsAcessiveis.length === 0) return
 
@@ -189,6 +192,7 @@ export default function MetricasPage() {
         let q = supabase
           .from('tickets')
           .select('criado_em, primeira_resposta_em')
+          .eq('organizacao_id', orgId)
           .eq('status', 'encerrado')
           .not('primeira_resposta_em', 'is', null)
           .in('setor_id', filterSetorIds)
@@ -214,6 +218,7 @@ export default function MetricasPage() {
         let q = supabase
           .from('tickets')
           .select('criado_em, encerrado_em')
+          .eq('organizacao_id', orgId)
           .eq('status', 'encerrado')
           .not('encerrado_em', 'is', null)
           .in('setor_id', filterSetorIds)
@@ -239,6 +244,7 @@ export default function MetricasPage() {
       let totalQuery = supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
+        .eq('organizacao_id', orgId)
         .in('setor_id', filterSetorIds)
       if (filterDate) totalQuery = totalQuery.gte('criado_em', filterDate)
       if (filterDateTo) totalQuery = totalQuery.lte('criado_em', filterDateTo)
@@ -249,6 +255,7 @@ export default function MetricasPage() {
       let closedQuery = supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
+        .eq('organizacao_id', orgId)
         .eq('status', 'encerrado')
         .in('setor_id', filterSetorIds)
       if (filterDate) closedQuery = closedQuery.gte('criado_em', filterDate)
@@ -275,6 +282,7 @@ export default function MetricasPage() {
         let q = supabase
           .from('tickets')
           .select('setor_id, setores(nome)')
+          .eq('organizacao_id', orgId)
           .in('setor_id', filterSetorIds)
           .order('criado_em', { ascending: true })
           .range(from, to)
@@ -300,6 +308,7 @@ export default function MetricasPage() {
         let q = supabase
           .from('tickets')
           .select('colaborador_id, colaboradores(nome)')
+          .eq('organizacao_id', orgId)
           .eq('status', 'encerrado')
           .not('colaborador_id', 'is', null)
           .in('setor_id', filterSetorIds)
@@ -327,6 +336,7 @@ export default function MetricasPage() {
         let q = supabase
           .from('tickets')
           .select('criado_em')
+          .eq('organizacao_id', orgId)
           .in('setor_id', filterSetorIds)
           .order('criado_em', { ascending: true })
           .range(from, to)

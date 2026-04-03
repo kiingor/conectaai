@@ -15,9 +15,14 @@ export function useColaborador() {
 
       const { data } = await supabase
         .from('colaboradores')
-        .select('id, nome, email, is_master, is_online, ativo, permissao_id, setor_id, permissoes:permissao_id(*)')
+        .select('id, nome, email, is_master, is_online, ativo, organizacao_id, permissao_id, setor_id, permissoes:permissao_id(*)')
         .eq('email', user.email)
         .maybeSingle()
+
+      // Set org_id cookie for server components (e.g. Empresa page)
+      if (data?.organizacao_id) {
+        document.cookie = `org_id=${data.organizacao_id}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`
+      }
 
       return data
     },
@@ -29,15 +34,17 @@ export function useColaborador() {
 }
 
 // Setores data hook
-export function useSetores(colaboradorId?: string, isMaster?: boolean) {
+export function useSetores(colaboradorId?: string, isMaster?: boolean, organizacaoId?: string) {
   return useSWR(
-    colaboradorId ? ['setores', colaboradorId, isMaster] : null,
+    colaboradorId ? ['setores', colaboradorId, isMaster, organizacaoId] : null,
     async () => {
       if (isMaster) {
-        const { data } = await supabase
+        let query = supabase
           .from('setores')
           .select('*, setor_canais(tipo, ativo), tags(id, nome, cor, ordem)')
           .order('nome')
+        if (organizacaoId) query = query.eq('organizacao_id', organizacaoId)
+        const { data } = await query
         return data || []
       }
 

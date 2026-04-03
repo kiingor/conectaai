@@ -232,10 +232,13 @@ export default function TicketsPage() {
   const supabase = createClient()
   const { toast } = useToast()
   const { data: colaborador } = useColaborador()
-  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master)
+  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master, colaborador?.organizacao_id)
   const setorIdsAcessiveis = setoresAcessiveis.map((s: any) => s.id)
 
   async function fetchTickets() {
+    if (!colaborador?.organizacao_id) return
+    const orgId = colaborador.organizacao_id
+
     if (setorIdsAcessiveis.length === 0 && !colaborador?.is_master) {
       setTickets([])
       setLoading(false)
@@ -253,6 +256,7 @@ export default function TicketsPage() {
         setor:setores(id, nome),
         subsetor:subsetores(id, nome)
       `)
+      .eq('organizacao_id', orgId)
       .order('created_at', { ascending: false })
 
     // Filter by accessible setores (unless master)
@@ -290,9 +294,12 @@ export default function TicketsPage() {
   }
 
   async function fetchDropdownData() {
+    if (!colaborador?.organizacao_id) return
+    const orgId = colaborador.organizacao_id
+
     const [clientesRes, colaboradoresRes] = await Promise.all([
-      supabase.from('clientes').select('id, nome, telefone, email').order('nome'),
-      supabase.from('colaboradores').select('id, nome, is_online').eq('ativo', true).order('nome'),
+      supabase.from('clientes').select('id, nome, telefone, email').eq('organizacao_id', orgId).order('nome'),
+      supabase.from('colaboradores').select('id, nome, is_online').eq('organizacao_id', orgId).eq('ativo', true).order('nome'),
     ])
 
     if (clientesRes.data) setClientes(clientesRes.data)
@@ -307,14 +314,16 @@ export default function TicketsPage() {
   }, [setoresAcessiveis])
 
   useEffect(() => {
-    fetchDropdownData()
-  }, [])
+    if (colaborador?.organizacao_id) {
+      fetchDropdownData()
+    }
+  }, [colaborador?.organizacao_id])
 
   useEffect(() => {
-    if (colaborador) {
+    if (colaborador?.organizacao_id) {
       fetchTickets()
     }
-  }, [statusFilter, prioridadeFilter, setorFilter, searchTerm, colaborador, setorIdsAcessiveis.length])
+  }, [statusFilter, prioridadeFilter, setorFilter, searchTerm, colaborador?.organizacao_id, setorIdsAcessiveis.length])
 
   async function handleCreateTicket() {
     if (!createFormData.cliente_id) {

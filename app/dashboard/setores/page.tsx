@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useColaborador } from '@/lib/hooks/use-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,15 +43,18 @@ export default function SetoresPage() {
   const [formData, setFormData] = useState({ nome: '', descricao: '', template_id: '', phone_number_id: '' })
   const [saving, setSaving] = useState(false)
 
+  const { data: colaborador } = useColaborador()
   const supabase = createClient()
 
   async function fetchSetores() {
+    if (!colaborador?.organizacao_id) return
     setLoading(true)
     setError(null)
     try {
       const { data, error: fetchError } = await supabase
         .from('setores')
         .select('*')
+        .eq('organizacao_id', colaborador.organizacao_id)
         .order('created_at', { ascending: false })
 
       if (fetchError) {
@@ -71,7 +75,7 @@ export default function SetoresPage() {
   useEffect(() => {
     fetchSetores()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [colaborador?.organizacao_id])
 
   function openCreateModal() {
     setEditingSetor(null)
@@ -108,7 +112,7 @@ export default function SetoresPage() {
         fetchSetores()
       }
     } else {
-      const { error } = await supabase.from('setores').insert(payload)
+      const { error } = await supabase.from('setores').insert({ ...payload, organizacao_id: colaborador?.organizacao_id })
 
       if (!error) {
         setModalOpen(false)

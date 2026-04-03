@@ -50,6 +50,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Plus, Pencil, Search, UserCog, Building2, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useColaborador } from '@/lib/hooks/use-data'
 
 interface Setor {
   id: string
@@ -79,11 +80,11 @@ interface ColaboradorSetor {
 
 const supabase = createClient()
 
-async function fetchUsuariosData() {
+async function fetchUsuariosData([, organizacaoId]: [string, string]) {
   const [colabsRes, setoresRes, permissoesRes, colabSetoresRes] = await Promise.all([
-    supabase.from('colaboradores').select('*, permissoes:permissao_id(*)').order('nome'),
-    supabase.from('setores').select('*').order('nome'),
-    supabase.from('permissoes').select('*').order('nome'),
+    supabase.from('colaboradores').select('*, permissoes:permissao_id(*)').eq('organizacao_id', organizacaoId).order('nome'),
+    supabase.from('setores').select('*').eq('organizacao_id', organizacaoId).order('nome'),
+    supabase.from('permissoes').select('*').eq('organizacao_id', organizacaoId).order('nome'),
     supabase.from('colaborador_setores').select('*'),
   ])
   return {
@@ -111,10 +112,16 @@ export default function UsuariosPage() {
     setores_selecionados: [] as string[],
   })
 
-  const { data, isLoading, mutate } = useSWR('usuarios-data', fetchUsuariosData, {
-    revalidateOnFocus: false,
-    dedupingInterval: 30000,
-  })
+  const { data: colaborador } = useColaborador()
+
+  const { data, isLoading, mutate } = useSWR(
+    colaborador?.organizacao_id ? ['usuarios-data', colaborador.organizacao_id] : null,
+    fetchUsuariosData,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+    }
+  )
 
   const colaboradores = data?.colaboradores || []
   const setores = data?.setores || []
@@ -214,6 +221,7 @@ export default function UsuariosPage() {
             permissao_id: formData.permissao_id || null,
             ativo: true,
             is_online: false,
+            organizacao_id: colaborador?.organizacao_id,
           })
           .select()
           .single()

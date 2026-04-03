@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useColaborador } from '@/lib/hooks/use-data'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
@@ -49,16 +50,20 @@ export default function LogsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
+  const { data: colaborador } = useColaborador()
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
   const fetchLogs = useCallback(async () => {
+    if (!colaborador?.organizacao_id) return
     setLoading(true)
     let query = supabase
       .from('error_logs')
       .select('*')
+      .eq('organizacao_id', colaborador.organizacao_id)
       .order('criado_em', { ascending: false })
       .limit(200)
 
@@ -74,7 +79,7 @@ export default function LogsPage() {
     const { data } = await query
     setLogs(data || [])
     setLoading(false)
-  }, [supabase, filterTela, filterStatus])
+  }, [supabase, filterTela, filterStatus, colaborador?.organizacao_id])
 
   useEffect(() => {
     fetchLogs()

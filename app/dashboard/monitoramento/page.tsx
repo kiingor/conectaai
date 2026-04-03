@@ -100,7 +100,7 @@ function formatPhone(phone: string | null) {
 export default function MonitoramentoPage() {
   const supabase = createClient()
   const { data: colaborador } = useColaborador()
-  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master)
+  const { data: setoresAcessiveis = [] } = useSetores(colaborador?.id, colaborador?.is_master, colaborador?.organizacao_id)
   const setorIdsAcessiveis = setoresAcessiveis.map((s: any) => s.id)
 
   const [tagFilter, setTagFilter] = useState<string>('all')

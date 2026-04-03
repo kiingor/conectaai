@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Shield, Plus, Pencil, Trash2, Loader2, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useColaborador } from '@/lib/hooks/use-data'
 
 interface Permissao {
   id: string
@@ -62,14 +63,18 @@ export default function PermissoesPage() {
   const [deleting, setDeleting] = useState(false)
 
   const supabase = createClient()
+  const { data: colaborador } = useColaborador()
 
   async function fetchPermissoes() {
+    if (!colaborador?.organizacao_id) return
+
     setLoading(true)
 
     // Fetch permissoes
     const { data: permissoesData, error: permissoesError } = await supabase
       .from('permissoes')
       .select('*')
+      .eq('organizacao_id', colaborador.organizacao_id)
       .order('created_at', { ascending: false })
 
     if (permissoesError || !permissoesData) {
@@ -81,6 +86,7 @@ export default function PermissoesPage() {
     const { data: countData } = await supabase
       .from('colaboradores')
       .select('permissao_id')
+      .eq('organizacao_id', colaborador.organizacao_id)
 
     const countMap: Record<string, number> = {}
     if (countData) {
@@ -102,7 +108,7 @@ export default function PermissoesPage() {
 
   useEffect(() => {
     fetchPermissoes()
-  }, [])
+  }, [colaborador?.organizacao_id])
 
   function openCreateModal() {
     setEditingPermissao(null)
@@ -157,6 +163,7 @@ export default function PermissoesPage() {
         can_view_dashboard: formData.can_view_dashboard,
         can_manage_users: formData.can_manage_users,
         can_view_all_tickets: formData.can_view_all_tickets,
+        organizacao_id: colaborador?.organizacao_id,
       })
 
       if (!error) {

@@ -169,15 +169,16 @@ export default function DashboardPage() {
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null)
 
   const fetchTags = useCallback(async () => {
+    if (!colaborador?.organizacao_id) return
     setLoadingTags(true)
-    const { data } = await supabase.from('tags').select('*').order('ordem').order('nome')
+    const { data } = await supabase.from('tags').select('*').eq('organizacao_id', colaborador?.organizacao_id).order('ordem').order('nome')
     if (data) setTags(data)
     setLoadingTags(false)
-  }, [supabase])
+  }, [supabase, colaborador?.organizacao_id])
 
   useEffect(() => {
-    fetchTags()
-  }, [fetchTags])
+    if (colaborador?.organizacao_id) fetchTags()
+  }, [fetchTags, colaborador?.organizacao_id])
 
   const handleSetorClick = useCallback(
     (setorId: string) => {
@@ -192,7 +193,8 @@ export default function DashboardPage() {
   const { data: colaborador, isLoading: loadingColab } = useColaborador()
   const { data: setores = [], isLoading: loadingSetores, mutate } = useSetores(
     colaborador?.id,
-    colaborador?.is_master
+    colaborador?.is_master,
+    colaborador?.organizacao_id
   )
 
   const filteredSetores = useMemo(() => {
@@ -247,6 +249,7 @@ export default function DashboardPage() {
           cor: newSetor.cor,
           icon_url: newSetor.icon_url,
           tag_id: newSetor.tag_id || null,
+          organizacao_id: colaborador?.organizacao_id,
         })
         .select('id')
         .single()
@@ -291,7 +294,7 @@ export default function DashboardPage() {
       } else {
         const { error } = await supabase
           .from('tags')
-          .insert({ nome: tagForm.nome.trim(), cor: tagForm.cor, ordem: tagForm.ordem })
+          .insert({ nome: tagForm.nome.trim(), cor: tagForm.cor, ordem: tagForm.ordem, organizacao_id: colaborador?.organizacao_id })
         if (error) throw error
         toast.success('Tag criada!')
       }

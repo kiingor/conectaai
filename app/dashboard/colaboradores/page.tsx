@@ -43,6 +43,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Users, Plus, Pencil, UserX, Loader2, Circle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
+import { useColaborador } from '@/lib/hooks/use-data'
 
 interface Setor {
   id: string
@@ -89,6 +90,7 @@ export default function ColaboradoresPage() {
 
   const supabase = createClient()
   const { toast } = useToast()
+  const { data: colaborador } = useColaborador()
 
   const [colaboradorSetores, setColaboradorSetores] = useState<{ colaborador_id: string; setor_id: string }[]>([])
 
@@ -99,6 +101,8 @@ export default function ColaboradoresPage() {
   }
 
   async function fetchData() {
+    if (!colaborador?.organizacao_id) return
+
     setLoading(true)
 
     // Fetch colaboradores with joins
@@ -109,6 +113,7 @@ export default function ColaboradoresPage() {
         setor:setores(id, nome),
         permissao:permissoes(id, nome)
       `)
+      .eq('organizacao_id', colaborador.organizacao_id)
       .order('created_at', { ascending: false })
 
     if (!colaboradoresError && colaboradoresData) {
@@ -119,6 +124,7 @@ export default function ColaboradoresPage() {
     const { data: setoresData } = await supabase
       .from('setores')
       .select('id, nome')
+      .eq('organizacao_id', colaborador.organizacao_id)
       .order('nome')
 
     if (setoresData) {
@@ -129,6 +135,7 @@ export default function ColaboradoresPage() {
     const { data: permissoesData } = await supabase
       .from('permissoes')
       .select('id, nome')
+      .eq('organizacao_id', colaborador.organizacao_id)
       .order('nome')
 
     if (permissoesData) {
@@ -175,7 +182,7 @@ export default function ColaboradoresPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [colaborador?.organizacao_id])
 
   function openCreateModal() {
     setEditingColaborador(null)
@@ -306,6 +313,7 @@ export default function ColaboradoresPage() {
         permissao_id: formData.permissao_id || null,
         is_online: false,
         ativo: true,
+        organizacao_id: colaborador?.organizacao_id,
       })
 
       if (insertError) {
