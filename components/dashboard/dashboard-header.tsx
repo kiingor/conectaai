@@ -22,7 +22,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Menu, LogOut, User as UserIcon, ChevronDown, Bell, KeyRound, Search } from 'lucide-react'
+import { Menu, LogOut, User as UserIcon, ChevronDown, Bell, KeyRound } from 'lucide-react'
 import { useColaborador } from '@/lib/hooks/use-data'
 
 interface DashboardHeaderProps {
@@ -112,9 +112,9 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
     : (colaborador?.permissoes as { nome?: string } | null)?.nome || 'Usuário'
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between glass-header px-4 lg:px-6">
-      {/* Left side */}
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between glass-header px-4 lg:px-6">
+      {/* Left side - mobile menu only */}
+      <div className="flex items-center">
         <Button
           variant="ghost"
           size="icon"
@@ -124,25 +124,10 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
           <Menu className="h-5 w-5 text-white/60" />
           <span className="sr-only">Abrir menu</span>
         </Button>
-
-        {/* Page title area */}
-        <div className="hidden lg:block">
-          <span className="text-sm font-medium text-white/40">Painel</span>
-        </div>
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-1.5">
-        {/* Search button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
-        >
-          <Search className="h-[18px] w-[18px] text-white/40" />
-          <span className="sr-only">Buscar</span>
-        </Button>
-
         {/* Notifications */}
         <Button
           variant="ghost"
@@ -154,29 +139,24 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
         </Button>
 
         {/* Divider */}
-        <div className="hidden md:block h-6 w-px bg-white/6 mx-1" />
+        <div className="hidden md:block h-5 w-px bg-white/6 mx-1" />
 
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2.5 pl-2 pr-3 h-10 rounded-2xl hover:bg-white/5 transition-all"
+              className="flex items-center gap-2 pl-1.5 pr-2.5 h-9 rounded-2xl hover:bg-white/5 transition-all"
             >
-              <Avatar className="h-8 w-8 glass-avatar-ring">
-                <AvatarFallback className="brand-gradient text-white text-xs font-bold">
+              <Avatar className="h-7 w-7 glass-avatar-ring">
+                <AvatarFallback className="brand-gradient text-white text-[10px] font-bold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-white/90 leading-tight capitalize">
-                  {userDisplayName}
-                </span>
-                <span className="text-[10px] text-white/30 leading-tight">
-                  {userRole}
-                </span>
-              </div>
-              <ChevronDown className="hidden md:block h-3.5 w-3.5 text-white/30 ml-0.5" />
+              <span className="hidden md:block text-sm font-medium text-white/90 leading-tight capitalize">
+                {userDisplayName}
+              </span>
+              <ChevronDown className="hidden md:block h-3 w-3 text-white/30" />
             </Button>
           </DropdownMenuTrigger>
 

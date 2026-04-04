@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Plus, Pencil, Search, UserCog, Building2, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Search, UserCog, Building2, Trash2, Filter } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useColaborador } from '@/lib/hooks/use-data'
 
@@ -97,6 +97,7 @@ async function fetchUsuariosData([, organizacaoId]: [string, string]) {
 
 export default function UsuariosPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<Colaborador | null>(null)
   const [saving, setSaving] = useState(false)
@@ -129,12 +130,20 @@ export default function UsuariosPage() {
   const colaboradorSetores = data?.colaboradorSetores || []
 
   const filteredColaboradores = useMemo(() => {
-    if (!searchTerm) return colaboradores
-    return colaboradores.filter((c: any) =>
-      c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [colaboradores, searchTerm])
+    let result = colaboradores
+    if (searchTerm) {
+      result = result.filter((c: any) =>
+        c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+    if (statusFilter === 'active') {
+      result = result.filter((c: any) => c.ativo)
+    } else if (statusFilter === 'inactive') {
+      result = result.filter((c: any) => !c.ativo)
+    }
+    return result
+  }, [colaboradores, searchTerm, statusFilter])
 
   function getSetoresDoColaborador(colaboradorId: string): string[] {
     return colaboradorSetores
@@ -281,7 +290,7 @@ export default function UsuariosPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-130px)]">
+    <div className="flex flex-col gap-5 h-[calc(100vh-130px)]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -295,152 +304,173 @@ export default function UsuariosPage() {
             </p>
           </div>
         </div>
+        <Button onClick={openCreateModal} className="btn-glow rounded-xl gap-2 px-5">
+          <Plus className="h-4 w-4" />
+          Novo Usuario
+        </Button>
+      </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
+      {/* Search & Filter Bar */}
+      <div className="glass-card rounded-2xl p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
             <Input
-              placeholder="Buscar usuario..."
+              placeholder="Buscar por nome ou e-mail..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+              className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
             />
           </div>
-          <Button onClick={openCreateModal} className="btn-glow rounded-xl gap-2 px-5">
-            <Plus className="h-4 w-4" />
-            Novo Usuario
-          </Button>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-white/30 shrink-0" />
+            <div className="flex rounded-xl border border-white/8 overflow-hidden">
+              {(['all', 'active', 'inactive'] as const).map((val) => (
+                <button
+                  key={val}
+                  onClick={() => setStatusFilter(val)}
+                  className={cn(
+                    'px-4 py-2 text-xs font-medium transition-colors',
+                    statusFilter === val
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : 'text-white/40 hover:bg-white/5 hover:text-white/60'
+                  )}
+                >
+                  {val === 'all' ? 'Todos' : val === 'active' ? 'Ativos' : 'Inativos'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Users Table */}
-      <div className="glass-card rounded-2xl flex flex-col flex-1 min-h-0 overflow-hidden">
-        <div className="p-0 overflow-y-auto flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/6 hover:bg-transparent">
-                <TableHead className="pl-5 text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
-                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">E-mail</TableHead>
-                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tipo</TableHead>
-                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Permissao</TableHead>
-                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setores</TableHead>
-                <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
-                <TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i} className="border-white/6">
-                    <TableCell className="pl-5"><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                  </TableRow>
-                ))
-              ) : filteredColaboradores.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center text-white/30">
-                      <UserCog className="mb-2 h-8 w-8" />
-                      <p>Nenhum usuario encontrado</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredColaboradores.map((user: any, index: number) => {
-                  const userSetores = getSetoresDoColaborador(user.id)
-                  const setorNames = setores
-                    .filter((s) => userSetores.includes(s.id))
-                    .map((s) => s.nome)
+      {/* Card List */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 flex items-center gap-4">
+              <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-56" />
+              </div>
+              <Skeleton className="h-6 w-16 rounded-full" />
+            </div>
+          ))
+        ) : filteredColaboradores.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-white/30">
+            <UserCog className="mb-3 h-10 w-10" />
+            <p className="text-sm">Nenhum usuario encontrado</p>
+          </div>
+        ) : (
+          filteredColaboradores.map((user: any, index: number) => {
+            const userSetores = getSetoresDoColaborador(user.id)
+            const setorNames = setores
+              .filter((s) => userSetores.includes(s.id))
+              .map((s) => s.nome)
+            const initials = user.nome
+              .split(' ')
+              .map((n: string) => n[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase()
 
-                  return (
-                    <motion.tr
-                      key={user.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      className="border-b border-white/6 hover:bg-white/[0.03] transition-colors"
-                    >
-                      <TableCell className="font-medium pl-5 text-white/90">{user.nome}</TableCell>
-                      <TableCell className="text-white/60">{user.email}</TableCell>
-                      <TableCell>
-                        {user.is_master ? (
-                          <Badge className="glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20">
-                            Admin
+            return (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04, duration: 0.3 }}
+                className={cn(
+                  'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-emerald-500/60 group',
+                  user.ativo ? 'border-l-emerald-500/30' : 'border-l-white/10 opacity-60'
+                )}
+              >
+                {/* Avatar */}
+                <div className={cn(
+                  'h-11 w-11 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold',
+                  user.is_master
+                    ? 'bg-gradient-to-br from-emerald-500/25 to-cyan-500/25 text-emerald-400 border border-emerald-500/20'
+                    : 'bg-white/[0.06] text-white/50 border border-white/8'
+                )}>
+                  {initials}
+                </div>
+
+                {/* Main Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white/90 truncate">{user.nome}</span>
+                    {user.is_master && (
+                      <Badge className="glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[10px] px-1.5 py-0">
+                        Admin
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-white/40 truncate">{user.email}</p>
+                  {/* Setores inline */}
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {user.is_master ? (
+                      <span className="text-xs text-white/30">Todos os setores</span>
+                    ) : setorNames.length > 0 ? (
+                      <>
+                        {setorNames.slice(0, 3).map((nome: string) => (
+                          <Badge key={nome} className="glass-badge bg-cyan-500/10 text-cyan-400/60 border-cyan-500/15 text-[10px] px-1.5 py-0">
+                            {nome}
                           </Badge>
-                        ) : (
-                          <Badge className="glass-badge bg-white/5 text-white/50 border-white/10">Usuario</Badge>
+                        ))}
+                        {setorNames.length > 3 && (
+                          <Badge className="glass-badge bg-white/5 text-white/30 border-white/8 text-[10px] px-1.5 py-0">
+                            +{setorNames.length - 3}
+                          </Badge>
                         )}
-                      </TableCell>
-                      <TableCell className="text-white/60">
-                        {user.permissoes?.nome || (
-                          <span className="text-white/25">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {user.is_master ? (
-                          <span className="text-sm text-white/40">
-                            Todos os setores
-                          </span>
-                        ) : setorNames.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {setorNames.slice(0, 2).map((nome) => (
-                              <Badge key={nome} className="glass-badge bg-cyan-500/10 text-cyan-400/70 border-cyan-500/15 text-xs">
-                                {nome}
-                              </Badge>
-                            ))}
-                            {setorNames.length > 2 && (
-                              <Badge className="glass-badge bg-white/5 text-white/40 border-white/10 text-xs">
-                                +{setorNames.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-white/25">Nenhum</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            user.ativo
-                              ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-                              : 'glass-badge bg-white/5 text-white/30 border-white/10'
-                          }
-                        >
-                          {user.ativo ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/40 hover:text-white hover:bg-white/5"
-                            onClick={() => openEditModal(user)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
-                            onClick={() => setDeletingUser(user)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </motion.tr>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                      </>
+                    ) : (
+                      <span className="text-xs text-white/20">Sem setores</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Permission */}
+                <div className="hidden md:block text-right shrink-0">
+                  <span className="text-[10px] uppercase tracking-wider text-white/25 block">Permissao</span>
+                  <span className="text-sm text-white/50">{user.permissoes?.nome || '-'}</span>
+                </div>
+
+                {/* Status */}
+                <Badge
+                  className={cn(
+                    'shrink-0',
+                    user.ativo
+                      ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+                      : 'glass-badge bg-white/5 text-white/30 border-white/10'
+                  )}
+                >
+                  {user.ativo ? 'Ativo' : 'Inativo'}
+                </Badge>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                    onClick={() => openEditModal(user)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                    onClick={() => setDeletingUser(user)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </motion.div>
+            )
+          })
+        )}
       </div>
 
       {/* Delete Confirmation */}

@@ -32,8 +32,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Shield, Plus, Pencil, Trash2, Loader2, Check, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Shield, Plus, Pencil, Trash2, Loader2, Check, X, Search, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { useColaborador } from '@/lib/hooks/use-data'
 
 interface Permissao {
@@ -61,6 +64,7 @@ export default function PermissoesPage() {
   })
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const supabase = createClient()
   const { data: colaborador } = useColaborador()
@@ -209,138 +213,130 @@ export default function PermissoesPage() {
     )
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
-          <Shield className="h-5 w-5 text-emerald-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Permissoes
-          </h1>
-          <p className="text-sm text-white/40">
-            Gerencie os tipos de permissao e controle o acesso dos colaboradores.
-          </p>
-        </div>
-      </div>
+  const filteredPermissoes = searchTerm
+    ? permissoes.filter((p) => p.nome.toLowerCase().includes(searchTerm.toLowerCase()))
+    : permissoes
 
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/6">
-          <div className="flex items-center gap-2">
+  return (
+    <div className="flex flex-col gap-5 h-[calc(100vh-130px)]">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
             <Shield className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-base font-semibold text-white">Lista de Permissoes</h2>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Permissoes</h1>
+            <p className="text-sm text-white/40">
+              Gerencie os tipos de permissao e controle o acesso dos colaboradores.
+            </p>
           </div>
         </div>
-        <div className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-            </div>
-          ) : permissoes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="rounded-full bg-emerald-500/10 p-4">
-                <Shield className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-white">
-                Nenhuma permissao cadastrada
-              </h3>
-              <p className="mt-1 text-sm text-white/40">
-                Comece criando o primeiro tipo de permissao
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/6 hover:bg-transparent">
-                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
-                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Capacidades</TableHead>
-                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Colaboradores</TableHead>
-                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <AnimatePresence>
-                  {permissoes.map((permissao, index) => (
-                    <motion.tr
-                      key={permissao.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="border-b border-white/6 transition-colors hover:bg-white/[0.03]"
-                    >
-                      <TableCell className="font-medium text-white/90">
-                        {permissao.nome}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          <FlagBadge
-                            value={permissao.can_view_dashboard}
-                            label="Dashboard"
-                          />
-                          <FlagBadge
-                            value={permissao.can_manage_users}
-                            label="Usuarios"
-                          />
-                          <FlagBadge
-                            value={permissao.can_view_all_tickets}
-                            label="Todos Tickets"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-white/50">
-                        {permissao._count || 0} colaborador
-                        {permissao._count !== 1 ? 'es' : ''}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditModal(permissao)}
-                            className="text-white/40 hover:text-white hover:bg-white/5"
-                          >
-                            <Pencil className="mr-1 h-4 w-4" />
-                            Editar
-                          </Button>
-                          {(permissao._count || 0) === 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openDeleteDialog(permissao)}
-                              className="text-red-400/60 hover:bg-red-500/10 hover:text-red-400"
-                            >
-                              <Trash2 className="mr-1 h-4 w-4" />
-                              Excluir
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </TableBody>
-            </Table>
-          )}
+        <Button onClick={openCreateModal} className="btn-glow rounded-xl gap-2 px-5">
+          <Plus className="h-4 w-4" />
+          Nova Permissao
+        </Button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="glass-card rounded-2xl p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+          <Input
+            placeholder="Buscar permissao por nome..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+          />
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <motion.div
-        className="fixed right-6 bottom-6"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Button
-          onClick={openCreateModal}
-          size="lg"
-          className="h-14 w-14 rounded-full bg-primary text-primary-foreground glass-fab"
-        >
-          <Plus className="h-6 w-6" />
-          <span className="sr-only">Nova Permissao</span>
-        </Button>
-      </motion.div>
+      {/* Card List */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-5 flex items-center gap-4">
+              <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+          ))
+        ) : filteredPermissoes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="rounded-full bg-emerald-500/10 p-4">
+              <Shield className="h-10 w-10 text-emerald-400" />
+            </div>
+            <h3 className="mt-4 text-base font-semibold text-white">
+              {permissoes.length === 0 ? 'Nenhuma permissao cadastrada' : 'Nenhuma permissao encontrada'}
+            </h3>
+            <p className="mt-1 text-sm text-white/40">
+              {permissoes.length === 0 ? 'Comece criando o primeiro tipo de permissao' : 'Tente ajustar a busca'}
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {filteredPermissoes.map((permissao, index) => (
+              <motion.div
+                key={permissao.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                className="glass-card rounded-2xl p-5 flex items-center gap-4 border-l-2 border-l-violet-500/30 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-violet-500/60 group"
+              >
+                {/* Shield Icon */}
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center border border-white/8 shrink-0">
+                  <Shield className="h-5 w-5 text-violet-400" />
+                </div>
+
+                {/* Main Info */}
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-white/90">{permissao.nome}</span>
+                  {/* Capability badges */}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <FlagBadge value={permissao.can_view_dashboard} label="Dashboard" />
+                    <FlagBadge value={permissao.can_manage_users} label="Usuarios" />
+                    <FlagBadge value={permissao.can_view_all_tickets} label="Todos Tickets" />
+                  </div>
+                </div>
+
+                {/* Collaborator count */}
+                <div className="hidden sm:flex items-center gap-1.5 shrink-0 text-white/40">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="text-sm">
+                    {permissao._count || 0} colaborador{permissao._count !== 1 ? 'es' : ''}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                    onClick={() => openEditModal(permissao)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  {(permissao._count || 0) === 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                      onClick={() => openDeleteDialog(permissao)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>

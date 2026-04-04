@@ -1,12 +1,8 @@
 'use client'
 
-import { useEffect } from "react"
-
 import React, { useState, useMemo } from "react"
-import useSWR from 'swr'
 import { motion } from 'framer-motion'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
@@ -14,15 +10,13 @@ import { Clock, CheckCircle, Ticket, Timer, ChevronLeft, ChevronRight } from 'lu
 import {
   Bar,
   BarChart,
-  Line,
-  LineChart,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   Cell,
-  Legend,
 } from 'recharts'
 import {
   ChartContainer,
@@ -68,8 +62,6 @@ export default function MetricasPage() {
   const [dateFilter, setDateFilter] = useState('30')
   const [customRange, setCustomRange] = useState<DateRange | undefined>()
   const [setorFilter, setSetorFilter] = useState<string>('all')
-  const [subsetorFilter, setSubsetorFilter] = useState<string>('all')
-  const [subsetoresDisponiveis, setSubsetoresDisponiveis] = useState<{id: string, nome: string}[]>([])
   const [metrics, setMetrics] = useState<MetricCard[]>([
     { title: 'Tempo Médio 1ª Resposta', value: '0 min', description: 'Tempo até primeira resposta', icon: Timer, color: 'bg-primary' },
     { title: 'Tempo Médio Resolução', value: '0 min', description: 'Tempo para encerrar ticket', icon: Clock, color: 'bg-accent' },
@@ -113,33 +105,12 @@ export default function MetricasPage() {
     }
   }, [setorFilter, colaborador, setorIdsAcessiveis.length, supabase])
 
-  // Fetch subsetores when setor filter changes
-  React.useEffect(() => {
-    async function fetchSubsetores() {
-      const targetSetorIds = setorFilter !== 'all' ? [setorFilter] : setorIdsAcessiveis
-      if (targetSetorIds.length === 0) {
-        setSubsetoresDisponiveis([])
-        return
-      }
-      const { data } = await supabase
-        .from('subsetores')
-        .select('id, nome')
-        .in('setor_id', targetSetorIds)
-        .eq('ativo', true)
-        .order('nome')
-      setSubsetoresDisponiveis(data || [])
-    }
-    if (colaborador && setorIdsAcessiveis.length > 0) {
-      fetchSubsetores()
-    }
-  }, [setorFilter, colaborador, setorIdsAcessiveis.length, supabase])
-
   // CRITICAL FIX: Only fetch metrics when setorIdsAcessiveis is loaded (prevents counting ALL tickets)
   React.useEffect(() => {
     if (colaborador?.organizacao_id && setorIdsAcessiveis.length > 0) {
       fetchMetrics()
     }
-  }, [dateFilter, customRange, setorFilter, subsetorFilter, colaborador?.organizacao_id, setorIdsAcessiveis.length])
+  }, [dateFilter, customRange, setorFilter, colaborador?.organizacao_id, setorIdsAcessiveis.length])
 
   // Reset chart pages when data changes
   React.useEffect(() => { setSetorPage(0) }, [ticketsBySetor.length])
@@ -416,51 +387,25 @@ export default function MetricasPage() {
     visible: { opacity: 1, y: 0 }
   }
 
+  // Accent colors for metric cards: amber for time-based, emerald for count-based
+  const metricAccents = ['amber', 'amber', 'emerald', 'emerald']
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
-          <Ticket className="h-5 w-5 text-emerald-400" />
+      {/* Header: Title left, filters right — one compact row */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <Ticket className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Métricas</h1>
+            <p className="text-sm text-white/40">Indicadores de desempenho da operação</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Metricas</h1>
-          <p className="text-sm text-white/40">
-            Acompanhe os indicadores de desempenho da operacao
-          </p>
-        </div>
-      </div>
-
-      {/* Metric Cards */}
-      <motion.div
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {metrics.map((metric, index) => (
-          <motion.div key={metric.title} variants={itemVariants}>
-            <div className="glass-card-elevated rounded-2xl overflow-hidden p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-white/60">{metric.title}</span>
-                <div className="rounded-lg bg-gradient-to-br from-emerald-500/15 to-cyan-500/15 p-2 border border-white/5">
-                  <metric.icon className="h-4 w-4 text-emerald-400" />
-                </div>
-              </div>
-              <div className="text-3xl font-bold brand-gradient-text">{metric.value}</div>
-              <p className="text-xs text-white/30 mt-1">
-                {metric.description}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-white/60">Setor:</span>
+        <div className="flex flex-wrap items-center gap-3">
           <Select value={setorFilter} onValueChange={setSetorFilter}>
-            <SelectTrigger className="w-52 glass-input rounded-xl text-white/70">
+            <SelectTrigger className="w-48 glass-input rounded-xl text-white/70 h-9 text-sm">
               <SelectValue placeholder="Todos os setores" />
             </SelectTrigger>
             <SelectContent>
@@ -470,9 +415,6 @@ export default function MetricasPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-white/60">Periodo:</span>
           <DatePeriodFilter
             dateFilter={dateFilter}
             onDateFilterChange={setDateFilter}
@@ -483,20 +425,123 @@ export default function MetricasPage() {
         </div>
       </div>
 
-      {/* Charts Row 1 */}
+      {/* Stats Section — 2x2 grid of wider metric cards */}
+      <motion.div
+        className="grid gap-4 grid-cols-1 md:grid-cols-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {metrics.map((metric, index) => {
+          const isAmber = metricAccents[index] === 'amber'
+          return (
+            <motion.div key={metric.title} variants={itemVariants}>
+              <div className="glass-card-elevated rounded-2xl overflow-hidden p-5 flex items-center gap-4">
+                {/* Icon with colored accent */}
+                <div className={`shrink-0 h-12 w-12 rounded-xl flex items-center justify-center border ${
+                  isAmber
+                    ? 'bg-amber-500/10 border-amber-500/20'
+                    : 'bg-emerald-500/10 border-emerald-500/20'
+                }`}>
+                  <metric.icon className={`h-5 w-5 ${isAmber ? 'text-amber-400' : 'text-emerald-400'}`} />
+                </div>
+                {/* Text content */}
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-white/50 block">{metric.title}</span>
+                  <div className={`text-3xl font-bold mt-0.5 ${
+                    isAmber ? 'text-amber-400' : 'brand-gradient-text'
+                  }`}>{metric.value}</div>
+                  <p className="text-xs text-white/30 mt-0.5">{metric.description}</p>
+                </div>
+                {/* Subtle accent bar on right edge */}
+                <div className={`w-1 h-14 rounded-full shrink-0 ${
+                  isAmber ? 'bg-amber-500/30' : 'bg-emerald-500/30'
+                }`} />
+              </div>
+            </motion.div>
+          )
+        })}
+      </motion.div>
+
+      {/* Hero Chart — Daily Volume AreaChart, full width, taller */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="glass-card rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-white">Volume Diário de Tickets</CardTitle>
+            <CardDescription>Quantidade de tickets criados por dia</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {dailyVolume.length > 0 ? (
+              <ChartContainer
+                config={{
+                  count: {
+                    label: 'Tickets',
+                    color: '#10b981',
+                  },
+                }}
+                className="h-80 w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={dailyVolume} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                      tickLine={false}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      name="Tickets"
+                      stroke="#10b981"
+                      strokeWidth={2.5}
+                      fill="url(#areaGradient)"
+                      dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
+                      activeDot={{ r: 6, fill: '#06b6d4', stroke: '#06b6d4', strokeWidth: 2 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <div className="flex h-80 items-center justify-center text-muted-foreground">
+                Nenhum dado disponível
+              </div>
+            )}
+          </CardContent>
+        </div>
+      </motion.div>
+
+      {/* Secondary Charts — 2 columns */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Tickets by Sector */}
+        {/* Tickets by Sector — horizontal bar chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           <div className="glass-card rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-white">Tickets por Setor</CardTitle>
-                  <CardDescription>Distribuição de tickets por departamento</CardDescription>
+                  <CardDescription>Distribuição por departamento</CardDescription>
                 </div>
                 <Select value={chartSetorFilter} onValueChange={(v) => { setChartSetorFilter(v); setSetorPage(0) }}>
                   <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
@@ -530,13 +575,15 @@ export default function MetricasPage() {
                         layout="vertical"
                         margin={{ top: 10, right: 40, left: 10, bottom: 10 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                        <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'rgba(255,255,255,0.08)' }} />
                         <YAxis
                           dataKey="setor"
                           type="category"
-                          tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                          tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
                           width={140}
+                          tickLine={false}
+                          axisLine={false}
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Bar dataKey="count" name="Tickets" radius={[0, 6, 6, 0]} barSize={24}>
@@ -549,8 +596,8 @@ export default function MetricasPage() {
                   </ChartContainer>
                   {/* Pagination */}
                   {filteredTicketsBySetor.length > ITEMS_PER_PAGE && (
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                      <span className="text-xs text-white/40">
                         {setorPage * ITEMS_PER_PAGE + 1}-{Math.min((setorPage + 1) * ITEMS_PER_PAGE, filteredTicketsBySetor.length)} de {filteredTicketsBySetor.length}
                       </span>
                       <div className="flex items-center gap-1">
@@ -563,7 +610,7 @@ export default function MetricasPage() {
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="text-xs text-muted-foreground px-2">
+                        <span className="text-xs text-white/40 px-2">
                           {setorPage + 1}/{setorTotalPages}
                         </span>
                         <Button
@@ -580,7 +627,7 @@ export default function MetricasPage() {
                   )}
                 </>
               ) : (
-                <div className="flex h-[400px] items-center justify-center text-muted-foreground">
+                <div className="flex h-[400px] items-center justify-center text-white/30">
                   Nenhum dado disponível
                 </div>
               )}
@@ -588,18 +635,18 @@ export default function MetricasPage() {
           </div>
         </motion.div>
 
-        {/* Tickets by Collaborator */}
+        {/* Tickets by Collaborator — horizontal bar chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
           <div className="glass-card rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-white">Atendimentos por Colaborador</CardTitle>
-                  <CardDescription>Tickets encerrados por cada colaborador</CardDescription>
+                  <CardDescription>Tickets encerrados por colaborador</CardDescription>
                 </div>
                 <Select value={chartColaboradorFilter} onValueChange={(v) => { setChartColaboradorFilter(v); setColaboradorPage(0) }}>
                   <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
@@ -633,13 +680,15 @@ export default function MetricasPage() {
                         layout="vertical"
                         margin={{ top: 10, right: 40, left: 10, bottom: 10 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                        <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'rgba(255,255,255,0.08)' }} />
                         <YAxis
                           dataKey="colaborador"
                           type="category"
-                          tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                          tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
                           width={140}
+                          tickLine={false}
+                          axisLine={false}
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Bar dataKey="count" name="Tickets" radius={[0, 6, 6, 0]} barSize={22}>
@@ -652,8 +701,8 @@ export default function MetricasPage() {
                   </ChartContainer>
                   {/* Pagination */}
                   {filteredTicketsByColaborador.length > ITEMS_PER_PAGE && (
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                      <span className="text-xs text-white/40">
                         {colaboradorPage * ITEMS_PER_PAGE + 1}-{Math.min((colaboradorPage + 1) * ITEMS_PER_PAGE, filteredTicketsByColaborador.length)} de {filteredTicketsByColaborador.length}
                       </span>
                       <div className="flex items-center gap-1">
@@ -666,7 +715,7 @@ export default function MetricasPage() {
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="text-xs text-muted-foreground px-2">
+                        <span className="text-xs text-white/40 px-2">
                           {colaboradorPage + 1}/{colaboradorTotalPages}
                         </span>
                         <Button
@@ -683,7 +732,7 @@ export default function MetricasPage() {
                   )}
                 </>
               ) : (
-                <div className="flex h-[400px] items-center justify-center text-muted-foreground">
+                <div className="flex h-[400px] items-center justify-center text-white/30">
                   Nenhum dado disponível
                 </div>
               )}
@@ -691,59 +740,6 @@ export default function MetricasPage() {
           </div>
         </motion.div>
       </div>
-
-      {/* Daily Volume Chart - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
-        <div className="glass-card rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-white">Volume Diário de Tickets</CardTitle>
-            <CardDescription>Quantidade de tickets criados por dia</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {dailyVolume.length > 0 ? (
-              <ChartContainer
-                config={{
-                  count: {
-                    label: 'Tickets',
-                    color: '#06b6d4',
-                  },
-                }}
-                className="h-[400px] w-full"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyVolume} margin={{ top: 20, right: 40, left: 20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="count"
-                      name="Tickets"
-                      stroke="#10b981"
-                      strokeWidth={3}
-                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, fill: '#06b6d4' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            ) : (
-              <div className="flex h-[400px] items-center justify-center text-muted-foreground">
-                Nenhum dado disponível
-              </div>
-            )}
-          </CardContent>
-        </div>
-      </motion.div>
     </div>
   )
 }

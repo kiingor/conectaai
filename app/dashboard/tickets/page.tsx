@@ -34,6 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Ticket,
   Plus,
@@ -47,8 +48,13 @@ import {
   ArrowRight,
   FileText,
   Building2,
+  ChevronDown,
+  ChevronUp,
+  Phone,
+  Hash,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -198,6 +204,9 @@ export default function TicketsPage() {
   const [subsetorFilter, setSubsetorFilter] = useState<string>('all')
   const [subsetoresDisponiveis, setSubsetoresDisponiveis] = useState<Subsetor[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Expanded card
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null)
 
   // Create modal
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -608,8 +617,21 @@ export default function TicketsPage() {
     atendimento: <User className="h-4 w-4" />,
   }
 
+  function toggleExpand(ticketId: string) {
+    if (expandedTicketId === ticketId) {
+      setExpandedTicketId(null)
+    } else {
+      setExpandedTicketId(ticketId)
+      // Pre-fetch details for expanded ticket
+      const ticket = tickets.find((t) => t.id === ticketId)
+      if (ticket) {
+        openDetailsModal(ticket)
+      }
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-5 h-[calc(100vh-130px)]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -621,161 +643,254 @@ export default function TicketsPage() {
             <p className="text-sm text-white/40">Gerencie todos os tickets de atendimento</p>
           </div>
         </div>
-        <Button
-          onClick={() => setCreateModalOpen(true)}
-          className="btn-glow rounded-xl px-5 py-2.5"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Ticket
-        </Button>
+        <div className="flex items-center gap-3">
+          <span className="glass-badge bg-white/5 text-white/50 border-white/10 px-2.5 py-1 rounded-full text-xs">
+            {tickets.length} tickets
+          </span>
+          <Button
+            onClick={() => setCreateModalOpen(true)}
+            className="btn-glow rounded-xl gap-2 px-5"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Ticket
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
+      {/* Search & Filter Bar */}
       <div className="glass-card rounded-2xl p-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
-              <Input
-                placeholder="Buscar por cliente, telefone ou assunto..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 glass-input rounded-xl text-white/80 placeholder:text-white/25"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="glass-input rounded-xl text-white/70">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#0e1019] border-white/8">
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="aberto">Aberto</SelectItem>
-                <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
-                <SelectItem value="encerrado">Encerrado</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-              <SelectTrigger className="glass-input rounded-xl text-white/70">
-                <SelectValue placeholder="Prioridade" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#0e1019] border-white/8">
-                <SelectItem value="all">Todas as Prioridades</SelectItem>
-                <SelectItem value="baixa">Baixa</SelectItem>
-                <SelectItem value="media">Media</SelectItem>
-                <SelectItem value="alta">Alta</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={setorFilter} onValueChange={setSetorFilter}>
-              <SelectTrigger className="glass-input rounded-xl text-white/70">
-                <SelectValue placeholder="Setor" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#0e1019] border-white/8">
-                <SelectItem value="all">Todos os Setores</SelectItem>
-                {setores.map((setor) => (
-                  <SelectItem key={setor.id} value={setor.id}>
-                    {setor.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="relative lg:col-span-2">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Input
+              placeholder="Buscar por cliente, telefone ou assunto..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 glass-input rounded-xl text-white/80 placeholder:text-white/25"
+            />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="glass-input rounded-xl text-white/70">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#0e1019] border-white/8">
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="aberto">Aberto</SelectItem>
+              <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+              <SelectItem value="encerrado">Encerrado</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
+            <SelectTrigger className="glass-input rounded-xl text-white/70">
+              <SelectValue placeholder="Prioridade" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#0e1019] border-white/8">
+              <SelectItem value="all">Todas as Prioridades</SelectItem>
+              <SelectItem value="baixa">Baixa</SelectItem>
+              <SelectItem value="media">Media</SelectItem>
+              <SelectItem value="alta">Alta</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={setorFilter} onValueChange={setSetorFilter}>
+            <SelectTrigger className="glass-input rounded-xl text-white/70">
+              <SelectValue placeholder="Setor" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#0e1019] border-white/8">
+              <SelectItem value="all">Todos os Setores</SelectItem>
+              {setores.map((setor) => (
+                <SelectItem key={setor.id} value={setor.id}>
+                  {setor.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/6">
-          <div className="flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-base font-semibold text-white">Lista de Tickets</h2>
-            <span className="glass-badge bg-white/5 text-white/50 border-white/10 px-2 py-0.5 rounded-full text-xs ml-2">
-              {tickets.length}
-            </span>
+      {/* Card List */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 flex items-center gap-4">
+              <Skeleton className="h-9 w-16 rounded-lg shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-16 rounded-full" />
+            </div>
+          ))
+        ) : tickets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-white/30">
+            <Ticket className="mb-3 h-10 w-10" />
+            <p className="text-sm">Nenhum ticket encontrado</p>
           </div>
-        </div>
-        <div className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-            </div>
-          ) : tickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-white/30">
-              <Ticket className="mb-4 h-12 w-12" />
-              <p>Nenhum ticket encontrado</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/6 hover:bg-transparent">
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Cliente</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Assunto</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Atendente</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Prioridade</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Canal</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">1a Resposta</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Data</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40 text-right">Acoes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {tickets.map((ticket) => (
-                      <TableRow key={ticket.id} className="border-white/6 hover:bg-white/[0.03] transition-colors">
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-white/90">{ticket.cliente?.nome || 'N/A'}</p>
-                            <p className="text-xs text-white/30">
-                              {ticket.cliente?.telefone}
-                            </p>
+        ) : (
+          <AnimatePresence>
+            {tickets.map((ticket, index) => {
+              const isExpanded = expandedTicketId === ticket.id
+              const borderColor = ticket.status === 'aberto'
+                ? 'border-l-blue-500/30 hover:border-l-blue-500/60'
+                : ticket.status === 'em_atendimento'
+                  ? 'border-l-amber-500/30 hover:border-l-amber-500/60'
+                  : 'border-l-emerald-500/30 hover:border-l-emerald-500/60'
+
+              return (
+                <motion.div
+                  key={ticket.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ delay: index * 0.03, duration: 0.3 }}
+                  className={cn(
+                    'glass-card rounded-2xl border-l-2 transition-all duration-200 hover:bg-white/[0.03] group',
+                    borderColor
+                  )}
+                >
+                  {/* Main row */}
+                  <div className="p-4 flex items-center gap-4">
+                    {/* Ticket # badge */}
+                    <div className="h-9 min-w-[3.5rem] rounded-lg bg-white/[0.04] border border-white/8 flex items-center justify-center shrink-0">
+                      <Hash className="h-3 w-3 text-white/30 mr-0.5" />
+                      <span className="text-xs font-mono text-white/50">
+                        {ticket.id.slice(0, 6)}
+                      </span>
+                    </div>
+
+                    {/* Client info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white/90 truncate">
+                          {ticket.cliente?.nome || 'N/A'}
+                        </span>
+                        {ticket.assunto && (
+                          <span className="hidden lg:block text-xs text-white/30 truncate max-w-[200px]">
+                            - {ticket.assunto}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Phone className="h-3 w-3 text-white/25" />
+                        <span className="text-xs text-white/35">{ticket.cliente?.telefone || '-'}</span>
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <Badge className={cn('shrink-0', statusColors[ticket.status])}>
+                      {statusLabels[ticket.status]}
+                    </Badge>
+
+                    {/* Priority */}
+                    <Badge className={cn('shrink-0', prioridadeColors[ticket.prioridade])}>
+                      {prioridadeLabels[ticket.prioridade]}
+                    </Badge>
+
+                    {/* Sector */}
+                    <div className="hidden md:block text-right shrink-0 min-w-[80px]">
+                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">Setor</span>
+                      <span className="text-xs text-white/50">{ticket.setor?.nome || '-'}</span>
+                    </div>
+
+                    {/* Agent */}
+                    <div className="hidden lg:block text-right shrink-0 min-w-[80px]">
+                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">Atendente</span>
+                      <span className="text-xs text-white/50">{ticket.colaborador?.nome || '-'}</span>
+                    </div>
+
+                    {/* 1st response */}
+                    <div className="hidden xl:block text-right shrink-0 min-w-[70px]">
+                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">1a Resp.</span>
+                      {ticket.primeira_resposta_em ? (
+                        <span className="text-emerald-400 font-mono text-xs font-medium">
+                          {formatTimeDiff(ticket.criado_em, ticket.primeira_resposta_em)}
+                        </span>
+                      ) : ticket.status === 'encerrado' ? (
+                        <span className="text-white/25 text-xs">-</span>
+                      ) : (
+                        <LiveTimer startDate={ticket.criado_em} />
+                      )}
+                    </div>
+
+                    {/* Date */}
+                    <span className="hidden sm:block text-xs text-white/35 shrink-0">
+                      {format(new Date(ticket.criado_em || ticket.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
+                    </span>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                        onClick={() => openDetailsModal(ticket)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/5"
+                        onClick={() => toggleExpand(ticket.id)}
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Expanded details */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 pt-0 border-t border-white/6 mt-0">
+                          <div className="pt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase tracking-wider text-white/30">Canal</span>
+                              <p className="text-sm text-white/60 capitalize">{ticket.canal}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase tracking-wider text-white/30">Assunto</span>
+                              <p className="text-sm text-white/60">{ticket.assunto || '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase tracking-wider text-white/30">Setor</span>
+                              <p className="text-sm text-white/60">{ticket.setor?.nome || 'Nao atribuido'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase tracking-wider text-white/30">Atendente</span>
+                              <p className="text-sm text-white/60">{ticket.colaborador?.nome || 'Nenhum'}</p>
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate text-white/70">
-                          {ticket.assunto || '-'}
-                        </TableCell>
-                        <TableCell className="text-white/70">{ticket.setor?.nome || '-'}</TableCell>
-                        <TableCell className="text-white/70">{ticket.colaborador?.nome || '-'}</TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[ticket.status]}>
-                            {statusLabels[ticket.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={prioridadeColors[ticket.prioridade]}>
-                            {prioridadeLabels[ticket.prioridade]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="capitalize text-white/60">{ticket.canal}</TableCell>
-                        <TableCell>
-                          {ticket.primeira_resposta_em ? (
-                            <span className="text-emerald-400 font-mono text-xs font-medium">
-                              {formatTimeDiff(ticket.criado_em, ticket.primeira_resposta_em)}
-                            </span>
-                          ) : ticket.status === 'encerrado' ? (
-                            <span className="text-white/30 text-xs">-</span>
-                          ) : (
-                            <LiveTimer startDate={ticket.criado_em} />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-white/40">
-                          {format(new Date(ticket.criado_em || ticket.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/40 hover:text-white hover:bg-white/5"
-                            onClick={() => openDetailsModal(ticket)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
+                          <div className="flex gap-2 mt-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDetailsModal(ticket)}
+                              className="border-white/10 text-white/50 hover:bg-white/5 hover:text-white text-xs"
+                            >
+                              <Eye className="mr-1 h-3 w-3" />
+                              Ver detalhes completos
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Create Ticket Modal */}

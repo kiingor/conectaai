@@ -66,6 +66,7 @@ import {
   Clock,
   BarChart3,
   FileText,
+  Info,
   Settings,
   Filter,
   Search,
@@ -126,8 +127,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Send, Hash, Check, Tag, Radio, Inbox } from 'lucide-react'
-import { DisparoLogsSection } from '@/components/disparo-logs-section'
+import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 const supabase = createClient()
 
@@ -191,7 +192,6 @@ const ALL_SIDEBAR_ITEMS = [
     { id: 'horarios', name: 'Horários de atendimento', icon: Clock, description: 'Defina dias e horários disponíveis' },
     { id: 'pausas', name: 'Pausas', icon: Coffee, description: 'Gerencie os tipos de pausas dos atendentes' },
     { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações da empresa' },
-    { id: 'disparo_logs', name: 'Log de Disparos', icon: Megaphone, description: 'Historico de disparos realizados', whatsappOnly: true },
   ]
 
 // Fetcher function
@@ -202,7 +202,7 @@ async function fetchSetorData(setorId: string) {
   // Date range for reports (last 90 days to support all filter options)
   const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
 
-const [setorRes, ticketsAtivosRes, ticketsHojeRes, ticketsRelatorioRes, colaboradoresRes, horariosRes, permissoesRes, pausasRes, colabSubsetoresRes] = await Promise.all([
+const [setorRes, ticketsAtivosRes, ticketsHojeRes, ticketsRelatorioRes, colaboradoresRes, horariosRes, permissoesRes, pausasRes] = await Promise.all([
     supabase.from('setores').select('*').eq('id', setorId).single(),
     // Tickets ativos (aberto ou em_atendimento)
     supabase.from('tickets').select('*, numero, colaboradores(nome), clientes(nome, telefone)').eq('setor_id', setorId).in('status', ['aberto', 'em_atendimento']),
@@ -214,24 +214,14 @@ const [setorRes, ticketsAtivosRes, ticketsHojeRes, ticketsRelatorioRes, colabora
     supabase.from('horarios_atendimento').select('*').eq('setor_id', setorId).order('dia_semana'),
     supabase.from('permissoes').select('*'),
     supabase.from('pausas').select('*').eq('setor_id', setorId).order('nome'),
-    // Múltiplos subsetores por colaborador
-    supabase.from('colaboradores_subsetores').select('colaborador_id, subsetor_id, subsetores(id, nome)').eq('setor_id', setorId),
   ])
 
   const ticketsAtivos = ticketsAtivosRes.data || []
   const ticketsHoje = ticketsHojeRes.data || []
   const ticketsRelatorio = ticketsRelatorioRes.data || []
   const atendentesSetor = colaboradoresRes.data || []
-  // Agrupar subsetores por colaborador
-  const colabSubsetoresMap: Record<string, { id: string; nome: string }[]> = {}
-  for (const cs of (colabSubsetoresRes.data || [])) {
-    if (!colabSubsetoresMap[cs.colaborador_id]) colabSubsetoresMap[cs.colaborador_id] = []
-    if (cs.subsetores) colabSubsetoresMap[cs.colaborador_id].push(cs.subsetores as { id: string; nome: string })
-  }
   const atendentes = atendentesSetor.map((as: any) => ({
     ...as.colaboradores,
-    subsetor_ids: (colabSubsetoresMap[as.colaborador_id] || []).map((s: any) => s.id),
-    subsetor_nomes: (colabSubsetoresMap[as.colaborador_id] || []).map((s: any) => s.nome),
   })).filter(Boolean)
 
   // Calculate stats
@@ -576,7 +566,7 @@ export default function SetorPage() {
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null)
   const [canalForm, setCanalForm] = useState({
     nome: '',
-    tipo: 'whatsapp' as 'whatsapp' | 'evolution_api',
+    tipo: 'evolution_api' as 'whatsapp' | 'evolution_api',
     phone_number_id: '',
     whatsapp_token: '',
     template_id: '',
@@ -613,22 +603,6 @@ export default function SetorPage() {
   }>({ open: false, canal: null, qr: null, loading: false, connected: false })
   const reconnectPollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Subsetores state
-  interface Subsetor {
-    id: string
-    setor_id: string
-    nome: string
-    descricao: string | null
-    ativo: boolean
-    criado_em: string
-  }
-  const [subsetores, setSubsetores] = useState<Subsetor[]>([])
-  const [isSubsetorModalOpen, setIsSubsetorModalOpen] = useState(false)
-  const [editingSubsetor, setEditingSubsetor] = useState<Subsetor | null>(null)
-  const [subsetorForm, setSubsetorForm] = useState({ nome: '', descricao: '' })
-  const [savingSubsetor, setSavingSubsetor] = useState(false)
-  const [deletingSubsetorId, setDeletingSubsetorId] = useState<string | null>(null)
-
   // Pausas state
   interface Pausa {
     id: string
@@ -662,7 +636,6 @@ export default function SetorPage() {
   // Atendentes state
   const [isAtendenteModalOpen, setIsAtendenteModalOpen] = useState(false)
   const [editingAtendente, setEditingAtendente] = useState<any>(null)
-  const [atendenteSubsetorIds, setAtendenteSubsetorIds] = useState<string[]>([])
   const [atendenteForm, setAtendenteForm] = useState({
     nome: '',
     email: '',
@@ -847,23 +820,12 @@ export default function SetorPage() {
       fetchCanais()
       fetchTodosSetores()
       fetchTiposAtendimento()
-      fetchSubsetores()
       fetchDistributionConfig()
       fetchSetoresDestino()
       fetchTagsList()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setorId_stable])
-
-  // Fetch subsetores
-  const fetchSubsetores = async () => {
-    const { data } = await supabase
-      .from('subsetores')
-      .select('*')
-      .eq('setor_id', setorId)
-      .order('nome')
-    if (data) setSubsetores(data)
-  }
 
   // Fetch distribution config
   const fetchDistributionConfig = async () => {
@@ -1417,85 +1379,6 @@ const saveConfig = async () => {
     }
   }
 
-  // ============ SUBSETORES CRUD ============
-  const openCreateSubsetor = () => {
-    setEditingSubsetor(null)
-    setSubsetorForm({ nome: '', descricao: '' })
-    setIsSubsetorModalOpen(true)
-  }
-
-  const openEditSubsetor = (subsetor: Subsetor) => {
-    setEditingSubsetor(subsetor)
-    setSubsetorForm({ nome: subsetor.nome, descricao: subsetor.descricao || '' })
-    setIsSubsetorModalOpen(true)
-  }
-
-  const saveSubsetor = async () => {
-    if (!subsetorForm.nome.trim()) {
-      toast.error('Digite um nome para o subsetor')
-      return
-    }
-
-    setSavingSubsetor(true)
-    try {
-      if (editingSubsetor) {
-        const { error } = await supabase
-          .from('subsetores')
-          .update({ nome: subsetorForm.nome.trim(), descricao: subsetorForm.descricao.trim() || null })
-          .eq('id', editingSubsetor.id)
-        if (error) throw error
-        toast.success('Subsetor atualizado!')
-      } else {
-        const { error } = await supabase
-          .from('subsetores')
-          .insert({ setor_id: setorId, nome: subsetorForm.nome.trim(), descricao: subsetorForm.descricao.trim() || null })
-        if (error) throw error
-        toast.success('Subsetor criado!')
-      }
-      setIsSubsetorModalOpen(false)
-      fetchSubsetores()
-    } catch (error: any) {
-      console.error('Error saving subsetor:', error)
-      toast.error(error.message || 'Erro ao salvar subsetor')
-    } finally {
-      setSavingSubsetor(false)
-    }
-  }
-
-  const deleteSubsetor = async (id: string) => {
-    const subsetor = subsetores.find(s => s.id === id)
-    showConfirmDialog(
-      'Excluir Subsetor',
-      `Tem certeza que deseja excluir o subsetor "${subsetor?.nome}"? Esta ação não pode ser desfeita.`,
-      async () => {
-        setDeletingSubsetorId(id)
-        try {
-          const { error } = await supabase.from('subsetores').delete().eq('id', id)
-          if (error) throw error
-          toast.success('Subsetor excluído!')
-          fetchSubsetores()
-        } catch (error: any) {
-          toast.error(error.message || 'Erro ao excluir subsetor')
-        } finally {
-          setDeletingSubsetorId(null)
-        }
-      }
-    )
-  }
-
-  const toggleSubsetorAtivo = async (subsetor: Subsetor) => {
-    try {
-      const { error } = await supabase
-        .from('subsetores')
-        .update({ ativo: !subsetor.ativo })
-        .eq('id', subsetor.id)
-      if (error) throw error
-      fetchSubsetores()
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao atualizar subsetor')
-    }
-  }
-
   const saveCanal = async () => {
     if (!canalForm.nome.trim()) {
       toast.error('Digite um nome para o canal')
@@ -1596,7 +1479,7 @@ const saveConfig = async () => {
   const resetCanalForm = () => {
     setCanalForm({
       nome: '',
-      tipo: 'whatsapp',
+      tipo: 'evolution_api',
       phone_number_id: '',
       whatsapp_token: '',
       template_id: '',
@@ -1666,7 +1549,7 @@ const saveConfig = async () => {
       startEvoPolling(instanceName)
     } catch (err) {
       console.error('[handleEvoNext]', err)
-      toast.error('Erro ao criar instância Evolution')
+      toast.error('Erro ao criar instância WhatsApp')
     } finally {
       setEvoCreatingInstance(false)
     }
@@ -1705,7 +1588,7 @@ const saveConfig = async () => {
       const { error } = await supabase.from('setor_canais').insert(payload)
       if (error) throw error
       setEvoStep('connected')
-      toast.success('Canal EvolutionAPI conectado com sucesso!')
+      toast.success('Canal WhatsApp conectado com sucesso!')
       setTimeout(() => {
         closeCanalModal()
         fetchCanais()
@@ -1951,7 +1834,6 @@ const saveConfig = async () => {
   // Atendentes functions
   const openCreateAtendenteModal = () => {
     setEditingAtendente(null)
-    setAtendenteSubsetorIds([])
     setAtendenteForm({ nome: '', email: '', senha: '', confirmarSenha: '' })
     setShowPassword(false)
     setShowConfirmPassword(false)
@@ -2009,14 +1891,6 @@ const saveConfig = async () => {
 
   const openEditAtendenteModal = async (atendente: any) => {
     setEditingAtendente(atendente)
-    // Buscar subsetores atuais do atendente neste setor
-    const { data: colabSubsetores } = await supabase
-      .from('colaboradores_subsetores')
-      .select('subsetor_id')
-      .eq('colaborador_id', atendente.id)
-      .eq('setor_id', setorId)
-    
-    setAtendenteSubsetorIds((colabSubsetores || []).map((cs: any) => cs.subsetor_id))
     setAtendenteForm({
       nome: atendente.nome || '',
       email: atendente.email || '',
@@ -2033,27 +1907,6 @@ const saveConfig = async () => {
       return
     }
 
-    // Helper para salvar subsetores na nova tabela (delete + insert)
-    const saveSubsetores = async (colaboradorId: string) => {
-      // Remove atribuições anteriores
-      await supabase
-        .from('colaboradores_subsetores')
-        .delete()
-        .eq('colaborador_id', colaboradorId)
-        .eq('setor_id', setorId)
-
-      // Insere as novas
-      if (atendenteSubsetorIds.length > 0) {
-        const inserts = atendenteSubsetorIds.map((subsetorId) => ({
-          colaborador_id: colaboradorId,
-          setor_id: setorId,
-          subsetor_id: subsetorId,
-        }))
-        const { error } = await supabase.from('colaboradores_subsetores').insert(inserts)
-        if (error) throw error
-      }
-    }
-
     // If adding existing colaborador to this setor
     if (!editingAtendente && existingColaborador && !existingColaborador.alreadyInThisSetor) {
       setSavingAtendente(true)
@@ -2063,8 +1916,6 @@ const saveConfig = async () => {
           setor_id: setorId,
         })
         if (error) throw error
-
-        await saveSubsetores(existingColaborador.id)
 
         toast.success('Atendente adicionado ao setor!')
         setIsAtendenteModalOpen(false)
@@ -2100,9 +1951,6 @@ const saveConfig = async () => {
           .eq('id', editingAtendente.id)
 
         if (error) throw error
-
-        // Salvar subsetores na nova tabela N:N
-        await saveSubsetores(editingAtendente.id)
 
         toast.success('Atendente atualizado com sucesso!')
       } else {
@@ -2151,9 +1999,6 @@ const saveConfig = async () => {
           })
 
         if (linkError) throw linkError
-
-        // Salvar subsetores na nova tabela N:N
-        await saveSubsetores(colaboradorData.id)
 
         toast.success('Atendente criado com sucesso!')
       }
@@ -2360,75 +2205,82 @@ const saveConfig = async () => {
 
   return (
     <div className="flex h-screen flex-col bg-[#06080f]">
-      {/* Top Header - Simplified without tabs */}
-      <header className="flex h-14 items-center justify-between border-b border-white/6 glass-header px-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleBackClick}
-            className="flex items-center gap-3 text-foreground hover:text-primary transition-all cursor-pointer select-none active:scale-[0.98]"
-          >
-            <div className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-              isNavigatingBack ? "bg-primary/20" : "hover:bg-muted"
-            )}>
+      {/* Top Header */}
+      <header className="shrink-0 border-b border-white/6 glass-header">
+        <div className="flex h-14 items-center justify-between px-4 lg:px-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={handleBackClick}
+              className={cn(
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+                isNavigatingBack ? "bg-primary/20" : "hover:bg-muted"
+              )}
+            >
               {isNavigatingBack ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <ArrowLeft className="h-4 w-4" />
               )}
-            </div>
-            <div className="flex items-center gap-2">
-              <div 
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
+            </button>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: setor?.cor || '#3B82F6' }}
               >
                 <SetorIcon className="h-4 w-4 text-white" />
               </div>
-              {isLoading ? (
-                <Skeleton className="h-5 w-32" />
-              ) : (
-                <span className="font-semibold">{setor?.nome || 'Setor'}</span>
-              )}
+              <div className="min-w-0">
+                {isLoading ? (
+                  <Skeleton className="h-5 w-32" />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-semibold text-white truncate">{setor?.nome || 'Setor'}</h1>
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: setor?.cor || '#3B82F6' }}
+                    />
+                  </div>
+                )}
+                {setor?.descricao && (
+                  <p className="text-xs text-white/40 truncate hidden sm:block">{setor.descricao}</p>
+                )}
+              </div>
             </div>
-          </button>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNotificationModal(true)}
+              className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white"
+            >
+              <Send className="h-4 w-4" />
+              <span className="hidden sm:inline">Enviar Aviso</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <User className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        {/* Theme Toggle & User Menu */}
-        <div className="flex items-center gap-2">
-          {/* Send Notification Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNotificationModal(true)}
-            className="gap-2"
-          >
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline">Enviar Aviso</span>
-          </Button>
-
-          <ThemeToggle />
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <User className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-64 shrink-0 overflow-y-auto border-r glass-panel p-4">
-          <nav className="space-y-1">
+        {/* Horizontal Tab Bar */}
+        <div className="px-4 lg:px-6 -mb-px">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0">
             {sidebarItems.map((item) => {
               const Icon = item.icon
               const isActive = activeSection === item.id
@@ -2437,32 +2289,30 @@ const saveConfig = async () => {
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
                   className={cn(
-                    'flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left text-sm transition-all cursor-pointer select-none active:scale-[0.98]',
+                    'flex shrink-0 items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-all cursor-pointer select-none whitespace-nowrap',
                     isActive
-                      ? 'glass-nav-active text-emerald-400'
-                      : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80'
+                      ? 'bg-emerald-500/15 text-emerald-400 border-b-2 border-emerald-500'
+                      : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80 border-b-2 border-transparent'
                   )}
                 >
-                  <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-                  <div>
-                    <p className={cn('font-medium', isActive ? 'text-emerald-400' : 'text-white/80')}>{item.name}</p>
-                    <p className="text-xs text-white/30">{item.description}</p>
-                  </div>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span>{item.name}</span>
                 </button>
               )
             })}
-          </nav>
-        </aside>
+          </div>
+        </div>
+      </header>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-[#080a12] p-6">
+      {/* Main Content Area - Full Width */}
+      <main className="flex-1 overflow-y-auto bg-[#080a12] p-4 lg:p-6">
           {/* Monitoramento Section */}
           {activeSection === 'monitoramento' && (
-            <div className="space-y-6">
-              {/* Header */}
+            <div className="space-y-4">
+              {/* Header row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold text-white">Monitoramento de atendimento</h1>
+                  <h1 className="text-xl font-bold text-white">Monitoramento</h1>
                   <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1">
                     <span className="relative flex h-2 w-2">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -2471,165 +2321,85 @@ const saveConfig = async () => {
                     <span className="text-xs font-medium text-emerald-400">Ao vivo</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
-                    <Filter className="h-4 w-4" />
-                    Filtros
-                  </Button>
+              </div>
+
+              {/* Horizontal Stats Strip */}
+              <div className="glass-card-elevated rounded-2xl border-0 p-4">
+                <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-4 text-center">
+                  <div className="space-y-0.5">
+                    <p className="text-xl font-bold text-foreground tabular-nums">{stats.total}</p>
+                    <p className="text-[10px] text-muted-foreground">Total</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xl font-bold text-orange-500 tabular-nums">{stats.naFila}</p>
+                    <p className="text-[10px] text-muted-foreground">Na fila</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xl font-bold text-primary tabular-nums">{stats.emAtendimento}</p>
+                    <p className="text-[10px] text-muted-foreground">Em atend.</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xl font-bold text-green-500 tabular-nums">{stats.finalizadosHoje}</p>
+                    <p className="text-[10px] text-muted-foreground">Finalizados</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-lg font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoFila}</p>
+                    <p className="text-[10px] text-muted-foreground">Max. fila</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-lg font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoResposta}</p>
+                    <p className="text-[10px] text-muted-foreground">Max. resp.</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-green-500" />
+                      <p className="text-xl font-bold text-green-500 tabular-nums">{atendentesStats.online}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Online</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                      <p className="text-xl font-bold text-amber-500 tabular-nums">{atendentesStats.pausa}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Pausa</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-gray-400" />
+                      <p className="text-xl font-bold text-muted-foreground tabular-nums">{atendentesStats.invisivel}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Offline</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xl font-bold text-foreground tabular-nums">{stats.mediaTicketsPorAtendente}</p>
+                    <p className="text-[10px] text-muted-foreground">Ticket/Atend.</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Filters */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-white/40">Filtros rapidos:</span>
-                <Badge variant="secondary" className="cursor-pointer bg-white/[0.05] text-white/60 border-white/10 hover:bg-emerald-500/15 hover:text-emerald-400 hover:border-emerald-500/20">Filas</Badge>
-              </div>
-
-              {/* Stats Cards Row 1 */}
-              <div className="grid gap-4 grid-cols-1 lg:grid-cols-[2fr_1fr]">
-                {/* Atendimentos em tempo real */}
-                <Card className="glass-card-elevated rounded-2xl border-0 border-l-4 border-l-primary">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Atendimentos em tempo real
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-6 gap-3 text-center">
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-foreground tabular-nums">{stats.total}</p>
-                        <p className="text-xs text-muted-foreground">Total</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-orange-500 tabular-nums">{stats.naFila}</p>
-                        <p className="text-xs text-muted-foreground">Na fila</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-primary tabular-nums">{stats.emAtendimento}</p>
-                        <p className="text-xs text-muted-foreground">Em atend.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-green-500 tabular-nums">{stats.finalizadosHoje}</p>
-                        <p className="text-xs text-muted-foreground">Finalizados</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xl font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoFila}</p>
-                        <p className="text-xs text-muted-foreground">Max. fila</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xl font-bold text-foreground tabular-nums whitespace-nowrap">{stats.tempoMaximoResposta}</p>
-                        <p className="text-xs text-muted-foreground">Max. resp.</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Status dos atendentes */}
-                <Card className="glass-card-elevated rounded-2xl border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Status dos atendentes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-around text-center gap-2">
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-green-500 tabular-nums">{atendentesStats.online}</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="h-2 w-2 rounded-full bg-green-500" />
-                          <p className="text-xs text-muted-foreground">Online</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-amber-500 tabular-nums">{atendentesStats.pausa}</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                          <p className="text-xs text-muted-foreground">Pausa</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-muted-foreground tabular-nums">{atendentesStats.invisivel}</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="h-2 w-2 rounded-full bg-gray-400" />
-                          <p className="text-xs text-muted-foreground">Offline</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Stats Cards Row 2 */}
-              <div className="grid gap-4 lg:grid-cols-2">
-{/* Atendimento hoje */}
-              <Card className="glass-card-elevated rounded-2xl border-0">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Atendimento hoje
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="space-y-1">
-                      <p className="text-xl font-bold text-foreground tabular-nums">{temposHoje.tempoMedioEspera}</p>
-                      <p className="text-xs text-muted-foreground">Tempo méd. espera</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xl font-bold text-foreground tabular-nums">{temposHoje.tempoMedioResposta}</p>
-                      <p className="text-xs text-muted-foreground">Tempo méd. resposta</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xl font-bold text-foreground tabular-nums">{temposHoje.tempoMedioPrimeiraResposta}</p>
-                      <p className="text-xs text-muted-foreground">Tempo méd. 1ª resp.</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xl font-bold text-foreground tabular-nums">{temposHoje.tempoMedioAtendimento}</p>
-                      <p className="text-xs text-muted-foreground">Tempo méd. atend.</p>
-                    </div>
+              {/* Secondary stats strip */}
+              <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                <div className="glass-card-elevated rounded-xl border-0 p-3 text-center">
+                  <p className="text-lg font-bold text-foreground tabular-nums">{temposHoje.tempoMedioEspera}</p>
+                  <p className="text-[10px] text-muted-foreground">Espera</p>
+                </div>
+                <div className="glass-card-elevated rounded-xl border-0 p-3 text-center">
+                  <p className="text-lg font-bold text-foreground tabular-nums">{temposHoje.tempoMedioPrimeiraResposta}</p>
+                  <p className="text-[10px] text-muted-foreground">1a Resposta</p>
+                </div>
+                <div className="glass-card-elevated rounded-xl border-0 p-3 text-center">
+                  <p className="text-lg font-bold text-foreground tabular-nums">{temposHoje.tempoMedioAtendimento}</p>
+                  <p className="text-[10px] text-muted-foreground">Atendimento</p>
+                </div>
+                <div className="glass-card-elevated rounded-xl border-0 p-3 text-center">
+                  <div className="flex items-center justify-center gap-3">
+                    <div><p className="text-lg font-bold text-red-500 tabular-nums">{ticketsHoje.perdidos}</p><p className="text-[10px] text-muted-foreground">Perd.</p></div>
+                    <div><p className="text-lg font-bold text-orange-500 tabular-nums">{ticketsHoje.abandonados}</p><p className="text-[10px] text-muted-foreground">Aband.</p></div>
+                    <div><p className="text-lg font-bold text-green-500 tabular-nums">{ticketsHoje.finalizados}</p><p className="text-[10px] text-muted-foreground">Finaliz.</p></div>
                   </div>
-                </CardContent>
-              </Card>
-
-{/* Status dos tickets hoje */}
-              <Card className="glass-card-elevated rounded-2xl border-0">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Status dos tickets hoje
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="space-y-1">
-                      <p className="text-2xl font-bold text-red-500 tabular-nums">{ticketsHoje.perdidos}</p>
-                      <p className="text-xs text-muted-foreground">Perdidos</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-2xl font-bold text-orange-500 tabular-nums">{ticketsHoje.abandonados}</p>
-                      <p className="text-xs text-muted-foreground">Abandonados</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-2xl font-bold text-green-500 tabular-nums">{ticketsHoje.finalizados}</p>
-                      <p className="text-xs text-muted-foreground">Finalizados</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-2xl font-bold text-blue-500 tabular-nums">{ticketsHoje.fechados}</p>
-                      <p className="text-xs text-muted-foreground">Fechados</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Quick Filters 2 */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-white/40">Filtros rapidos:</span>
-              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Atendentes</Badge>
-              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Contato</Badge>
-              <Badge variant="outline" className="cursor-pointer border-white/10 text-white/50 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition-colors">Status do atendente</Badge>
-            </div>
+                </div>
+              </div>
 
             {/* Monitoramento Detalhado - Blip Style */}
             <Card className="glass-card-elevated rounded-2xl border-0">
@@ -3425,21 +3195,12 @@ const saveConfig = async () => {
                             <p className="text-sm text-primary truncate">{atendente.email}</p>
                           </div>
 
-                          {/* Filas/Setor */}
+                          {/* Setor */}
                           <div>
-                            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Setor / Subsetor</p>
+                            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Setor</p>
                             <p className="text-sm truncate">
                               {setor?.nome}
                             </p>
-                            {atendente.subsetor_nomes?.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {atendente.subsetor_nomes.map((nome: string, i: number) => (
-                                  <span key={i} className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                                    {nome}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
                           </div>
 
                           {/* Tickets Simultâneos */}
@@ -3601,7 +3362,12 @@ const saveConfig = async () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">Horários de Atendimento</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-white">Horários de Atendimento</h1>
+              <button type="button" className="text-white/30 hover:text-white/60 transition-colors" title="Configure os dias e horários em que sua equipe está disponível para atendimento.">
+                <Info className="h-4 w-4" />
+              </button>
+            </div>
             <p className="text-muted-foreground">
               Defina quais dias e horários seus atendentes estarão disponíveis
             </p>
@@ -3668,7 +3434,12 @@ const saveConfig = async () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">Pausas</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-white">Pausas</h1>
+              <button type="button" className="text-white/30 hover:text-white/60 transition-colors" title="Configure os tipos de pausa que os atendentes podem utilizar durante o expediente.">
+                <Info className="h-4 w-4" />
+              </button>
+            </div>
             <p className="text-muted-foreground">
               Configure os tipos de pausas disponíveis para os atendentes
             </p>
@@ -3745,21 +3516,17 @@ const saveConfig = async () => {
       </div>
     )}
 
-    {/* Configurações Section */}
+    {/* Configuracoes Section */}
     {activeSection === 'configuracoes' && (
-      <div className="space-y-6">
+      <div className="space-y-4">
+        {/* Header with save button */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white">Configurações do Setor</h1>
-            <p className="text-muted-foreground">
-              Personalize as informações e aparência do setor
-            </p>
-          </div>
+          <h1 className="text-xl font-bold text-white">Configuracoes</h1>
           <div className="flex items-center gap-3">
             {hasUnsavedConfig && !saving && (
               <span className="flex items-center gap-1.5 text-xs text-amber-400">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                Alterações não salvas
+                Alteracoes nao salvas
               </span>
             )}
             <Button onClick={saveConfig} disabled={saving} className={cn(hasUnsavedConfig && !saving && "ring-2 ring-amber-500/40")}>
@@ -3768,1027 +3535,559 @@ const saveConfig = async () => {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Salvando...
                 </>
-              ) : 'Salvar Configurações'}
+              ) : 'Salvar Configuracoes'}
             </Button>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Basic info */}
-          <Card className="glass-card-elevated rounded-2xl border-0">
-            <CardHeader>
-              <CardTitle>Informações Básicas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome">Nome do Setor</Label>
-                <Input
-                  id="nome"
-                  value={configForm.nome}
-                  onChange={(e) =>
-                    setConfigForm((prev) => ({ ...prev, nome: e.target.value }))
-                  }
-                  placeholder="Ex: Suporte Técnico"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="descricao">Descrição</Label>
-                <Textarea
-                  id="descricao"
-                  value={configForm.descricao}
-                  onChange={(e) =>
-                    setConfigForm((prev) => ({ ...prev, descricao: e.target.value }))
-                  }
-                  placeholder="Descreva as responsabilidades deste setor..."
-                  rows={4}
-                />
-              </div>
-
-              {tagsList.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5" />
-                    Tag
-                  </Label>
-                  <Select
-                    value={configForm.tag_id || 'none'}
-                    onValueChange={(v) =>
-                      setConfigForm((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar tag..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Sem tag</SelectItem>
-                      {tagsList.map((tag) => (
-                        <SelectItem key={tag.id} value={tag.id}>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="h-3 w-3 rounded-full shrink-0"
-                              style={{ backgroundColor: tag.cor }}
-                            />
-                            {tag.nome}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-            </CardContent>
-          </Card>
-
-          {/* Aparencia - Preview + Cor + Icone compacto */}
-          <Card className="glass-card-elevated rounded-2xl border-0">
-            <CardHeader>
-              <CardTitle>Aparencia do Setor</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Preview inline */}
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                <div
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-                  style={{ backgroundColor: configForm.cor }}
-                >
-                  <IconComponent className="h-7 w-7 text-white" />
+        {/* === Collapsible: Informacoes Basicas === */}
+        <Collapsible defaultOpen>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
+                  <Info className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">{configForm.nome || 'Nome do Setor'}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {configForm.descricao || 'Descricao do setor'}
-                  </p>
+                  <p className="font-semibold text-white">Informacoes Basicas</p>
+                  <p className="text-xs text-white/40">Nome, descricao, aparencia e tag do setor</p>
                 </div>
               </div>
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Left column: Name, Desc, Tag */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nome">Nome do Setor</Label>
+                      <Input
+                        id="nome"
+                        value={configForm.nome}
+                        onChange={(e) => setConfigForm((prev) => ({ ...prev, nome: e.target.value }))}
+                        placeholder="Ex: Suporte Tecnico"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="descricao">Descricao</Label>
+                      <Textarea
+                        id="descricao"
+                        value={configForm.descricao}
+                        onChange={(e) => setConfigForm((prev) => ({ ...prev, descricao: e.target.value }))}
+                        placeholder="Descreva as responsabilidades deste setor..."
+                        rows={4}
+                      />
+                    </div>
+                    {tagsList.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" /> Tag</Label>
+                        <Select value={configForm.tag_id || 'none'} onValueChange={(v) => setConfigForm((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))}>
+                          <SelectTrigger><SelectValue placeholder="Selecionar tag..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Sem tag</SelectItem>
+                            {tagsList.map((tag) => (
+                              <SelectItem key={tag.id} value={tag.id}>
+                                <div className="flex items-center gap-2">
+                                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: tag.cor }} />
+                                  {tag.nome}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                  {/* Right column: Appearance */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: configForm.cor }}>
+                        <IconComponent className="h-7 w-7 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{configForm.nome || 'Nome do Setor'}</h3>
+                        <p className="text-xs text-muted-foreground">{configForm.descricao || 'Descricao do setor'}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Cor</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_COLORS.map((color) => (
+                          <button
+                            key={color.value}
+                            onClick={() => setConfigForm((prev) => ({ ...prev, cor: color.value }))}
+                            className={cn('h-8 w-8 rounded-full border-2 transition-all', configForm.cor === color.value ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-foreground/20' : 'border-transparent hover:scale-110')}
+                            style={{ backgroundColor: color.value }}
+                            title={color.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Icone</Label>
+                      <div className="grid grid-cols-8 gap-1.5">
+                        {AVAILABLE_ICONS.map((iconItem) => (
+                          <button
+                            key={iconItem.name}
+                            onClick={() => setConfigForm((prev) => ({ ...prev, icon_url: iconItem.name }))}
+                            className={cn('flex h-9 w-full items-center justify-center rounded-md border transition-all', configForm.icon_url === iconItem.name ? 'border-primary bg-primary/10 text-primary' : 'border-transparent hover:bg-muted text-muted-foreground')}
+                            title={iconItem.name}
+                          >
+                            <iconItem.icon className="h-4 w-4" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
-              {/* Colors inline */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Cor</Label>
-                <div className="flex flex-wrap gap-2">
-                  {AVAILABLE_COLORS.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() =>
-                        setConfigForm((prev) => ({ ...prev, cor: color.value }))
-                      }
-                      className={cn(
-                        'h-8 w-8 rounded-full border-2 transition-all',
-                        configForm.cor === color.value
-                          ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-foreground/20'
-                          : 'border-transparent hover:scale-110'
-                      )}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
+        {/* === Collapsible: Canais (WhatsApp) === */}
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950/50">
+                  <Smartphone className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Canais de Atendimento (WhatsApp)</p>
+                  <p className="text-xs text-white/40">Numeros conectados via Evolution API</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {canais.length > 0 && <Badge variant="secondary" className="text-xs">{canais.length}</Badge>}
+                <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">Configure os numeros de WhatsApp para este setor.</p>
+                  <Button onClick={() => { setEditingCanal(null); resetCanalForm(); setIsCanalModalOpen(true) }}>
+                    <Plus className="mr-2 h-4 w-4" /> Adicionar Canal
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* === Collapsible: Distribuicao de Tickets === */}
+        {!empresaMode && (
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
+                  <Settings className="h-4 w-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Distribuicao de Tickets</p>
+                  <p className="text-xs text-white/40">Configure a atribuicao automatica de tickets</p>
+                </div>
+              </div>
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Atribuicao Automatica</p>
+                      <p className="text-xs text-muted-foreground">Novos tickets sao automaticamente atribuidos ao atendente com menor carga.</p>
+                    </div>
+                    <Switch
+                      checked={distributionConfig.auto_assign_enabled}
+                      onCheckedChange={(checked) => setDistributionConfig((prev) => ({ ...prev, auto_assign_enabled: checked }))}
                     />
-                  ))}
+                  </div>
+                  <div className="space-y-2 max-w-xs">
+                    <Label htmlFor="max_tickets">Limite de tickets por atendente</Label>
+                    <Input id="max_tickets" type="number" min={1} max={100} value={distributionConfig.max_tickets_per_agent} onChange={(e) => setDistributionConfig((prev) => ({ ...prev, max_tickets_per_agent: parseInt(e.target.value) || 10 }))} />
+                    <p className="text-xs text-muted-foreground">Maximo de tickets ativos simultaneos por atendente.</p>
+                  </div>
+                  <Button size="sm" onClick={saveDistributionConfig} disabled={savingDistribution}>
+                    {savingDistribution ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>) : 'Salvar Distribuicao'}
+                  </Button>
                 </div>
               </div>
-
-              {/* Icons compact grid */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Icone</Label>
-                <div className="grid grid-cols-8 gap-1.5">
-                  {AVAILABLE_ICONS.map((iconItem) => (
-                    <button
-                      key={iconItem.name}
-                      onClick={() =>
-                        setConfigForm((prev) => ({ ...prev, icon_url: iconItem.name }))
-                      }
-                      className={cn(
-                        'flex h-9 w-full items-center justify-center rounded-md border transition-all',
-                        configForm.icon_url === iconItem.name
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-transparent hover:bg-muted text-muted-foreground'
-                      )}
-                      title={iconItem.name}
-                    >
-                      <iconItem.icon className="h-4 w-4" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
+            </CollapsibleContent>
           </Card>
-        </div>
+        </Collapsible>
+        )}
 
-        {/* Roteamento de Atendimento — oculto em modo empresa */}
-        {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowRightLeft className="h-5 w-5" />
-              Roteamento de Atendimento
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Configure para qual setor cada tipo de atendimento sera redirecionado quando identificado pelo bot.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { key: 'suporte', label: 'Suporte Tecnico', icon: Headphones, color: 'bg-blue-500/10 text-blue-400', desc: 'Duvidas tecnicas e problemas com o sistema' },
-              { key: 'comercial', label: 'Comercial', icon: ShoppingCart, color: 'bg-green-500/10 text-green-400', desc: 'Vendas, propostas e negociacoes' },
-              { key: 'financeiro', label: 'Financeiro', icon: CreditCard, color: 'bg-amber-500/10 text-amber-400', desc: 'Boletos, pagamentos e notas fiscais' },
-              { key: 'ouvidoria', label: 'Ouvidoria', icon: MessageCircle, color: 'bg-purple-500/10 text-purple-400', desc: 'Reclamacoes, sugestoes e elogios' },
-              { key: 'implantacao', label: 'Implantacao', icon: Rocket, color: 'bg-cyan-500/10 text-cyan-400', desc: 'Onboarding e configuracao inicial' },
-            ].map((tipo) => {
-              const IconComponent = tipo.icon
-              const selectedSetor = todosSetores.find(s => s.id === tiposAtendimentoSetor[tipo.key])
-              return (
-                <div key={tipo.key} className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                  <div className={cn("flex items-center justify-center h-12 w-12 rounded-lg shrink-0", tipo.color)}>
-                    <IconComponent className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{tipo.label}</span>
-                      {selectedSetor && (
-                        <Badge variant="secondary" className="text-xs">
-                          {selectedSetor.nome}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{tipo.desc}</p>
-                  </div>
-                  <Select
-                    value={tiposAtendimentoSetor[tipo.key] || 'none'}
-                    onValueChange={(value) => setTiposAtendimentoSetor((prev) => ({ ...prev, [tipo.key]: value === 'none' ? null : value }))}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Selecionar setor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">
-                        <span className="text-muted-foreground">Nenhum</span>
-                      </SelectItem>
-                      {todosSetores.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+        {/* === Collapsible: Mensagens === */}
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-950/50">
+                  <MessageCircle className="h-4 w-4 text-purple-400" />
                 </div>
-              )
-            })}
-            <div className="flex justify-end pt-2">
-              <Button onClick={saveTiposAtendimento} disabled={savingTiposAtendimento}>
-                {savingTiposAtendimento ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  'Salvar Configuracoes'
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>}
-
-        {/* Row 1: Subsetores + Tempo de Espera */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Subsetores — oculto em modo empresa */}
-          {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="flex flex-row items-center justify-between shrink-0">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Subsetores
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Crie subsetores para organizar e direcionar atendimentos de forma mais especifica.
-                </p>
+                <div>
+                  <p className="font-semibold text-white">Mensagens</p>
+                  <p className="text-xs text-white/40">Mensagem de finalizacao e webhooks</p>
+                </div>
               </div>
-              <Button size="sm" onClick={openCreateSubsetor}>
-                <Plus className="h-4 w-4 mr-1" />
-                Novo Subsetor
-              </Button>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-hidden p-0 px-6 pb-6">
-              {subsetores.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhum subsetor cadastrado</p>
-              ) : (
-                <div className="overflow-y-auto h-full">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-card z-10">
-                      <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Descricao</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Acoes</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {subsetores.map((subsetor) => (
-                        <TableRow key={subsetor.id}>
-                          <TableCell className="font-medium">{subsetor.nome}</TableCell>
-                          <TableCell className="text-muted-foreground">{subsetor.descricao || '-'}</TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={subsetor.ativo}
-                              onCheckedChange={() => toggleSubsetorAtivo(subsetor)}
-                            />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" onClick={() => openEditSubsetor(subsetor)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteSubsetor(subsetor.id)}
-                                disabled={deletingSubsetorId === subsetor.id}
-                                className="text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>}
-
-          {/* Tempo de Espera */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="shrink-0">
-              <CardTitle>Tempo de Espera do Ticket</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Tempo maximo (em minutos) sem resposta do cliente. Apos esse tempo, o ticket ficara destacado em laranja no workdesk.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="space-y-2 flex-1 max-w-xs">
-                  <Label htmlFor="tempo_espera_minutos">Minutos</Label>
-                  <Input
-                    id="tempo_espera_minutos"
-                    type="number"
-                    min={1}
-                    max={1440}
-                    placeholder="10"
-                    value={configForm.tempo_espera_minutos}
-                    onChange={(e) => setConfigForm((prev) => ({ ...prev, tempo_espera_minutos: parseInt(e.target.value) || 10 }))}
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                {/* Mensagem de Finalizacao */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium">Mensagem de Finalizacao</h4>
+                  <p className="text-xs text-muted-foreground">Enviada automaticamente via WhatsApp quando um ticket e encerrado.</p>
+                  <Textarea
+                    value={configForm.mensagem_finalizacao}
+                    onChange={(e) => setConfigForm((prev) => ({ ...prev, mensagem_finalizacao: e.target.value }))}
+                    placeholder="Ex: Obrigado pelo contato, {{cliente_nome}}!"
+                    rows={4}
                   />
-                </div>
-                <div className="flex items-center gap-2 mt-6">
-                  <div className="h-4 w-4 rounded-full bg-amber-500" />
-                  <span className="text-sm text-muted-foreground">Destaque apos {configForm.tempo_espera_minutos} min sem resposta</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Row 2: Distribuição de Tickets + Mensagem de Finalização */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Distribuição de Tickets — oculto em modo empresa */}
-          {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 shrink-0">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5" />
-                  Distribuição de Tickets
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Configure como os tickets são distribuídos automaticamente entre os atendentes.
-                </p>
-              </div>
-              <Button size="sm" onClick={saveDistributionConfig} disabled={savingDistribution}>
-                {savingDistribution ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : 'Salvar'}
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-5 overflow-y-auto">
-              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Atribuição Automática</p>
-                  <p className="text-xs text-muted-foreground">
-                    Quando ativado, novos tickets são automaticamente atribuídos ao atendente com menor carga disponível.
-                  </p>
-                </div>
-                <Switch
-                  checked={distributionConfig.auto_assign_enabled}
-                  onCheckedChange={(checked) =>
-                    setDistributionConfig((prev) => ({ ...prev, auto_assign_enabled: checked }))
-                  }
-                />
-              </div>
-              <div className="space-y-2 max-w-xs">
-                <Label htmlFor="max_tickets">Limite de tickets por atendente</Label>
-                <Input
-                  id="max_tickets"
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={distributionConfig.max_tickets_per_agent}
-                  onChange={(e) =>
-                    setDistributionConfig((prev) => ({
-                      ...prev,
-                      max_tickets_per_agent: parseInt(e.target.value) || 10,
-                    }))
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  Máximo de tickets ativos simultâneos por atendente. Atendentes que atingirem esse limite não receberão novos tickets automaticamente.
-                </p>
-              </div>
-            </CardContent>
-          </Card>}
-
-          {/* Mensagem de Finalização */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="shrink-0">
-              <CardTitle>Mensagem de Finalização</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Esta mensagem será enviada automaticamente via WhatsApp quando um ticket for encerrado.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4 overflow-y-auto">
-              <Textarea
-                value={configForm.mensagem_finalizacao}
-                onChange={(e) =>
-                  setConfigForm((prev) => ({ ...prev, mensagem_finalizacao: e.target.value }))
-                }
-                placeholder="Ex: Obrigado pelo contato, {{cliente_nome}}! Seu atendimento foi finalizado. Caso precise de mais ajuda, estamos a disposicao."
-                rows={4}
-              />
-              <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-muted-foreground">Variaveis disponiveis:</span>
-                {templateVariables.map((v) => (
-                  <button
-                    key={v.key}
-                    type="button"
-                    onClick={() =>
-                      setConfigForm((prev) => ({
-                        ...prev,
-                        mensagem_finalizacao: prev.mensagem_finalizacao + v.key,
-                      }))
-                    }
-                    className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 font-mono"
-                  >
-                    {v.key}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Canais de Atendimento */}
-        <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[420px]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 shrink-0">
-            <div>
-              <CardTitle>Canais de Atendimento</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Configure multiplos canais (WhatsApp, EvolutionAPI) para este setor.
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                setEditingCanal(null)
-                resetCanalForm()
-                setIsCanalModalOpen(true)
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Canal
-            </Button>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden p-0 px-6 pb-6">
-            {canais.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum canal cadastrado</p>
-                <p className="text-sm">Adicione canais para receber e responder mensagens</p>
-              </div>
-            ) : (
-              <div className="overflow-y-auto h-full">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-card z-10">
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Identificador</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Acoes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {canais.map((canal) => (
-                      <TableRow key={canal.id}>
-                        <TableCell className="font-medium">{canal.nome}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            canal.tipo === 'whatsapp' ? 'default' :
-                            canal.tipo === 'evolution_api' ? 'secondary' :
-                            'outline'
-                          } className={
-                            canal.tipo === 'whatsapp' ? 'bg-emerald-600 hover:bg-emerald-700' :
-                            'bg-sky-600 hover:bg-sky-700 text-primary-foreground'
-                          }>
-                            {canal.tipo === 'whatsapp' ? 'WhatsApp' : 'EvolutionAPI'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-xs font-mono">
-                          {canal.tipo === 'whatsapp' ? (canal.phone_number_id || '-') :
-                           canal.tipo === 'evolution_api' ? (
-                            <div className="flex flex-col gap-0.5">
-                              {canal.instancia && (
-                                <span className="text-foreground font-medium">{canal.instancia}</span>
-                              )}
-                              <span>{canal.evolution_api_key ? '****' + canal.evolution_api_key.slice(-4) : '-'}</span>
-                              {!canal.instancia && (
-                                <span className="text-orange-500 text-[10px] font-sans">sem instância</span>
-                              )}
-                            </div>
-                           ) : '-'}
-                        </TableCell>
-                        <TableCell>
-                          {canal.tipo === 'whatsapp' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-900/40 text-green-300">
-                              <Wifi className="h-3 w-3" />
-                              Conectado
-                            </span>
-                          ) : canal.tipo === 'evolution_api' ? (
-                            (() => {
-                              const st = canalStatuses[canal.id]
-                              const isChecking = checkingCanalId === canal.id
-                              if (isChecking) return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                  Verificando...
-                                </span>
-                              )
-                              if (!st) return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-muted/50 text-muted-foreground">
-                                  —
-                                </span>
-                              )
-                              if (st === 'unknown') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-orange-900/40 text-orange-300">
-                                  <WifiOff className="h-3 w-3" />
-                                  Sem resposta
-                                </span>
-                              )
-                              if (st === 'open') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-green-900/40 text-green-300">
-                                  <Wifi className="h-3 w-3" />
-                                  Conectado
-                                </span>
-                              )
-                              if (st === 'connecting' || st === 'qrcode') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-900/40 text-yellow-300">
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                  Conectando
-                                </span>
-                              )
-                              if (st === 'not_found') return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
-                                  <WifiOff className="h-3 w-3" />
-                                  Não encontrada
-                                </span>
-                              )
-                              return (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-900/40 text-red-300">
-                                  <WifiOff className="h-3 w-3" />
-                                  Desconectado
-                                </span>
-                              )
-                            })()
-                          ) : null}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {/* Botão Verificar para evolution_api */}
-                            {canal.tipo === 'evolution_api' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground hover:bg-muted"
-                                onClick={() => checkInstanciaStatus(canal)}
-                                disabled={checkingCanalId === canal.id}
-                                title="Verificar status da instância agora"
-                              >
-                                {checkingCanalId === canal.id ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                  <RefreshCw className="h-3.5 w-3.5" />
-                                )}
-                                {!canalStatuses[canal.id] && checkingCanalId !== canal.id && (
-                                  <span>Verificar</span>
-                                )}
-                              </Button>
-                            )}
-                            {/* Botão Conectar para evolution desconectado */}
-                            {canal.tipo === 'evolution_api' && canal.instancia &&
-                              canalStatuses[canal.id] &&
-                              canalStatuses[canal.id] !== 'open' &&
-                              canalStatuses[canal.id] !== 'connecting' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-950"
-                                onClick={() => openReconnect(canal)}
-                              >
-                                <QrCode className="h-3.5 w-3.5 mr-1" />
-                                Conectar
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditCanal(canal)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteCanal(canal.id)}
-                              disabled={deletingCanalId === canal.id}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs text-muted-foreground">Variaveis:</span>
+                    {templateVariables.map((v) => (
+                      <button key={v.key} type="button" onClick={() => setConfigForm((prev) => ({ ...prev, mensagem_finalizacao: prev.mensagem_finalizacao + v.key }))} className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 font-mono">{v.key}</button>
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Row 3: Templates de Mensagem + Webhooks */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Templates de Mensagem */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 shrink-0">
-              <div>
-                <CardTitle>Templates de Mensagem</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Crie atalhos para respostas rapidas no WorkDesk. Use /atalho para inserir a mensagem.
-                </p>
-              </div>
-              <Button
-                onClick={() => {
-                  setEditingTemplate(null)
-                  setTemplateForm({ atalho: '', mensagem: '' })
-                  setIsTemplateModalOpen(true)
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Template
-              </Button>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-hidden p-0 px-6 pb-6">
-              {templates.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum template cadastrado</p>
-                  <p className="text-sm">Crie templates para agilizar o atendimento</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="overflow-y-auto h-full space-y-3 pr-1">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      className="flex items-start justify-between p-4 rounded-lg border bg-muted/30"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <code className="text-sm font-semibold text-primary">/{template.atalho}</code>
+                {/* Webhooks */}
+                <div className="space-y-4 pt-4 border-t border-white/6 mt-4">
+                  <h4 className="text-sm font-medium">Webhooks</h4>
+                  <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input type="checkbox" className="h-4 w-4 rounded border-border accent-primary" checked={configForm.webhook_eventos.includes('ticket_encerrado')} onChange={(e) => { setConfigForm((prev) => ({ ...prev, webhook_eventos: e.target.checked ? [...prev.webhook_eventos, 'ticket_encerrado'] : prev.webhook_eventos.filter((ev) => ev !== 'ticket_encerrado') })) }} />
+                    <div>
+                      <p className="text-sm font-medium">Ticket Encerrado</p>
+                      <p className="text-[11px] text-muted-foreground">Dispara quando um ticket e finalizado.</p>
+                    </div>
+                  </label>
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook_url">URL do Webhook</Label>
+                    <Input id="webhook_url" placeholder="https://exemplo.com/webhook" value={configForm.webhook_url} onChange={(e) => setConfigForm((prev) => ({ ...prev, webhook_url: e.target.value }))} />
+                  </div>
+                  {configForm.webhook_eventos.length > 0 && !configForm.webhook_url && (
+                    <p className="text-sm text-amber-400 bg-amber-950/20 border border-amber-800/30 p-2 rounded-md">Voce selecionou eventos mas nao informou a URL do webhook.</p>
+                  )}
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* === Collapsible: Transferencia === */}
+        {!empresaMode && (
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-950/50">
+                  <ArrowRightLeft className="h-4 w-4 text-sky-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Transferencia</p>
+                  <p className="text-xs text-white/40">Setores disponiveis como destino de transferencia</p>
+                </div>
+              </div>
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">Selecione quais setores estarao disponiveis como destino ao transferir um ticket deste setor.</p>
+                    <Button size="sm" onClick={saveSetoresDestino} disabled={savingSetoresDestino}>
+                      {savingSetoresDestino ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>) : 'Salvar'}
+                    </Button>
+                  </div>
+                  {/* Busca */}
+                  <div className="relative shrink-0">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+                    <Input
+                      placeholder="Buscar setor..."
+                      value={searchSetorDestino}
+                      onChange={(e) => setSearchSetorDestino(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+
+                  {/* Lista */}
+                  {(() => {
+                    const lista = todosSetores.filter(
+                      (s) =>
+                        s.id !== setorId &&
+                        s.nome.toLowerCase().includes(searchSetorDestino.toLowerCase())
+                    )
+                    if (todosSetores.filter((s) => s.id !== setorId).length === 0) {
+                      return (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                          <p className="text-sm">Nenhum outro setor cadastrado</p>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{template.mensagem}</p>
+                      )
+                    }
+                    if (lista.length === 0) {
+                      return (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <p className="text-sm">Nenhum setor encontrado</p>
+                        </div>
+                      )
+                    }
+                    return (
+                      <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+                        {lista.map((s) => {
+                          const isSelected = setoresDestinoTransferencia.includes(s.id)
+                          return (
+                            <label
+                              key={s.id}
+                              className={cn(
+                                'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors',
+                                isSelected
+                                  ? 'bg-primary/8 border-primary/40'
+                                  : 'hover:bg-muted/50 border-border/60'
+                              )}
+                            >
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-border accent-primary"
+                                checked={isSelected}
+                                onChange={() => toggleSetorDestino(s.id)}
+                              />
+                              <span className="text-sm font-medium">{s.nome}</span>
+                              {isSelected && (
+                                <Badge variant="secondary" className="ml-auto text-xs">
+                                  Habilitado
+                                </Badge>
+                              )}
+                            </label>
+                          )
+                        })}
                       </div>
-                      <div className="flex items-center gap-1 ml-4">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setEditingTemplate(template)
-                            setTemplateForm({
-                              atalho: template.atalho,
-                              mensagem: template.mensagem,
-                            })
-                            setIsTemplateModalOpen(true)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteTemplate(template.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    )
+                  })()}
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+        )}
+
+        {/* === Collapsible: Receptor / Transmissor === */}
+        {colaboradorLogado?.is_master && !empresaMode && (
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-950/50">
+                  <Radio className="h-4 w-4 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Receptor / Transmissor</p>
+                  <p className="text-xs text-white/40">Encaminhamento automatico quando nao ha atendentes</p>
+                </div>
+              </div>
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="space-y-5">
+                  {/* Switch: Setor Receptor */}
+                  <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950">
+                        <Inbox className="h-4 w-4 text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Setor Receptor</p>
+                        <p className="text-xs text-muted-foreground">
+                          Marca este setor como ponto central que recebe tickets de outros setores.
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Webhooks */}
-          <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[400px]">
-            <CardHeader className="shrink-0">
-              <CardTitle>Webhooks</CardTitle>
-              <p className="text-sm text-muted-foreground">Dispare notificações para sistemas externos quando eventos ocorrerem neste setor.</p>
-            </CardHeader>
-            <CardContent className="space-y-4 overflow-y-auto">
-              <div className="space-y-2">
-                <Label>Eventos</Label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-border accent-primary"
-                      checked={configForm.webhook_eventos.includes('ticket_encerrado')}
-                      onChange={(e) => {
+                    <Switch
+                      checked={configForm.is_receptor}
+                      onCheckedChange={(checked) => {
                         setConfigForm((prev) => ({
                           ...prev,
-                          webhook_eventos: e.target.checked
-                            ? [...prev.webhook_eventos, 'ticket_encerrado']
-                            : prev.webhook_eventos.filter((ev) => ev !== 'ticket_encerrado'),
+                          is_receptor: checked,
+                          ...(checked ? { transmissao_ativa: false, setor_receptor_id: '' } : {}),
                         }))
                       }}
                     />
-                    <div>
-                      <p className="text-sm font-medium">Ticket Encerrado</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Dispara quando um ticket é finalizado. Envia dados do ticket, cliente, canal e horários.
-                      </p>
+                  </div>
+
+                  {/* Switch: Transmissao Ativa */}
+                  <div className={cn(
+                    "rounded-lg border border-border p-4 transition-opacity",
+                    configForm.is_receptor && "opacity-50 pointer-events-none"
+                  )}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-950">
+                          <Radio className="h-4 w-4 text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Transmissao Ativa</p>
+                          <p className="text-xs text-muted-foreground">
+                            Quando ativo, tickets sem atendente disponivel sao encaminhados ao setor receptor.
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={configForm.transmissao_ativa}
+                        disabled={configForm.is_receptor}
+                        onCheckedChange={(checked) => {
+                          setConfigForm((prev) => ({
+                            ...prev,
+                            transmissao_ativa: checked,
+                            ...(checked ? {} : { setor_receptor_id: '' }),
+                          }))
+                        }}
+                      />
                     </div>
-                  </label>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="webhook_url">URL do Webhook</Label>
-                <Input
-                  id="webhook_url"
-                  placeholder="https://exemplo.com/webhook"
-                  value={configForm.webhook_url}
-                  onChange={(e) => setConfigForm((prev) => ({ ...prev, webhook_url: e.target.value }))}
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  URL que receberá um POST com os dados do evento em JSON.
-                </p>
-              </div>
-              {configForm.webhook_eventos.length > 0 && !configForm.webhook_url && (
-                <p className="text-sm text-amber-400 bg-amber-950/20 border border-amber-800/30 p-2 rounded-md">
-                  Você selecionou eventos mas não informou a URL do webhook.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Setores para Transferência — oculto em modo empresa */}
-        {!empresaMode && <Card className="glass-card-elevated rounded-2xl border-0 flex flex-col max-h-[420px]">
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 shrink-0">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowRightLeft className="h-5 w-5" />
-                Setores para Transferência
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Selecione quais setores estarão disponíveis como destino ao transferir um ticket deste setor no WorkDesk.
-              </p>
-            </div>
-            <Button size="sm" onClick={saveSetoresDestino} disabled={savingSetoresDestino}>
-              {savingSetoresDestino ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : 'Salvar'}
-            </Button>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden flex flex-col gap-3 pb-4">
-            {/* Busca */}
-            <div className="relative shrink-0">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
-              <Input
-                placeholder="Buscar setor..."
-                value={searchSetorDestino}
-                onChange={(e) => setSearchSetorDestino(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-
-            {/* Lista */}
-            {(() => {
-              const lista = todosSetores.filter(
-                (s) =>
-                  s.id !== setorId &&
-                  s.nome.toLowerCase().includes(searchSetorDestino.toLowerCase())
-              )
-              if (todosSetores.filter((s) => s.id !== setorId).length === 0) {
-                return (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p className="text-sm">Nenhum outro setor cadastrado</p>
-                  </div>
-                )
-              }
-              if (lista.length === 0) {
-                return (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <p className="text-sm">Nenhum setor encontrado</p>
-                  </div>
-                )
-              }
-              return (
-                <div className="overflow-y-auto flex-1 space-y-2 pr-1">
-                  {lista.map((s) => {
-                    const isSelected = setoresDestinoTransferencia.includes(s.id)
-                    return (
-                      <label
-                        key={s.id}
-                        className={cn(
-                          'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors',
-                          isSelected
-                            ? 'bg-primary/8 border-primary/40'
-                            : 'hover:bg-muted/50 border-border/60'
+                    {/* Select: Setor Receptor destino */}
+                    {configForm.transmissao_ativa && !configForm.is_receptor && (
+                      <div className="mt-4 space-y-2 pl-12">
+                        <Label>Setor Receptor de Destino</Label>
+                        <Select
+                          value={configForm.setor_receptor_id || 'none'}
+                          onValueChange={(v) =>
+                            setConfigForm((prev) => ({ ...prev, setor_receptor_id: v === 'none' ? '' : v }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o setor receptor..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {todosSetores
+                              .filter((s) => s.id !== setorId && s.is_receptor)
+                              .map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  <div className="flex items-center gap-2">
+                                    <Inbox className="h-3.5 w-3.5 text-blue-500" />
+                                    {s.nome}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {todosSetores.filter((s) => s.id !== setorId && s.is_receptor).length === 0 && (
+                          <p className="text-xs text-amber-400">
+                            Nenhum setor esta configurado como receptor. Marque um setor como &quot;Setor Receptor&quot; primeiro.
+                          </p>
                         )}
-                      >
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-border accent-primary"
-                          checked={isSelected}
-                          onChange={() => toggleSetorDestino(s.id)}
-                        />
-                        <span className="text-sm font-medium">{s.nome}</span>
-                        {isSelected && (
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            Habilitado
-                          </Badge>
-                        )}
-                      </label>
-                    )
-                  })}
-                </div>
-              )
-            })()}
-          </CardContent>
-        </Card>}
-
-        {/* Receptor / Transmissor — apenas admin, oculto em modo empresa */}
-        {colaboradorLogado?.is_master && !empresaMode && (
-          <Card className="glass-card-elevated rounded-2xl border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Radio className="h-5 w-5" />
-                Receptor / Transmissor
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure o encaminhamento automático de tickets quando não houver atendentes disponíveis.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {/* Switch: Setor Receptor */}
-              <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950">
-                    <Inbox className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Setor Receptor</p>
-                    <p className="text-xs text-muted-foreground">
-                      Marca este setor como ponto central que recebe tickets de outros setores.
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={configForm.is_receptor}
-                  onCheckedChange={(checked) => {
-                    setConfigForm((prev) => ({
-                      ...prev,
-                      is_receptor: checked,
-                      // Receptor não pode transmitir
-                      ...(checked ? { transmissao_ativa: false, setor_receptor_id: '' } : {}),
-                    }))
-                  }}
-                />
-              </div>
-
-              {/* Switch: Transmissão Ativa */}
-              <div className={cn(
-                "rounded-lg border border-border p-4 transition-opacity",
-                configForm.is_receptor && "opacity-50 pointer-events-none"
-              )}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-950">
-                      <Radio className="h-4 w-4 text-amber-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Transmissão Ativa</p>
-                      <p className="text-xs text-muted-foreground">
-                        Quando ativo, tickets sem atendente disponível são encaminhados ao setor receptor.
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={configForm.transmissao_ativa}
-                    disabled={configForm.is_receptor}
-                    onCheckedChange={(checked) => {
-                      setConfigForm((prev) => ({
-                        ...prev,
-                        transmissao_ativa: checked,
-                        ...(checked ? {} : { setor_receptor_id: '' }),
-                      }))
-                    }}
-                  />
-                </div>
-
-                {/* Select: Setor Receptor destino */}
-                {configForm.transmissao_ativa && !configForm.is_receptor && (
-                  <div className="mt-4 space-y-2 pl-12">
-                    <Label>Setor Receptor de Destino</Label>
-                    <Select
-                      value={configForm.setor_receptor_id || 'none'}
-                      onValueChange={(v) =>
-                        setConfigForm((prev) => ({ ...prev, setor_receptor_id: v === 'none' ? '' : v }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o setor receptor..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Nenhum</SelectItem>
-                        {todosSetores
-                          .filter((s) => s.id !== setorId && s.is_receptor)
-                          .map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              <div className="flex items-center gap-2">
-                                <Inbox className="h-3.5 w-3.5 text-blue-500" />
-                                {s.nome}
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    {todosSetores.filter((s) => s.id !== setorId && s.is_receptor).length === 0 && (
-                      <p className="text-xs text-amber-400">
-                        Nenhum setor está configurado como receptor. Marque um setor como &quot;Setor Receptor&quot; primeiro.
-                      </p>
+                      </div>
                     )}
                   </div>
-                )}
+                </div>
               </div>
-            </CardContent>
+            </CollapsibleContent>
           </Card>
+        </Collapsible>
         )}
 
-        {/* Zona de Perigo */}
-        <Card className="glass-card-elevated rounded-2xl border-0 border-destructive/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Zona de Perigo
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Ações irreversíveis. Tenha certeza antes de prosseguir.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-                <div>
-                  <p className="font-medium">Excluir Setor</p>
-                  <p className="text-sm text-muted-foreground">
-                    Exclui permanentemente o setor, todos os atendentes vinculados, pausas, templates e configurações.
-                  </p>
+        {/* === Collapsible: Zona de Perigo === */}
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden border-destructive/30">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-950/50">
+                  <AlertTriangle className="h-4 w-4 text-red-400" />
                 </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Excluir Setor
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-                        <AlertTriangle className="h-5 w-5" />
-                        Excluir Setor Permanentemente
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-3">
-                        <p>
-                          Esta ação é <strong>irreversível</strong>. Todos os dados abaixo serão excluídos permanentemente:
-                        </p>
-                        <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                          <li>Todos os atendentes vinculados a este setor</li>
-                          <li>Todos os subsetores</li>
-                          <li>Todas as pausas configuradas</li>
-                          <li>Todos os templates de mensagem</li>
-                          <li>Todas as configurações de canais</li>
-                          <li>Configurações de roteamento de atendimento</li>
-                        </ul>
-                        <div className="pt-2">
-                          <Label htmlFor="confirm-delete" className="text-foreground">
-                            Digite <strong className="text-destructive">{setor?.nome}</strong> para confirmar:
-                          </Label>
-                          <Input
-                            id="confirm-delete"
-                            className="mt-2"
-                            placeholder="Digite o nome do setor"
-                            value={deleteSetorConfirmText}
-                            onChange={(e) => setDeleteSetorConfirmText(e.target.value)}
-                          />
-                        </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteSetorConfirmText('')}>
-                        Cancelar
-                      </AlertDialogCancel>
-                      <Button
-                        variant="destructive"
-                        onClick={handleDeleteSetor}
-                        disabled={deletingSetor || deleteSetorConfirmText !== setor?.nome}
-                      >
-                        {deletingSetor ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Excluindo...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir Setor Permanentemente
-                          </>
-                        )}
-                      </Button>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <div>
+                  <p className="font-semibold text-white">Zona de Perigo</p>
+                  <p className="text-xs text-white/40">Acoes irreversiveis para este setor</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-white/6 p-5">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+                    <div>
+                      <p className="font-medium">Excluir Setor</p>
+                      <p className="text-sm text-muted-foreground">
+                        Exclui permanentemente o setor, todos os atendentes vinculados, pausas, templates e configurações.
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir Setor
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                            <AlertTriangle className="h-5 w-5" />
+                            Excluir Setor Permanentemente
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-3">
+                            <p>
+                              Esta ação é <strong>irreversível</strong>. Todos os dados abaixo serão excluídos permanentemente:
+                            </p>
+                            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                              <li>Todos os atendentes vinculados a este setor</li>
+                              <li>Todas as pausas configuradas</li>
+                              <li>Todos os templates de mensagem</li>
+                              <li>Todas as configurações de canais</li>
+                              <li>Configurações de roteamento de atendimento</li>
+                            </ul>
+                            <div className="pt-2">
+                              <Label htmlFor="confirm-delete" className="text-foreground">
+                                Digite <strong className="text-destructive">{setor?.nome}</strong> para confirmar:
+                              </Label>
+                              <Input
+                                id="confirm-delete"
+                                className="mt-2"
+                                placeholder="Digite o nome do setor"
+                                value={deleteSetorConfirmText}
+                                onChange={(e) => setDeleteSetorConfirmText(e.target.value)}
+                              />
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setDeleteSetorConfirmText('')}>
+                            Cancelar
+                          </AlertDialogCancel>
+                          <Button
+                            variant="destructive"
+                            onClick={handleDeleteSetor}
+                            disabled={deletingSetor || deleteSetorConfirmText !== setor?.nome}
+                          >
+                            {deletingSetor ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Excluindo...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Excluir Setor Permanentemente
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </div>
     )}
 
-    {activeSection === 'disparo_logs' && (
-      <DisparoLogsSection setorId={setorId} />
-    )}
   </main>
-</div>
 
       {/* Delete Atendente Confirmation Dialog */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
@@ -4888,7 +4187,7 @@ const saveConfig = async () => {
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {canalForm.tipo === 'evolution_api' && <Smartphone className="h-5 w-5 text-sky-400" />}
+              <Smartphone className="h-5 w-5 text-sky-400" />
               {editingCanal ? 'Editar Canal' : 'Novo Canal'}
             </DialogTitle>
             <DialogDescription>
@@ -4972,18 +4271,17 @@ const saveConfig = async () => {
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="whatsapp">WhatsApp Oficial</SelectItem>
-                    <SelectItem value="evolution_api">EvolutionAPI</SelectItem>
+                    <SelectItem value="evolution_api">WhatsApp</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* EvolutionAPI NEW: apenas nome+tipo, instância é gerada automaticamente */}
+              {/* WhatsApp NEW: apenas nome+tipo, instância é gerada automaticamente */}
               {canalForm.tipo === 'evolution_api' && !editingCanal && (
                 <div className="rounded-xl border border-sky-800 bg-sky-950/40 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium text-sky-300">
                     <Smartphone className="h-4 w-4" />
-                    EvolutionAPI — Configuração automática
+                    WhatsApp — Configuração automática
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Clique em <strong>Próximo</strong> para criar a instância e escanear o QR Code com o WhatsApp.
@@ -4992,12 +4290,12 @@ const saveConfig = async () => {
                 </div>
               )}
 
-              {/* EvolutionAPI EDIT: mostra instância como info */}
+              {/* WhatsApp EDIT: mostra instância como info */}
               {canalForm.tipo === 'evolution_api' && !!editingCanal && (
                 <div className="rounded-xl border border-muted bg-muted/30 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Smartphone className="h-4 w-4 text-sky-400" />
-                    EvolutionAPI — Gerenciado automaticamente
+                    WhatsApp — Gerenciado automaticamente
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Instância: <span className="font-mono text-xs">{canalForm.instancia || 'N/D'}</span>
@@ -5184,59 +4482,6 @@ const saveConfig = async () => {
         </DialogContent>
       </Dialog>
 
-      {/* Subsetor Modal */}
-      <Dialog open={isSubsetorModalOpen} onOpenChange={setIsSubsetorModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingSubsetor ? 'Editar Subsetor' : 'Novo Subsetor'}</DialogTitle>
-            <DialogDescription>
-              Crie um subsetor para organizar seus atendentes e direcionar tickets de forma mais especifica.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="subsetor-nome">Tipo do Subsetor</Label>
-              <Select
-                value={subsetorForm.nome}
-                onValueChange={(value) => setSubsetorForm((prev) => ({ ...prev, nome: value }))}
-              >
-                <SelectTrigger id="subsetor-nome">
-                  <SelectValue placeholder="Selecione o tipo..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Suporte">Suporte</SelectItem>
-                  <SelectItem value="Financeiro">Financeiro</SelectItem>
-                  <SelectItem value="Ouvidoria">Ouvidoria</SelectItem>
-                  <SelectItem value="Jornada Cliente">Jornada Cliente</SelectItem>
-                  <SelectItem value="Sped">Sped</SelectItem>
-                  <SelectItem value="Prime">Prime</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="subsetor-descricao">Descricao (opcional)</Label>
-              <Textarea
-                id="subsetor-descricao"
-                value={subsetorForm.descricao}
-                onChange={(e) => setSubsetorForm((prev) => ({ ...prev, descricao: e.target.value }))}
-                placeholder="Descreva a funcao deste subsetor..."
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsSubsetorModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={saveSubsetor} disabled={savingSubsetor}>
-              {savingSubsetor ? 'Salvando...' : (editingSubsetor ? 'Salvar' : 'Criar Subsetor')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Pausa Modal */}
       <Dialog open={isPausaModalOpen} onOpenChange={setIsPausaModalOpen}>
@@ -5454,38 +4699,6 @@ const saveConfig = async () => {
               </>
             )}
 
-            {/* Subsetor selection - checkboxes para múltipla seleção */}
-            {subsetores.filter(s => s.ativo).length > 0 && (
-              <div className="space-y-2">
-                <Label>Subsetores (opcional)</Label>
-                <div className="rounded-lg border border-border divide-y divide-border max-h-44 overflow-y-auto">
-                  {subsetores.filter(s => s.ativo).map((s) => {
-                    const checked = atendenteSubsetorIds.includes(s.id)
-                    return (
-                      <label
-                        key={s.id}
-                        className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-border accent-primary"
-                          checked={checked}
-                          onChange={() => {
-                            setAtendenteSubsetorIds(prev =>
-                              checked ? prev.filter(id => id !== s.id) : [...prev, s.id]
-                            )
-                          }}
-                        />
-                        <span className="text-sm">{s.nome}</span>
-                      </label>
-                    )
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  O atendente receberá tickets dos subsetores selecionados. Sem seleção, atende o setor geral.
-                </p>
-              </div>
-            )}
           </div>
 
           <DialogFooter>

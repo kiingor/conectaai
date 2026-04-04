@@ -356,135 +356,154 @@ export function DisponibilidadePanel({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className={cn(
-            'flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border',
-            currentStatus === 'online' && 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/15',
-            currentStatus === 'offline' && 'bg-white/5 text-white/50 border-white/8 hover:bg-white/8',
-            currentStatus === 'pausa' && 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/15'
-          )}
+        <button
+          className="group relative flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-white/5"
+          aria-label={statusLabel}
         >
+          {/* Animated ring around status dot */}
           <motion.div
+            className={cn(
+              'absolute inset-0 rounded-full',
+              currentStatus === 'online' && 'ring-2 ring-emerald-500/40',
+              currentStatus === 'pausa' && 'ring-2 ring-amber-500/40',
+              currentStatus === 'offline' && 'ring-2 ring-white/10'
+            )}
             animate={{
-              scale: currentStatus === 'online' ? [1, 1.2, 1] : 1,
+              scale: currentStatus !== 'offline' ? [1, 1.15, 1] : 1,
+              opacity: currentStatus !== 'offline' ? [0.6, 0.2, 0.6] : 0.4,
             }}
             transition={{
-              duration: 2,
-              repeat: currentStatus === 'online' ? Number.POSITIVE_INFINITY : 0,
+              duration: 2.5,
+              repeat: currentStatus !== 'offline' ? Number.POSITIVE_INFINITY : 0,
+              repeatType: 'loop',
+            }}
+          />
+          {/* Status dot */}
+          <div className={cn(
+            'relative w-3 h-3 rounded-full transition-colors',
+            currentStatus === 'online' && 'status-dot-online',
+            currentStatus === 'pausa' && 'bg-amber-500',
+            currentStatus === 'offline' && 'bg-white/25'
+          )} />
+          {/* Pause timer badge */}
+          {pausaAtual && (
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-mono text-amber-400 bg-[#06080f]/90 px-1 rounded whitespace-nowrap">
+              {getPauseDuration()}
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-0 glass-dropdown rounded-2xl border-0" align="center" side="right" sideOffset={12}>
+        {/* Prominent status icon at top */}
+        <div className="flex flex-col items-center pt-5 pb-3">
+          <motion.div
+            className={cn(
+              'w-14 h-14 rounded-full flex items-center justify-center mb-3',
+              currentStatus === 'online' && 'bg-emerald-500/10 ring-2 ring-emerald-500/30',
+              currentStatus === 'offline' && 'bg-white/5 ring-2 ring-white/10',
+              currentStatus === 'pausa' && 'bg-amber-500/10 ring-2 ring-amber-500/30'
+            )}
+            animate={{
+              boxShadow:
+                currentStatus === 'online'
+                  ? ['0 0 0 0 rgba(16, 185, 129, 0.3)', '0 0 0 10px rgba(16, 185, 129, 0)']
+                  : currentStatus === 'pausa'
+                    ? ['0 0 0 0 rgba(245, 158, 11, 0.3)', '0 0 0 10px rgba(245, 158, 11, 0)']
+                    : 'none',
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: currentStatus !== 'offline' ? Number.POSITIVE_INFINITY : 0,
               repeatType: 'loop',
             }}
           >
             {currentStatus === 'pausa' ? (
-              <Coffee className="h-3.5 w-3.5" />
+              <Coffee className="h-6 w-6 text-amber-400" />
             ) : (
               <div className={cn(
-                'h-2.5 w-2.5 rounded-full',
-                currentStatus === 'online' ? 'status-dot-online' : 'bg-white/30'
+                'h-5 w-5 rounded-full',
+                currentStatus === 'online' ? 'status-dot-online' : 'bg-white/20'
               )} />
             )}
           </motion.div>
-          <span className="text-xs font-medium truncate max-w-[120px]">{statusLabel}</span>
-          {pausaAtual && <span className="text-[10px] font-mono opacity-75">{getPauseDuration()}</span>}
-          <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0 glass-dropdown rounded-2xl border-0" align="end">
-        <div className="p-4">
-          {/* Status Display */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <motion.div
-                className={cn(
-                  'w-11 h-11 rounded-full flex items-center justify-center',
-                  currentStatus === 'online' && 'bg-emerald-500/10 ring-1 ring-emerald-500/30',
-                  currentStatus === 'offline' && 'bg-white/5 ring-1 ring-white/10',
-                  currentStatus === 'pausa' && 'bg-amber-500/10 ring-1 ring-amber-500/30'
-                )}
-                animate={{
-                  boxShadow:
-                    currentStatus === 'online'
-                      ? ['0 0 0 0 rgba(16, 185, 129, 0.3)', '0 0 0 8px rgba(16, 185, 129, 0)']
-                      : currentStatus === 'pausa'
-                        ? ['0 0 0 0 rgba(245, 158, 11, 0.3)', '0 0 0 8px rgba(245, 158, 11, 0)']
-                        : 'none',
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: currentStatus !== 'offline' ? Number.POSITIVE_INFINITY : 0,
-                  repeatType: 'loop',
-                }}
-              >
-                {currentStatus === 'pausa' ? (
-                  <Coffee className="h-5 w-5 text-amber-400" />
-                ) : (
-                  <div className={cn(
-                    'h-4 w-4 rounded-full',
-                    currentStatus === 'online' ? 'status-dot-online' : 'bg-white/20'
-                  )} />
-                )}
-              </motion.div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">Seu status</p>
-                <p className="text-base font-semibold text-white/90">{statusLabel}</p>
-                {pausaAtual && (
-                  <p className="text-xs text-amber-400 font-mono">
-                    Em pausa ha {getPauseDuration()}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <p className={cn(
+            'text-sm font-semibold',
+            currentStatus === 'online' && 'text-emerald-400',
+            currentStatus === 'offline' && 'text-white/50',
+            currentStatus === 'pausa' && 'text-amber-400'
+          )}>
+            {statusLabel}
+          </p>
+          {pausaAtual && (
+            <p className="text-[11px] text-amber-400/70 font-mono mt-0.5">{getPauseDuration()}</p>
+          )}
+        </div>
 
-          {/* If in pause, show return button and offline button */}
+        <div className="px-4 pb-4">
+          {/* Pause: horizontal pill toggles */}
           {pausaAtual ? (
-            <div className="flex flex-col gap-2">
-              <Button onClick={endPausa} disabled={loading} className="w-full gap-2 btn-glow rounded-lg">
-                <Play className="h-4 w-4" />
-                {loading ? 'Retornando...' : 'Voltar ao Atendimento'}
+            <div className="flex gap-2">
+              <Button onClick={endPausa} disabled={loading} className="flex-1 gap-1.5 btn-glow rounded-full h-9 text-xs">
+                <Play className="h-3.5 w-3.5" />
+                {loading ? 'Voltando...' : 'Retomar'}
               </Button>
               <Button
                 onClick={goOfflineFromPausa}
                 disabled={loading}
-                className="w-full gap-2 bg-white/5 hover:bg-white/8 text-white/60 hover:text-white/80 border border-white/8"
+                className="flex-1 gap-1.5 bg-white/5 hover:bg-white/8 text-white/50 hover:text-white/70 border border-white/8 rounded-full h-9 text-xs"
               >
-                <Power className="h-4 w-4" />
-                {loading ? 'Alterando...' : 'Ficar Offline'}
+                <Power className="h-3.5 w-3.5" />
+                {loading ? '...' : 'Offline'}
               </Button>
             </div>
           ) : (
             <>
-              {/* Toggle Button */}
-              <Button
-                onClick={toggleStatus}
-                disabled={loading}
-                className={cn(
-                  'w-full gap-2 transition-all rounded-lg',
-                  isOnline
-                    ? 'bg-white/5 hover:bg-white/8 text-white/60 hover:text-white/80 border border-white/8'
-                    : 'btn-glow'
-                )}
-              >
-                <Power className="h-4 w-4" />
-                {loading ? 'Alterando...' : isOnline ? 'Ficar Offline' : 'Ficar Online'}
-              </Button>
+              {/* Horizontal pill toggle */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={!isOnline ? toggleStatus : undefined}
+                  disabled={loading || isOnline}
+                  className={cn(
+                    'flex-1 gap-1.5 rounded-full h-9 text-xs transition-all',
+                    isOnline
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 cursor-default'
+                      : 'btn-glow'
+                  )}
+                >
+                  <Circle className={cn('h-2.5 w-2.5', isOnline && 'fill-emerald-400')} />
+                  Online
+                </Button>
+                <Button
+                  onClick={isOnline ? toggleStatus : undefined}
+                  disabled={loading || !isOnline}
+                  className={cn(
+                    'flex-1 gap-1.5 rounded-full h-9 text-xs transition-all',
+                    !isOnline
+                      ? 'bg-white/8 text-white/50 border border-white/10 cursor-default'
+                      : 'bg-white/5 hover:bg-white/8 text-white/50 hover:text-white/70 border border-white/8'
+                  )}
+                >
+                  <Power className="h-3.5 w-3.5" />
+                  Offline
+                </Button>
+              </div>
 
-              {/* Pause selector - only show when online and has pausas */}
+              {/* Pause dropdown with icons */}
               {isOnline && pausas.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-white/6">
-                  <p className="text-xs text-white/40 mb-2 flex items-center gap-2">
-                    <Coffee className="h-3.5 w-3.5" />
-                    Entrar em pausa
-                  </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
+                    <Coffee className="h-3.5 w-3.5 text-amber-400/60 shrink-0" />
                     <Select value={selectedPausa} onValueChange={setSelectedPausa}>
-                      <SelectTrigger className="flex-1 glass-input text-white/70 border-white/8">
-                        <SelectValue placeholder="Selecione a pausa..." />
+                      <SelectTrigger className="flex-1 glass-input text-white/60 border-white/8 h-8 text-xs rounded-full px-3">
+                        <SelectValue placeholder="Iniciar pausa..." />
                       </SelectTrigger>
                       <SelectContent className="glass-dropdown border-white/8">
                         {pausas.map((pausa) => (
-                          <SelectItem key={pausa.id} value={pausa.id}>
-                            {pausa.nome}
+                          <SelectItem key={pausa.id} value={pausa.id} className="text-xs">
+                            <span className="flex items-center gap-2">
+                              <Coffee className="h-3 w-3 text-amber-400/60" />
+                              {pausa.nome}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -492,10 +511,10 @@ export function DisponibilidadePanel({
                     <Button
                       onClick={() => startPausa(selectedPausa)}
                       disabled={!selectedPausa || loading}
-                      variant="outline"
-                      className="bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300"
+                      size="sm"
+                      className="bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 rounded-full h-8 w-8 p-0"
                     >
-                      <Coffee className="h-4 w-4" />
+                      <Play className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -503,21 +522,21 @@ export function DisponibilidadePanel({
             </>
           )}
 
-          {/* History Toggle */}
+          {/* Compact timeline history */}
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 w-full mt-4 pt-4 border-t border-white/6 text-xs text-white/40 hover:text-white/60 transition-colors"
+            className="flex items-center gap-2 w-full mt-3 pt-3 border-t border-white/6 text-[11px] text-white/30 hover:text-white/50 transition-colors"
           >
-            <History className="h-3.5 w-3.5" />
-            <span>Historico recente</span>
+            <History className="h-3 w-3" />
+            <span>Historico</span>
             {showHistory ? (
-              <ChevronUp className="h-3.5 w-3.5 ml-auto" />
+              <ChevronUp className="h-3 w-3 ml-auto" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5 ml-auto" />
+              <ChevronDown className="h-3 w-3 ml-auto" />
             )}
           </button>
 
-          {/* History List */}
+          {/* Timeline view history */}
           <AnimatePresence>
             {showHistory && (
               <motion.div
@@ -527,37 +546,50 @@ export function DisponibilidadePanel({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="pt-3 space-y-2">
+                <div className="pt-2.5 pl-2">
                   {logs.length === 0 ? (
-                    <p className="text-xs text-white/30 text-center py-2">Nenhum registro encontrado</p>
+                    <p className="text-[11px] text-white/20 text-center py-1.5">Sem registros</p>
                   ) : (
-                    logs.map((log) => {
-                      const isPausa = log.status.startsWith('pausa:')
-                      const statusText = isPausa
-                        ? `Entrou em pausa (${log.status.replace('pausa:', '')})`
-                        : log.status === 'online'
-                          ? 'Ficou online'
-                          : 'Ficou offline'
-                      return (
-                        <motion.div
-                          key={log.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-2 text-xs"
-                        >
-                          {isPausa ? (
-                            <Coffee className="h-3 w-3 text-amber-400" />
-                          ) : (
-                            <div
-                              className={cn('h-2 w-2 rounded-full', log.status === 'online' ? 'status-dot-online' : 'bg-white/20')}
-                            />
-                          )}
-                          <span className="text-white/40">
-                            {statusText} as {format(new Date(log.timestamp), "HH:mm 'de' dd/MM", { locale: ptBR })}
-                          </span>
-                        </motion.div>
-                      )
-                    })
+                    <div className="relative">
+                      {/* Vertical timeline line */}
+                      <div className="absolute left-[3px] top-1 bottom-1 w-px bg-white/8" />
+                      <div className="space-y-2.5">
+                        {logs.map((log) => {
+                          const isPausa = log.status.startsWith('pausa:')
+                          const statusText = isPausa
+                            ? `Pausa (${log.status.replace('pausa:', '')})`
+                            : log.status === 'online'
+                              ? 'Online'
+                              : 'Offline'
+                          return (
+                            <motion.div
+                              key={log.id}
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="relative flex items-center gap-2.5 pl-4"
+                            >
+                              {/* Timeline dot */}
+                              <div className="absolute left-0">
+                                {isPausa ? (
+                                  <div className="h-[7px] w-[7px] rounded-full bg-amber-500 ring-2 ring-[#0e101a]" />
+                                ) : (
+                                  <div className={cn(
+                                    'h-[7px] w-[7px] rounded-full ring-2 ring-[#0e101a]',
+                                    log.status === 'online' ? 'bg-emerald-500' : 'bg-white/25'
+                                  )} />
+                                )}
+                              </div>
+                              <div className="flex items-baseline gap-1.5 min-w-0">
+                                <span className="text-[11px] text-white/40 truncate">{statusText}</span>
+                                <span className="text-[10px] text-white/20 font-mono shrink-0">
+                                  {format(new Date(log.timestamp), 'HH:mm', { locale: ptBR })}
+                                </span>
+                              </div>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    </div>
                   )}
                 </div>
               </motion.div>

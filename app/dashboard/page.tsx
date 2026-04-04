@@ -33,12 +33,14 @@ import {
   Truck,
   CreditCard,
   HelpCircle,
-  ArrowUpRight,
-  Sparkles,
   Tag,
   Pencil,
   Trash2,
   X,
+  ChevronRight,
+  LayoutList,
+  Wifi,
+  Hash,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -148,6 +150,7 @@ export default function DashboardPage() {
   const [isPending, startTransition] = useTransition()
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [newSetor, setNewSetor] = useState({
     nome: '',
@@ -167,6 +170,13 @@ export default function DashboardPage() {
   const [editingTag, setEditingTag] = useState<TagItem | null>(null)
   const [savingTag, setSavingTag] = useState(false)
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null)
+
+  const { data: colaborador, isLoading: loadingColab } = useColaborador()
+  const { data: setores = [], isLoading: loadingSetores, mutate } = useSetores(
+    colaborador?.id,
+    colaborador?.is_master,
+    colaborador?.organizacao_id
+  )
 
   const fetchTags = useCallback(async () => {
     if (!colaborador?.organizacao_id) return
@@ -190,20 +200,35 @@ export default function DashboardPage() {
     [router]
   )
 
-  const { data: colaborador, isLoading: loadingColab } = useColaborador()
-  const { data: setores = [], isLoading: loadingSetores, mutate } = useSetores(
-    colaborador?.id,
-    colaborador?.is_master,
-    colaborador?.organizacao_id
-  )
-
   const filteredSetores = useMemo(() => {
-    const all = setores as Setor[]
-    if (!searchTerm) return all
-    return all.filter((s) =>
-      s.nome.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [searchTerm, setores])
+    let all = setores as Setor[]
+    if (searchTerm) {
+      all = all.filter((s) =>
+        s.nome.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+    if (activeTagFilter) {
+      if (activeTagFilter === 'untagged') {
+        all = all.filter((s) => !s.tag_id)
+      } else {
+        all = all.filter((s) => s.tag_id === activeTagFilter)
+      }
+    }
+    return all
+  }, [searchTerm, setores, activeTagFilter])
+
+  // Stats derived from data
+  const stats = useMemo(() => {
+    const allSetores = setores as Setor[]
+    return {
+      totalSetores: allSetores.length,
+      totalTags: tags.length,
+      totalCanais: allSetores.reduce((acc, s) => {
+        const active = (s.setor_canais ?? []).filter((c) => c.ativo)
+        return acc + active.length
+      }, 0),
+    }
+  }, [setores, tags])
 
   // Group sectors by tag
   const groupedSetores = useMemo(() => {
@@ -327,8 +352,8 @@ export default function DashboardPage() {
   const isLoading = loadingColab || (colaborador && loadingSetores)
   const PreviewIcon = getIconComponent(newSetor.icon_url)
 
-  // --- Sector Card ---
-  function SetorCard({ setor, index }: { setor: Setor; index: number }) {
+  // --- Sector Row (list view) ---
+  function SetorRow({ setor, index }: { setor: Setor; index: number }) {
     const SetorIcon = getIconComponent(setor.icon_url)
     const setorColor = setor.cor || '#10b981'
     const isNavigating = navigatingTo === setor.id && isPending
@@ -338,18 +363,20 @@ export default function DashboardPage() {
     return (
       <motion.div
         key={setor.id}
-        initial={{ opacity: 0, y: 16, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ delay: index * 0.04, duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 12 }}
+        transition={{ delay: index * 0.03, duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
         layout
       >
         <div
           className={cn(
-            'group relative glass-card-elevated glass-shimmer-hover rounded-3xl overflow-hidden cursor-pointer',
-            'active:scale-[0.98] transition-transform duration-150',
+            'group relative glass-card glass-shimmer-hover rounded-2xl overflow-hidden cursor-pointer',
+            'active:scale-[0.995] transition-all duration-150',
+            'border-l-[3px]',
             isNavigating && 'opacity-70 pointer-events-none'
           )}
+          style={{ borderLeftColor: setorColor }}
           onClick={() => handleSetorClick(setor.id)}
           role="button"
           tabIndex={0}
@@ -358,90 +385,89 @@ export default function DashboardPage() {
             if (e.key === 'Enter' || e.key === ' ') handleSetorClick(setor.id)
           }}
         >
-          {/* Color accent bar at top */}
-          <div
-            className="h-1 w-full"
-            style={{ background: `linear-gradient(90deg, ${setorColor}, ${hexToRgba(setorColor, 0.2)})` }}
-          />
-
           {/* Subtle color tint overlay */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500"
-            style={{ background: `radial-gradient(ellipse at top left, ${setorColor} 0%, transparent 70%)` }}
+            className="absolute inset-0 pointer-events-none opacity-[0.02] group-hover:opacity-[0.05] transition-opacity duration-500"
+            style={{ background: `linear-gradient(90deg, ${setorColor} 0%, transparent 40%)` }}
           />
 
-          <div className="relative p-5 space-y-4">
-            {/* Top row: Icon + Name + Arrow */}
-            <div className="flex items-start gap-3.5">
-              <div
-                className="glass-icon-glow shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg"
-                style={{
-                  backgroundColor: setorColor,
-                  boxShadow: `0 4px 20px ${hexToRgba(setorColor, 0.3)}`,
-                }}
-              >
-                <SetorIcon className="h-6 w-6 text-white drop-shadow-sm" />
-              </div>
-
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h3 className="font-semibold text-[15px] leading-snug line-clamp-1 tracking-tight text-white/90">
-                  {setor.nome}
-                </h3>
-                {setor.descricao ? (
-                  <p className="text-xs text-white/30 mt-0.5 line-clamp-2 leading-relaxed">
-                    {setor.descricao}
-                  </p>
-                ) : (
-                  <p className="text-xs text-white/15 mt-0.5 italic">Sem descricao</p>
-                )}
-              </div>
-
-              {/* Floating arrow button */}
-              <div
-                className={cn(
-                  'glass-fab shrink-0',
-                  'h-8 w-8 rounded-xl',
-                  'flex items-center justify-center',
-                  'opacity-0 group-hover:opacity-100',
-                  'translate-x-1 group-hover:translate-x-0',
-                  'transition-all duration-300',
-                )}
-              >
-                {isNavigating ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
-                ) : (
-                  <ArrowUpRight className="h-3.5 w-3.5 text-white" />
-                )}
-              </div>
+          <div className="relative flex items-center gap-4 px-4 py-3.5 sm:px-5">
+            {/* Icon */}
+            <div
+              className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl shadow-md"
+              style={{
+                backgroundColor: setorColor,
+                boxShadow: `0 3px 12px ${hexToRgba(setorColor, 0.25)}`,
+              }}
+            >
+              <SetorIcon className="h-5 w-5 text-white drop-shadow-sm" />
             </div>
 
-            {/* Divider */}
-            <div className="h-px bg-gradient-to-r from-white/8 via-white/4 to-transparent" />
-
-            {/* Channels section */}
-            <div className="space-y-2">
-              <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest">
-                Canais
-              </p>
-              {activeCanais.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {activeCanais.map((canal, idx) => {
-                    const cfg = CANAL_CONFIG[canal.tipo]
-                    if (!cfg) return null
-                    return (
-                      <span
-                        key={idx}
-                        className="glass-badge inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium"
-                        style={{ backgroundColor: cfg.bg, color: cfg.color }}
-                      >
-                        <span className="text-[9px]">{cfg.icon}</span>
-                        {cfg.label}
-                      </span>
-                    )
-                  })}
-                </div>
+            {/* Name + Description */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm leading-snug line-clamp-1 tracking-tight text-white/90">
+                {setor.nome}
+              </h3>
+              {setor.descricao ? (
+                <p className="text-xs text-white/30 mt-0.5 line-clamp-1 leading-relaxed">
+                  {setor.descricao}
+                </p>
               ) : (
-                <p className="text-[10px] text-white/15 italic">Nenhum canal ativo</p>
+                <p className="text-xs text-white/15 mt-0.5 italic">Sem descricao</p>
+              )}
+            </div>
+
+            {/* Tag badge */}
+            <div className="hidden md:flex items-center shrink-0">
+              {setor.tags ? (
+                <span
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold text-white/90"
+                  style={{ backgroundColor: hexToRgba(setor.tags.cor, 0.6) }}
+                >
+                  <Tag className="h-2.5 w-2.5" />
+                  {setor.tags.nome}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-white/5 text-white/25">
+                  Sem tag
+                </span>
+              )}
+            </div>
+
+            {/* Channel badges */}
+            <div className="hidden lg:flex items-center gap-1.5 shrink-0">
+              {activeCanais.length > 0 ? (
+                activeCanais.map((canal, idx) => {
+                  const cfg = CANAL_CONFIG[canal.tipo]
+                  if (!cfg) return null
+                  return (
+                    <span
+                      key={idx}
+                      className="glass-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                      style={{ backgroundColor: cfg.bg, color: cfg.color }}
+                    >
+                      <span className="text-[9px]">{cfg.icon}</span>
+                      {cfg.label}
+                    </span>
+                  )
+                })
+              ) : (
+                <span className="text-[10px] text-white/15 italic">Sem canal</span>
+              )}
+            </div>
+
+            {/* Navigation chevron */}
+            <div
+              className={cn(
+                'shrink-0 h-7 w-7 rounded-lg flex items-center justify-center',
+                'bg-white/5 group-hover:bg-white/10',
+                'transition-all duration-300',
+              )}
+            >
+              {isNavigating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white/60" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white/70 transition-colors" />
               )}
             </div>
           </div>
@@ -451,133 +477,249 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Header — title + action buttons */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
-              <Sparkles className="h-4 w-4 text-emerald-400" />
+              <LayoutList className="h-4 w-4 text-emerald-400" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight brand-gradient-text">Setores</h1>
           </div>
           <p className="text-white/35 text-sm ml-[42px]">
-            Selecione um setor para gerenciar
+            Gerencie e acesse todos os setores da sua organizacao
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-            <Input
-              placeholder="Buscar setor..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-10 h-10 rounded-2xl glass-input text-sm placeholder:text-white/25"
-            />
+        {colaborador?.is_master && (
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="gap-2 h-10 rounded-2xl btn-glow self-start sm:self-auto"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Setor
+          </Button>
+        )}
+      </div>
+
+      {/* Stats Strip */}
+      {!isLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        >
+          <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+              <Building2 className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalSetores}</p>
+              <p className="text-[11px] text-white/35 font-medium">Setores</p>
+            </div>
           </div>
+          <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10">
+              <Hash className="h-5 w-5 text-cyan-400" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalTags}</p>
+              <p className="text-[11px] text-white/35 font-medium">Tags</p>
+            </div>
+          </div>
+          <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-3.5 col-span-2 sm:col-span-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+              <Wifi className="h-5 w-5 text-violet-400" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalCanais}</p>
+              <p className="text-[11px] text-white/35 font-medium">Canais Ativos</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Filter / Search Bar */}
+      <div className="glass-card rounded-2xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
+          <Input
+            placeholder="Buscar setor..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-9 rounded-xl glass-input text-sm placeholder:text-white/25 border-white/8"
+          />
+        </div>
+
+        {/* Tag filter chips */}
+        <div className="flex items-center gap-2 flex-wrap flex-1">
+          <button
+            type="button"
+            onClick={() => setActiveTagFilter(null)}
+            className={cn(
+              'px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
+              activeTagFilter === null
+                ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30'
+                : 'bg-white/5 text-white/40 hover:bg-white/8 hover:text-white/60'
+            )}
+          >
+            Todos
+          </button>
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => setActiveTagFilter(activeTagFilter === tag.id ? null : tag.id)}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
+                activeTagFilter === tag.id
+                  ? 'text-white'
+                  : 'text-white/50 hover:text-white/70'
+              )}
+              style={{
+                backgroundColor: activeTagFilter === tag.id ? hexToRgba(tag.cor, 0.25) : 'rgba(255,255,255,0.04)',
+                boxShadow: activeTagFilter === tag.id ? `0 0 0 1px ${hexToRgba(tag.cor, 0.4)}` : undefined,
+              }}
+            >
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ backgroundColor: tag.cor }}
+              />
+              {tag.nome}
+            </button>
+          ))}
+          {(setores as Setor[]).some((s) => !s.tag_id) && (
+            <button
+              type="button"
+              onClick={() => setActiveTagFilter(activeTagFilter === 'untagged' ? null : 'untagged')}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
+                activeTagFilter === 'untagged'
+                  ? 'bg-white/10 text-white/70 ring-1 ring-white/20'
+                  : 'bg-white/5 text-white/40 hover:bg-white/8 hover:text-white/60'
+              )}
+            >
+              Sem Tag
+            </button>
+          )}
+
+          {/* Spacer + Tags management button */}
+          <div className="flex-1" />
           {colaborador?.is_master && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditingTag(null)
-                  setTagForm({ nome: '', cor: '#10b981' })
-                  setIsTagsDialogOpen(true)
-                }}
-                className="gap-2 h-10 rounded-2xl border-white/10 hover:bg-white/5 text-white/60 hover:text-white/80"
-              >
-                <Tag className="h-4 w-4" />
-                Tags
-              </Button>
-              <Button
-                onClick={() => setIsCreateOpen(true)}
-                className="gap-2 h-10 rounded-2xl btn-glow"
-              >
-                <Plus className="h-4 w-4" />
-                Novo Setor
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setEditingTag(null)
+                setTagForm({ nome: '', cor: '#10b981', ordem: 0 })
+                setIsTagsDialogOpen(true)
+              }}
+              className="gap-1.5 h-8 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 text-xs"
+            >
+              <Tag className="h-3.5 w-3.5" />
+              Gerenciar Tags
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content — List View */}
       {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="glass-card-elevated rounded-3xl p-5 space-y-4">
-              <div className="flex items-center gap-3.5">
-                <Skeleton className="h-12 w-12 rounded-2xl shrink-0 bg-white/5" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-28 bg-white/5" />
-                  <Skeleton className="h-3 w-full bg-white/5" />
-                </div>
+        <div className="space-y-2.5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4">
+              <Skeleton className="h-10 w-10 rounded-xl shrink-0 bg-white/5" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-36 bg-white/5" />
+                <Skeleton className="h-3 w-56 bg-white/5" />
               </div>
-              <div className="space-y-2.5 pt-1">
-                <Skeleton className="h-3 w-12 bg-white/5" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-20 rounded-full bg-white/5" />
-                  <Skeleton className="h-6 w-24 rounded-full bg-white/5" />
-                </div>
-              </div>
+              <Skeleton className="h-6 w-16 rounded-full bg-white/5 hidden md:block" />
+              <Skeleton className="h-6 w-20 rounded-full bg-white/5 hidden lg:block" />
+              <Skeleton className="h-7 w-7 rounded-lg bg-white/5" />
             </div>
           ))}
         </div>
       ) : filteredSetores.length === 0 ? (
-        <div className="glass-card-elevated rounded-3xl p-20">
+        <div className="glass-card-elevated rounded-2xl p-16">
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl glass-card">
-              <MessageCircle className="h-9 w-9 text-white/20" />
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl glass-card">
+              <MessageCircle className="h-8 w-8 text-white/20" />
             </div>
             <h3 className="text-lg font-semibold text-white/80">Nenhum setor encontrado</h3>
             <p className="mt-1.5 text-sm text-white/35 max-w-xs">
-              {colaborador?.is_master
-                ? 'Crie seu primeiro setor para comecar a organizar seus atendimentos'
-                : 'Voce nao tem setores atribuidos no momento'}
+              {searchTerm || activeTagFilter
+                ? 'Nenhum setor corresponde aos filtros aplicados'
+                : colaborador?.is_master
+                  ? 'Crie seu primeiro setor para comecar a organizar seus atendimentos'
+                  : 'Voce nao tem setores atribuidos no momento'}
             </p>
+            {(searchTerm || activeTagFilter) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('')
+                  setActiveTagFilter(null)
+                }}
+                className="mt-3 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl"
+              >
+                Limpar filtros
+              </Button>
+            )}
           </div>
         </div>
+      ) : activeTagFilter ? (
+        /* Flat list (filtered by specific tag) */
+        <div className="space-y-2">
+          <AnimatePresence mode="popLayout">
+            {filteredSetores.map((setor, index) => (
+              <SetorRow key={setor.id} setor={setor as Setor} index={index} />
+            ))}
+          </AnimatePresence>
+        </div>
       ) : (
-        <div className="space-y-8">
+        /* Grouped by tag */
+        <div className="space-y-6">
           {groupedSetores.map((group, gi) => (
             <div key={group.tag?.id ?? 'sem-tag'}>
               {/* Group header */}
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-2.5">
                 <div className="flex items-center gap-2">
                   {group.tag ? (
                     <>
                       <span
-                        className="glass-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm"
-                        style={{ backgroundColor: hexToRgba(group.tag.cor, 0.7) }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white/90"
+                        style={{ backgroundColor: hexToRgba(group.tag.cor, 0.5) }}
                       >
-                        <Tag className="h-3 w-3" />
+                        <Tag className="h-2.5 w-2.5" />
                         {group.tag.nome}
                       </span>
-                      <span className="text-xs text-white/25">
-                        {group.setores.length} {group.setores.length === 1 ? 'setor' : 'setores'}
+                      <span className="text-[11px] text-white/20 tabular-nums">
+                        {group.setores.length}
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="glass-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-white/40">
-                        <Tag className="h-3 w-3" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/5 text-white/35">
+                        <Tag className="h-2.5 w-2.5" />
                         Sem Tag
                       </span>
-                      <span className="text-xs text-white/25">
-                        {group.setores.length} {group.setores.length === 1 ? 'setor' : 'setores'}
+                      <span className="text-[11px] text-white/20 tabular-nums">
+                        {group.setores.length}
                       </span>
                     </>
                   )}
                 </div>
-                <div className="flex-1 h-px bg-white/6" />
+                <div className="flex-1 h-px bg-white/5" />
               </div>
 
-              {/* Sectors grid */}
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {/* Sector rows */}
+              <div className="space-y-2">
                 <AnimatePresence mode="popLayout">
                   {group.setores.map((setor, index) => (
-                    <SetorCard key={setor.id} setor={setor} index={index + gi * 4} />
+                    <SetorRow key={setor.id} setor={setor} index={index + gi * 4} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -586,48 +728,77 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Create Setor Dialog */}
+      {/* Create Setor Dialog — redesigned with 2-column layout */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="glass-card-elevated rounded-2xl max-w-lg border-0">
+        <DialogContent className="glass-card-elevated rounded-2xl max-w-2xl border-0">
           <DialogHeader>
-            <DialogTitle className="text-lg text-white/90">Novo Setor</DialogTitle>
-            <DialogDescription className="text-white/35">
-              Crie um novo setor para organizar seus atendimentos
-            </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-xl shadow-lg"
+                style={{
+                  backgroundColor: newSetor.cor,
+                  boxShadow: `0 4px 16px ${hexToRgba(newSetor.cor, 0.3)}`,
+                }}
+              >
+                <PreviewIcon className="h-5.5 w-5.5 text-white drop-shadow-sm" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg text-white/90">
+                  {newSetor.nome || 'Novo Setor'}
+                </DialogTitle>
+                <DialogDescription className="text-white/35">
+                  Preencha os dados abaixo para criar um novo setor
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
           {/* Scrollable content area */}
           <div className="overflow-y-auto max-h-[65vh] -mx-6 px-6">
             <div className="space-y-5 pb-2">
-              {/* Preview */}
-              <div className="flex justify-center pb-3">
-                <div className="text-center">
-                  <div
-                    className="glass-icon-glow mx-auto mb-3 flex h-18 w-18 items-center justify-center rounded-3xl shadow-lg"
-                    style={{
-                      backgroundColor: newSetor.cor,
-                      boxShadow: `0 8px 30px ${hexToRgba(newSetor.cor, 0.3)}`,
-                    }}
-                  >
-                    <PreviewIcon className="h-9 w-9 text-white drop-shadow-sm" />
-                  </div>
-                  <p className="text-sm font-semibold tracking-tight text-white/80">
-                    {newSetor.nome || 'Nome do Setor'}
-                  </p>
+              {/* Top fields: Name + Description + Tag */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome" className="text-white/60">Nome do Setor</Label>
+                  <Input
+                    id="nome"
+                    value={newSetor.nome}
+                    onChange={(e) => setNewSetor((prev) => ({ ...prev, nome: e.target.value }))}
+                    placeholder="Ex: Suporte Tecnico"
+                    className="rounded-xl glass-input"
+                  />
                 </div>
-              </div>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
-
-              <div className="space-y-2">
-                <Label htmlFor="nome" className="text-white/60">Nome do Setor</Label>
-                <Input
-                  id="nome"
-                  value={newSetor.nome}
-                  onChange={(e) => setNewSetor((prev) => ({ ...prev, nome: e.target.value }))}
-                  placeholder="Ex: Suporte Tecnico"
-                  className="rounded-xl glass-input"
-                />
+                {/* Tag selector */}
+                {tags.length > 0 ? (
+                  <div className="space-y-2">
+                    <Label className="text-white/60">Tag</Label>
+                    <Select
+                      value={newSetor.tag_id || 'none'}
+                      onValueChange={(v) => setNewSetor((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))}
+                    >
+                      <SelectTrigger className="rounded-xl glass-input">
+                        <SelectValue placeholder="Selecionar tag..." />
+                      </SelectTrigger>
+                      <SelectContent className="glass-dropdown rounded-xl border-white/8">
+                        <SelectItem value="none">Sem tag</SelectItem>
+                        {tags.map((tag) => (
+                          <SelectItem key={tag.id} value={tag.id}>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="h-3 w-3 rounded-full shrink-0"
+                                style={{ backgroundColor: tag.cor }}
+                              />
+                              {tag.nome}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div />
+                )}
               </div>
 
               <div className="space-y-2">
@@ -642,77 +813,57 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {/* Tag selector */}
-              {tags.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-white/60">Tag</Label>
-                  <Select
-                    value={newSetor.tag_id || 'none'}
-                    onValueChange={(v) => setNewSetor((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))}
-                  >
-                    <SelectTrigger className="rounded-xl glass-input">
-                      <SelectValue placeholder="Selecionar tag..." />
-                    </SelectTrigger>
-                    <SelectContent className="glass-dropdown rounded-xl border-white/8">
-                      <SelectItem value="none">Sem tag</SelectItem>
-                      {tags.map((tag) => (
-                        <SelectItem key={tag.id} value={tag.id}>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="h-3 w-3 rounded-full shrink-0"
-                              style={{ backgroundColor: tag.cor }}
-                            />
-                            {tag.nome}
-                          </div>
-                        </SelectItem>
+              <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+
+              {/* 2-column: Color Picker + Icon Picker side by side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Color Picker */}
+                <div className="space-y-2.5">
+                  <Label className="text-white/60">Cor do Setor</Label>
+                  <div className="glass-card rounded-xl p-3 border border-white/6">
+                    <div className="grid grid-cols-5 gap-2.5">
+                      {AVAILABLE_COLORS.map((color) => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => setNewSetor((prev) => ({ ...prev, cor: color.value }))}
+                          className={cn(
+                            'h-8 w-8 rounded-full border-2 transition-all duration-200 mx-auto',
+                            newSetor.cor === color.value
+                              ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
+                              : 'border-transparent hover:scale-110'
+                          )}
+                          style={{ backgroundColor: color.value }}
+                          title={color.name}
+                        />
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              {/* Color Picker */}
-              <div className="space-y-2.5">
-                <Label className="text-white/60">Cor do Setor</Label>
-                <div className="grid grid-cols-9 gap-2.5">
-                  {AVAILABLE_COLORS.map((color) => (
-                    <button
-                      key={color.value}
-                      type="button"
-                      onClick={() => setNewSetor((prev) => ({ ...prev, cor: color.value }))}
-                      className={cn(
-                        'h-8 w-8 rounded-full border-2 transition-all duration-200',
-                        newSetor.cor === color.value
-                          ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
-                          : 'border-transparent hover:scale-110'
-                      )}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Icon Picker */}
-              <div className="space-y-2.5">
-                <Label className="text-white/60">Icone do Setor</Label>
-                <div className="grid grid-cols-8 gap-2">
-                  {AVAILABLE_ICONS.map((iconItem) => (
-                    <button
-                      key={iconItem.name}
-                      type="button"
-                      onClick={() => setNewSetor((prev) => ({ ...prev, icon_url: iconItem.name }))}
-                      className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all duration-200',
-                        newSetor.icon_url === iconItem.name
-                          ? 'border-emerald-500/60 bg-emerald-500/10 shadow-sm shadow-emerald-500/20'
-                          : 'border-white/8 hover:border-emerald-500/30 hover:bg-white/5'
-                      )}
-                      title={iconItem.name}
-                    >
-                      <iconItem.icon className="h-5 w-5 text-white/60" />
-                    </button>
-                  ))}
+                {/* Icon Picker */}
+                <div className="space-y-2.5">
+                  <Label className="text-white/60">Icone do Setor</Label>
+                  <div className="glass-card rounded-xl p-3 border border-white/6">
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {AVAILABLE_ICONS.map((iconItem) => (
+                        <button
+                          key={iconItem.name}
+                          type="button"
+                          onClick={() => setNewSetor((prev) => ({ ...prev, icon_url: iconItem.name }))}
+                          className={cn(
+                            'flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200',
+                            newSetor.icon_url === iconItem.name
+                              ? 'border-emerald-500/60 bg-emerald-500/10 shadow-sm shadow-emerald-500/20'
+                              : 'border-white/6 hover:border-emerald-500/30 hover:bg-white/5'
+                          )}
+                          title={iconItem.name}
+                        >
+                          <iconItem.icon className="h-4 w-4 text-white/60" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

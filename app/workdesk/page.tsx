@@ -33,11 +33,13 @@ import {
   History,
   PanelRightOpen,
   PanelRightClose,
+  PanelLeft,
   Copy,
   Megaphone,
   Lock,
   Timer,
   ChevronRight,
+  ChevronLeft,
   Zap,
   Ticket,
   Hash,
@@ -53,6 +55,8 @@ import {
   ShieldCheck,
   Pencil,
   Save,
+  Info,
+  UserCircle,
 } from 'lucide-react'
 import {
   Dialog,
@@ -86,6 +90,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { useAudioAlert } from '@/hooks/use-audio-alert'
@@ -545,7 +555,7 @@ export default function WorkdeskPage() {
   const [encerrarDialogOpen, setEncerrarDialogOpen] = useState(false)
   const [transferDialogOpen, setTransferDialogOpen] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [showClientInfo, setShowClientInfo] = useState(false)
+  const [showClientPanel, setShowClientPanel] = useState(true)
   
   // Transfer data
   const [setores, setSetores] = useState<any[]>([])
@@ -2610,7 +2620,7 @@ const tempId = `temp-${Date.now()}`
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100svh-3.5rem)] items-center justify-center bg-[#06080f]">
+      <div className="flex h-screen items-center justify-center bg-[#06080f]">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
           <p className="text-white/40 text-sm">Carregando tickets...</p>
@@ -2620,47 +2630,58 @@ const tempId = `temp-${Date.now()}`
   }
 
   return (
-    <div className="flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden">
+    <TooltipProvider delayDuration={200}>
+    <div className="flex h-screen flex-col overflow-hidden">
+      {/* Mobile top bar — only shows on small screens */}
+      <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-3 py-2 md:hidden">
+        <span className="text-sm font-semibold text-white/70">Tickets</span>
+        <Badge variant="outline" className="text-[10px] tabular-nums">
+          {filteredTickets.length}
+        </Badge>
+      </div>
+
       <div className="flex flex-1 overflow-hidden w-full max-w-full">
-        {/* Ticket List Column - responsive width */}
-        <aside className="w-52 shrink-0 border-r border-white/6 glass-panel lg:w-60 xl:w-72 h-full overflow-hidden flex flex-col">
-          {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
-          {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
-            setorCanalConfig !== 'evolution_api') && (
-          <div className="p-2 border-b border-white/6 shrink-0">
-  <Button
-  onClick={async () => {
-    // Check dispatch limit before opening
-    if (colaborador?.setor_id) {
-      try {
-        const res = await fetch(`/api/whatsapp/dispatch/count?setorId=${colaborador.setor_id}`)
-        const data = await res.json()
-        if (data.blocked) {
-          setDisparoLimitBlocked(true)
-          setDisparoLimitInfo(`Limite diario atingido (${data.used}/${data.limit})`)
-          toast.error(`Limite de disparos atingido (${data.used}/${data.limit}). Tente novamente amanha.`)
-          return
-        }
-        setDisparoLimitBlocked(false)
-        setDisparoLimitInfo(data.limit > 0 ? `${data.used}/${data.limit} hoje` : '')
-      } catch {
-        // If check fails, allow dispatch anyway
-      }
-    }
-    resetDisparo()
-    setDisparoDialogOpen(true)
-  }}
-  className="w-full gap-2 btn-glow h-8 text-xs rounded-lg"
-  size="sm"
-  >
-  <Megaphone className="h-3.5 w-3.5" />
-  Novo Disparo
-            </Button>
-          </div>
-          )}
-          {/* Subsetor Picker */}
-          {subsetoresDisponiveis.length > 0 && (
-            <div className="px-2 py-1.5 border-b border-white/6 shrink-0">
+        {/* ═══════════════════════════════════════════════════════════════════════
+            COLUMN 1 — Ticket List (340px)
+           ═══════════════════════════════════════════════════════════════════════ */}
+        <aside className={cn(
+          "w-full md:w-[340px] shrink-0 border-r border-white/5 bg-[#06080f]/60 backdrop-blur-xl h-full overflow-hidden flex flex-col",
+          selectedTicket ? "hidden md:flex" : "flex"
+        )}>
+          {/* Top section: Disparo + Search */}
+          <div className="p-3 space-y-2 shrink-0 border-b border-white/5">
+            {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
+            {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
+              setorCanalConfig !== 'evolution_api') && (
+              <Button
+                onClick={async () => {
+                  if (colaborador?.setor_id) {
+                    try {
+                      const res = await fetch(`/api/whatsapp/dispatch/count?setorId=${colaborador.setor_id}`)
+                      const data = await res.json()
+                      if (data.blocked) {
+                        setDisparoLimitBlocked(true)
+                        setDisparoLimitInfo(`Limite diario atingido (${data.used}/${data.limit})`)
+                        toast.error(`Limite de disparos atingido (${data.used}/${data.limit}). Tente novamente amanha.`)
+                        return
+                      }
+                      setDisparoLimitBlocked(false)
+                      setDisparoLimitInfo(data.limit > 0 ? `${data.used}/${data.limit} hoje` : '')
+                    } catch {}
+                  }
+                  resetDisparo()
+                  setDisparoDialogOpen(true)
+                }}
+                className="w-full gap-2 btn-glow h-9 text-xs rounded-lg"
+                size="sm"
+              >
+                <Megaphone className="h-3.5 w-3.5" />
+                Novo Disparo
+              </Button>
+            )}
+
+            {/* Subsetor Picker */}
+            {subsetoresDisponiveis.length > 0 && (
               <Popover open={subsetorPickerOpen} onOpenChange={setSubsetorPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -2707,9 +2728,10 @@ const tempId = `temp-${Date.now()}`
                   </div>
                 </PopoverContent>
               </Popover>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Ticket List */}
           <div className="flex-1 overflow-hidden">
             <TicketList
               tickets={filteredTickets}
@@ -2732,38 +2754,39 @@ const tempId = `temp-${Date.now()}`
           </div>
         </aside>
 
-        {/* Chat Area */}
-        <main className="hidden flex-1 flex-col overflow-hidden md:flex">
+        {/* ═══════════════════════════════════════════════════════════════════════
+            COLUMN 2 — Chat (center, flex-1)
+           ═══════════════════════════════════════════════════════════════════════ */}
+        <main className={cn(
+          "flex-1 flex-col overflow-hidden min-w-0",
+          selectedTicket ? "flex" : "hidden md:flex"
+        )}>
           {selectedTicket ? (
             <>
-              {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-3 py-2 gap-2">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
-                    <User className="h-4 w-4 text-emerald-400" />
-                  </div>
+              {/* Chat Header — compact */}
+              <div className="flex items-center justify-between border-b border-white/5 bg-[#06080f]/80 backdrop-blur-xl px-4 py-2.5 gap-3">
+                {/* Left: back button (mobile) + client info */}
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {/* Mobile back button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 md:hidden h-8 w-8"
+                    onClick={() => {
+                      setSelectedTicket(null)
+                      selectedTicketIdRef.current = null
+                    }}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs font-sans font-bold text-white/40 shrink-0">#{selectedTicket.numero}</span>
-                      <h2 className="text-xs font-semibold text-white/90 truncate max-w-[180px]">{selectedTicket.clientes.nome}</h2>
-                    </div>
-                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                      {selectedTicket.setores && (
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] px-1 py-0 font-medium"
-                          style={{
-                            borderColor: selectedTicket.setores.cor || '#6b7280',
-                            color: selectedTicket.setores.cor || '#6b7280',
-                          }}
-                        >
-                          {selectedTicket.setores.nome}
-                        </Badge>
-                      )}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h2 className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome}</h2>
                       <Badge
                         variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
                         className={cn(
-                          'text-[9px] px-1 py-0',
+                          'text-[9px] px-1.5 py-0 shrink-0',
                           selectedTicket.status === 'aberto' && 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                           selectedTicket.status === 'em_atendimento' && 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         )}
@@ -2771,83 +2794,102 @@ const tempId = `temp-${Date.now()}`
                         {selectedTicket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
                       </Badge>
                     </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-white/40">
+                      <span className="font-mono">#{selectedTicket.numero}</span>
+                      {selectedTicket.setores && (
+                        <>
+                          <span className="text-white/15">|</span>
+                          <span style={{ color: selectedTicket.setores.cor || '#6b7280' }}>
+                            {selectedTicket.setores.nome}
+                          </span>
+                        </>
+                      )}
+                      <span className="text-white/15">|</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(selectedTicket.criado_em), { locale: ptBR, addSuffix: true })}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {/* Transfer Button */}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={openTransferDialog}
-                    className="gap-1.5 bg-transparent"
-                  >
-                    <ArrowRightLeft className="h-4 w-4" />
-                    Transferir
-                  </Button>
-                  
-  {/* Encerrar Button */}
-  <Button
-  variant="destructive"
-  size="sm"
-  onClick={() => setEncerrarDialogOpen(true)}
-  disabled={selectedTicket?.is_disparo && !isDisparoEncerrarEnabled(selectedTicket)}
-  className="gap-1.5"
-  >
-  <XCircle className="h-4 w-4" />
-  Encerrar
-  </Button>
+                {/* Right: action buttons */}
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Atender — only when ticket is aberto */}
+                  {selectedTicket.status === 'aberto' && (
+                    <Button
+                      size="sm"
+                      onClick={handleMarcarEmAtendimento}
+                      className="gap-1.5 btn-glow h-8 text-xs"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      Atender
+                    </Button>
+                  )}
 
-                  {/* Toggle Client Info Panel */}
+                  {/* Transfer */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={openTransferDialog}
+                        className="h-8 w-8 bg-transparent"
+                      >
+                        <ArrowRightLeft className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"><p>Transferir</p></TooltipContent>
+                  </Tooltip>
+
+                  {/* Encerrar */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => setEncerrarDialogOpen(true)}
+                        disabled={selectedTicket?.is_disparo && !isDisparoEncerrarEnabled(selectedTicket)}
+                        className="h-8 w-8"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"><p>Encerrar</p></TooltipContent>
+                  </Tooltip>
+
+                  {/* Toggle Client Info Panel (desktop) */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowClientPanel(!showClientPanel)}
+                        className="h-8 w-8 hidden md:flex"
+                      >
+                        {showClientPanel ? (
+                          <PanelRightClose className="h-4 w-4" />
+                        ) : (
+                          <PanelRightOpen className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{showClientPanel ? 'Ocultar painel' : 'Dados do cliente'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* Client info button (mobile) — opens sheet */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setShowClientInfo(!showClientInfo)}
-                    title={showClientInfo ? 'Ocultar dados do cliente' : 'Mostrar dados do cliente'}
+                    onClick={() => setMobileDrawerOpen(true)}
+                    className="h-8 w-8 md:hidden"
                   >
-                    {showClientInfo ? (
-                      <PanelRightClose className="h-4 w-4" />
-                    ) : (
-                      <PanelRightOpen className="h-4 w-4" />
-                    )}
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedTicket(null)
-                      selectedTicketIdRef.current = null
-                    }}
-                  >
-                    <X className="h-5 w-5" />
+                    <Info className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-
-              {/* Chat Info Bar */}
-              <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.02] backdrop-blur-sm px-4 py-2 text-xs text-white/40">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      Aberto{' '}
-                      {formatDistanceToNow(new Date(selectedTicket.criado_em), {
-                        locale: ptBR,
-                        addSuffix: true,
-                      })}
-                    </span>
-                    {selectedTicket.primeira_resposta_em && (
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                        Primeira resposta{' '}
-                        {formatDistanceToNow(new Date(selectedTicket.primeira_resposta_em), {
-                          locale: ptBR,
-                          addSuffix: true,
-                        })}
-                      </span>
-                    )}
-                  </div>
-                </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-hidden">
@@ -3188,24 +3230,32 @@ const tempId = `temp-${Date.now()}`
           )}
         </main>
 
-{/* Client Info Sidebar */}
-        {selectedTicket && (
-          <aside className={cn(
-            "w-56 shrink-0 border-l border-white/6 glass-panel overflow-y-auto transition-all duration-200 lg:w-64 xl:w-72",
-            showClientInfo ? "hidden xl:block" : "hidden"
-          )}>
-            <div className="p-4">
-              {/* Header Dados do Cliente */}
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-emerald-400" />
-                  Dados do Cliente
-                </h3>
-                <div className="flex items-center gap-1">
+        {/* ═══════════════════════════════════════════════════���═══════════════════
+            COLUMN 3 — Client Info Panel (right, 280px, collapsible)
+           ═════════════════════════════════════════════════���═════════════════════ */}
+        {showClientPanel && selectedTicket && (
+          <aside className="hidden md:flex w-[280px] shrink-0 border-l border-white/5 bg-[#06080f]/60 backdrop-blur-xl overflow-y-auto flex-col">
+            <div className="p-4 space-y-5">
+              {/* Client Card */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                    <UserCircle className="h-6 w-6 text-emerald-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome || 'Sem nome'}</p>
+                    {selectedTicket.clientes.telefone && (
+                      <p className="text-xs text-white/40 truncate">{formatPhone(selectedTicket.clientes.telefone)}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] px-2 gap-1 border-amber-400/30 text-amber-400 hover:bg-amber-500/10"
+                    className="flex-1 h-7 text-[10px] gap-1 border-amber-400/30 text-amber-400 hover:bg-amber-500/10"
                     onClick={handleAbrirEditarCliente}
                   >
                     <Pencil className="h-3 w-3" />
@@ -3214,7 +3264,7 @@ const tempId = `temp-${Date.now()}`
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] px-2 gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                    className="flex-1 h-7 text-[10px] gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
                     onClick={() => {
                       setSelecionarClienteCnpj('')
                       setSelecionarClienteData(null)
@@ -3227,144 +3277,104 @@ const tempId = `temp-${Date.now()}`
                 </div>
               </div>
 
-              {/* Campo linha: label + valor + copy */}
-              <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
-                {/* Nome */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-white/40 shrink-0 w-16">Nome</span>
-                  <span className="font-medium text-white/80 flex-1 text-right truncate">
-                    {selectedTicket.clientes.nome || '—'}
-                  </span>
-                  {selectedTicket.clientes.nome && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(selectedTicket.clientes.nome, 'Nome')}
-                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Telefone */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-white/40 shrink-0 w-16">Telefone</span>
-                  <span className="font-medium text-white/80 flex-1 text-right truncate">
-                    {selectedTicket.clientes.telefone ? formatPhone(selectedTicket.clientes.telefone) : '—'}
-                  </span>
-                  {selectedTicket.clientes.telefone && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(selectedTicket.clientes.telefone!, 'Telefone')}
-                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Registro */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-white/40 shrink-0 w-16">Registro</span>
-                  <span className="font-medium text-white/80 flex-1 text-right truncate">
-                    {selectedTicket.clientes.Registro || '—'}
-                  </span>
-                  {selectedTicket.clientes.Registro && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(selectedTicket.clientes.Registro!, 'Registro')}
-                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* CNPJ */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-white/40 shrink-0 w-16">CNPJ</span>
-                  <span className="font-medium text-white/80 flex-1 text-right truncate">
-                    {selectedTicket.clientes.CNPJ ? formatCNPJ(selectedTicket.clientes.CNPJ) : '—'}
-                  </span>
-                  {selectedTicket.clientes.CNPJ && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(selectedTicket.clientes.CNPJ!.replace(/\D/g, ''), 'CNPJ')}
-                      className="shrink-0 text-white/30 hover:text-white/60 transition-colors"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* PDV */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                  <span className="text-white/40 shrink-0 w-16">PDV</span>
-                  <span className="font-medium text-white/80 flex-1 text-right truncate">
-                    {selectedTicket.clientes.PDV || '—'}
-                  </span>
-                </div>
-
-                {/* Cliente Desde */}
-                {selectedTicket.clientes.created_at && (
+              {/* Client Details */}
+              <div>
+                <h4 className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+                  Dados do Cliente
+                </h4>
+                <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Desde</span>
-                    <span className="font-medium text-white/80 flex-1 text-right">
-                      {format(new Date(selectedTicket.clientes.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                    <span className="text-white/40 shrink-0 w-16">CNPJ</span>
+                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                      {selectedTicket.clientes.CNPJ ? formatCNPJ(selectedTicket.clientes.CNPJ) : '—'}
+                    </span>
+                    {selectedTicket.clientes.CNPJ && (
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.CNPJ!.replace(/\D/g, ''), 'CNPJ')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 shrink-0 w-16">Registro</span>
+                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                      {selectedTicket.clientes.Registro || '—'}
+                    </span>
+                    {selectedTicket.clientes.Registro && (
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.Registro!, 'Registro')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 shrink-0 w-16">PDV</span>
+                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                      {selectedTicket.clientes.PDV || '—'}
                     </span>
                   </div>
-                )}
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 shrink-0 w-16">Telefone</span>
+                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                      {selectedTicket.clientes.telefone ? formatPhone(selectedTicket.clientes.telefone) : '—'}
+                    </span>
+                    {selectedTicket.clientes.telefone && (
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.telefone!, 'Telefone')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                  {selectedTicket.clientes.created_at && (
+                    <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                      <span className="text-white/40 shrink-0 w-16">Desde</span>
+                      <span className="font-medium text-white/80 flex-1 text-right">
+                        {format(new Date(selectedTicket.clientes.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Ticket Info Section */}
-              <div className="mt-4 pt-4 border-t border-white/6">
-                <h3 className="text-xs font-semibold text-white/70 mb-2 flex items-center gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
+              {/* Ticket Info */}
+              <div>
+                <h4 className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">
                   Info do Ticket
-                </h3>
-
+                </h4>
                 <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
-                  {/* Número */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Número</span>
-                    <span className="font-bold text-white/90 flex-1 text-right select-all">
-                      #{selectedTicket.numero}
-                    </span>
+                    <span className="text-white/40 shrink-0 w-16">Ticket</span>
+                    <span className="font-bold text-white/90 flex-1 text-right select-all">#{selectedTicket.numero}</span>
                   </div>
-
-                  {/* Prioridade */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
                     <span className="text-white/40 shrink-0 w-16">Prioridade</span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-[10px] px-1.5 py-0 h-4',
-                        selectedTicket.prioridade === 'urgente' && 'border-red-500/30 text-red-400'
-                      )}
-                    >
+                    <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4', selectedTicket.prioridade === 'urgente' && 'border-red-500/30 text-red-400')}>
                       {selectedTicket.prioridade === 'urgente' ? 'Urgente' : 'Normal'}
                     </Badge>
                   </div>
-
-                  {/* Canal */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
                     <span className="text-white/40 shrink-0 w-16">Canal</span>
                     <span className="font-medium text-white/80 capitalize">{selectedTicket.canal}</span>
                   </div>
-
-                  {/* Criado em */}
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
                     <span className="text-white/40 shrink-0 w-16">Criado em</span>
                     <span className="font-medium text-white/80">
-                      {new Date(selectedTicket.criado_em).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {new Date(selectedTicket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
+                  {selectedTicket.primeira_resposta_em && (
+                    <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                      <span className="text-white/40 shrink-0 w-16">1a Resposta</span>
+                      <span className="font-medium text-white/80">
+                        {formatDistanceToNow(new Date(selectedTicket.primeira_resposta_em), { locale: ptBR, addSuffix: true })}
+                      </span>
+                    </div>
+                  )}
+                  {selectedTicket.setores && (
+                    <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                      <span className="text-white/40 shrink-0 w-16">Setor</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-medium" style={{ borderColor: selectedTicket.setores.cor || '#6b7280', color: selectedTicket.setores.cor || '#6b7280' }}>
+                        {selectedTicket.setores.nome}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -3372,293 +3382,50 @@ const tempId = `temp-${Date.now()}`
         )}
       </div>
 
-      {/* Mobile Chat Sheet */}
-      <Sheet open={!!selectedTicket && mobileDrawerOpen} onOpenChange={() => setMobileDrawerOpen(false)}>
-        <SheetContent side="right" className="w-full p-0 sm:max-w-full">
-          <SheetTitle className="sr-only">Chat do Ticket</SheetTitle>
+      {/* Mobile Client Info Sheet — only rendered on mobile via md:hidden trigger in chat header */}
+      <Sheet open={!!selectedTicket && mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+        <SheetContent side="right" className="w-[300px] p-0">
+          <SheetTitle className="sr-only">Dados do Cliente</SheetTitle>
           {selectedTicket && (
-            <div className="flex h-full flex-col">
-              {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
-                    <User className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-white/90">{selectedTicket.clientes.nome}</h2>
-                    <Badge
-                      variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
-                      className={cn(
-                        'text-[10px] px-1.5 py-0',
-                        selectedTicket.status === 'aberto' && 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-                        selectedTicket.status === 'em_atendimento' && 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      )}
-                    >
-                      {selectedTicket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
-                    </Badge>
-                  </div>
+            <div className="p-4 space-y-4 overflow-y-auto h-full">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                  <UserCircle className="h-5 w-5 text-emerald-400" />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-onClick={() => {
-                        setSelectedTicket(null)
-                        selectedTicketIdRef.current = null
-                        setMobileDrawerOpen(false)
-                      }}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                {mensagens.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center text-white/40">
-                    <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
-                    <p>Nenhuma mensagem ainda</p>
-                  </div>
-) : (
-                      <div className="space-y-4">
-                        {(() => {
-                          // Garante que mensagens do ticket atual sempre venham por último (mobile)
-                          const mensagensOrdenadas = selectedTicket
-                            ? [
-                                ...mensagens.filter((m) => m.ticket_id !== selectedTicket.id),
-                                ...mensagens.filter((m) => m.ticket_id === selectedTicket.id),
-                              ]
-                            : mensagens
-
-                          let lastTicketId: string | null = null
-                          return mensagensOrdenadas.map((msg, index) => {
-                            const msgStatus = pendingMessages.get(msg.id)
-                            const isNewTicket = msg.ticket_id !== lastTicketId
-                            const isCurrentTicket = msg.ticket_id === selectedTicket?.id
-                            const isPreviousTicket = !isCurrentTicket && isNewTicket
-                            lastTicketId = msg.ticket_id
-
-                            return (
-                              <React.Fragment key={msg.id}>
-                                {/* Ticket separator for history */}
-                                {isPreviousTicket && (
-                                  <div className="flex items-center gap-2 py-2">
-                                    <div className="flex-1 h-px bg-border" />
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/[0.03] border border-white/8 text-[10px] text-white/40">
-                                      <History className="h-2.5 w-2.5" />
-                                      <span>
-                                        {(msg.tickets?.criado_em || msg.enviado_em)
-                                          ? new Date(msg.tickets?.criado_em || msg.enviado_em).toLocaleDateString('pt-BR', {
-                                              day: '2-digit',
-                                              month: '2-digit',
-                                            })
-                                          : '?'}
-                                      </span>
-                                    </div>
-                                    <div className="flex-1 h-px bg-border" />
-                                  </div>
-                                )}
-                                {/* Current ticket separator */}
-                                {isNewTicket && isCurrentTicket && index > 0 && (
-                                  <div className="flex items-center gap-2 py-2">
-                                    <div className="flex-1 h-px bg-emerald-500/30" />
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 font-medium">
-                                      <MessageCircle className="h-2.5 w-2.5" />
-                                      <span>Atual</span>
-                                    </div>
-                                    <div className="flex-1 h-px bg-emerald-500/30" />
-                                  </div>
-                                )}
-                                {msg.remetente === 'sistema' ? (
-                                  <div className="flex justify-center">
-                                    <div className={cn(
-                                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] max-w-[90%]",
-                                      msg.conteudo.startsWith('Transferido')
-                                        ? "bg-blue-500/5 border-blue-500/20 text-blue-400"
-                                        : "bg-white/[0.03] border-white/8 text-white/40"
-                                    )}>
-                                      {msg.conteudo.startsWith('Transferido') ? (
-                                        <ArrowRightLeft className="h-3 w-3 shrink-0 text-blue-400" />
-                                      ) : (
-                                        <Megaphone className="h-3 w-3 shrink-0 text-emerald-400" />
-                                      )}
-                                      <span>{msg.conteudo}</span>
-                                      {msg.enviado_em && (
-                                        <span className="shrink-0 ml-1 opacity-60">
-                                          {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ) : (
-                                <div
-                                  className={cn(
-                                    'flex',
-                                    isOutgoingMessage(msg.remetente) ? 'justify-end' : 'justify-start',
-                                    !isCurrentTicket && 'opacity-70'
-                                  )}
-                                >
-                                  <div
-                                    className={cn(
-'max-w-[85%] rounded-2xl px-3 py-2 break-all overflow-hidden',
-                    isOutgoingMessage(msg.remetente)
-                      ? 'brand-gradient text-white rounded-br-md shadow-lg shadow-emerald-500/10'
-                      : 'bg-white/[0.05] text-white/90 rounded-bl-md border border-white/6',
-                    msgStatus === 'error' && 'bg-red-500 text-white'
-                                    )}
-                                  >
-                  {msg.url_imagem && (
-                    <MessageMedia
-                      url={msg.url_imagem}
-                      mediaType={msg.media_type}
-                      tipo={msg.tipo}
-                      conteudo={msg.conteudo}
-                      isOutgoing={isOutgoingMessage(msg.remetente)}
-                    />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome}</p>
+                  {selectedTicket.clientes.telefone && (
+                    <p className="text-xs text-white/40">{formatPhone(selectedTicket.clientes.telefone)}</p>
                   )}
-                  {msg.media_type === 'contact' && msg.conteudo ? (
-                    <ContactCard conteudo={msg.conteudo} isOutgoing={isOutgoingMessage(msg.remetente)} />
-                  ) : msg.conteudo && msg.tipo !== 'documento' && msg.tipo !== 'audio' && msg.tipo !== 'video' && !msg.url_imagem?.toLowerCase().endsWith('.pdf') && <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>}
-                                    <div className="mt-1 flex items-center justify-end gap-1 text-[10px] opacity-60">
-                                      <span>
-                                        {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', {
-                                          hour: '2-digit',
-                                          minute: '2-digit',
-                                        })}
-                                      </span>
-                                      {isOutgoingMessage(msg.remetente) && (
-                                        <>
-                                          {msgStatus === 'sending' && <Clock className="h-3 w-3 animate-pulse" />}
-                                          {msgStatus === 'sent' && <Check className="h-3 w-3" />}
-                                          {msgStatus === 'error' && <AlertTriangle className="h-3 w-3" />}
-                                          {!msgStatus && <CheckCheck className="h-3 w-3" />}
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                                )}
-                              </React.Fragment>
-                            )
-                          })
-                        })()}
-                      </div>
-                    )}
-                  </ScrollArea>
-
-            {/* Input Area Mobile */}
-            <div className="border-t border-white/6 glass-header p-3 space-y-2">
-              {selectedTicket.status === 'aberto' && (
-                <Button
-                  onClick={handleMarcarEmAtendimento}
-                  className="w-full btn-glow gap-2"
-                >
-                    <CheckCircle className="h-4 w-4" />
-                    ✨ Iniciar Atendimento
-                  </Button>
-                )}
-                
-{/* File Preview Mobile */}
-                    {filePreview && (
-                      <div className="mb-2 p-2 bg-white/[0.02] rounded-lg border border-white/6">
-                        <div className="relative inline-block">
-  {filePreview.startsWith('file:') ? (
-  (() => { const { icon: FIcon, label, color, bg, border } = getFileInfo(filePreview.replace('file:', '').split('.').pop() || '', selectedFile?.type); return (
-  <div className={cn('flex items-center gap-2 px-2 py-1.5 rounded border', bg, border)}>
-    <FIcon className={cn('h-5 w-5', color)} />
-    <span className="text-xs text-white/80 max-w-[100px] truncate">{filePreview.replace('file:', '')}</span>
-  </div>) })()
-  ) : filePreview.startsWith('video:') ? (
-  <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-500/10 rounded border border-blue-500/20">
-  <Video className="h-5 w-5 text-blue-400" />
-  <span className="text-xs text-white/80">{filePreview.replace('video:', '')}</span>
-  </div>
-  ) : (
-  <img
-  src={filePreview || "/placeholder.svg"}
-  alt="Preview"
-  className="max-h-16 max-w-[120px] rounded-lg border object-cover"
-  />
-  )}
-  <button
-                            type="button"
-                            onClick={clearSelectedFile}
-                            className="absolute -top-2 -right-2 rounded-full bg-destructive text-destructive-foreground p-1"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="shrink-0"
-                      >
-                        <Smile className="h-5 w-5 text-white/40" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="shrink-0"
-                      >
-                        <ImageIcon className="h-5 w-5 text-white/40" />
-                      </Button>
-                  <Input
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  onPaste={handlePaste}
-                  placeholder="Mensagem..."
-                  className="flex-1"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  data-gramm="false"
-                  data-gramm_editor="false"
-                  data-enable-grammarly="false"
-                  data-ms-editor="false"
-                  />
-                      <Button
-                        size="icon"
-                        onClick={handleSendMessage}
-                        disabled={(!messageInput.trim() && !selectedFile) || uploadingFile}
-                        className="shrink-0"
-                      >
-                  {uploadingFile ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                
-                {selectedTicket.status === 'em_atendimento' && (
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={openTransferDialog}
-                      className="flex-1 gap-1 bg-transparent"
-                    >
-                      <ArrowRightLeft className="h-4 w-4" />
-                      Transferir
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => setEncerrarDialogOpen(true)}
-                      className="flex-1 gap-1"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Encerrar
-                    </Button>
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 text-xs">
+                {selectedTicket.clientes.CNPJ && (
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 w-16">CNPJ</span>
+                    <span className="text-white/80 truncate">{formatCNPJ(selectedTicket.clientes.CNPJ)}</span>
                   </div>
                 )}
+                {selectedTicket.clientes.Registro && (
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 w-16">Registro</span>
+                    <span className="text-white/80 truncate">{selectedTicket.clientes.Registro}</span>
+                  </div>
+                )}
+                {selectedTicket.clientes.PDV && (
+                  <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
+                    <span className="text-white/40 w-16">PDV</span>
+                    <span className="text-white/80 truncate">{selectedTicket.clientes.PDV}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-1.5">
+                <Button variant="outline" size="sm" className="flex-1 h-7 text-[10px] gap-1" onClick={handleAbrirEditarCliente}>
+                  <Pencil className="h-3 w-3" /> Editar
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 h-7 text-[10px] gap-1" onClick={() => { setSelecionarClienteCnpj(''); setSelecionarClienteData(null); setSelecionarClienteDialogOpen(true) }}>
+                  <Search className="h-3 w-3" /> {clienteTemCNPJ ? 'Trocar' : 'Selecionar'}
+                </Button>
               </div>
             </div>
           )}
@@ -4360,6 +4127,7 @@ onClick={() => {
         </div>
       )}
     </div>
+    </TooltipProvider>
   )
 }
 
@@ -4413,44 +4181,45 @@ function TicketList({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Filters Toggle */}
-      <div className="shrink-0 border-b border-white/6 px-4 py-2">
-        <button
-          type="button"
-          onClick={() => setFiltersOpen(!filtersOpen)}
-          className="flex items-center gap-2 text-xs text-white/40 hover:text-white/60 transition-colors w-full py-1"
-        >
-          <Filter className="h-3 w-3" />
-          <span>Filtros</span>
-          {(hasActiveFilter || searchTerm) && (
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          )}
-          <ChevronDown className={cn('h-3 w-3 ml-auto transition-transform', filtersOpen && 'rotate-180')} />
-        </button>
+      {/* Search + Filter Toggle */}
+      <div className="shrink-0 px-3 pt-3 pb-2 space-y-2">
+        {/* Search input with filter icon */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+          <Input
+            placeholder="Buscar cliente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-9 h-9 text-xs bg-white/[0.03] border-white/8"
+          />
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className={cn(
+              'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors',
+              filtersOpen || hasActiveFilter ? 'text-emerald-400' : 'text-white/30 hover:text-white/50'
+            )}
+          >
+            <Filter className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Collapsible filters */}
         {filtersOpen && (
-          <div className="space-y-2 pt-2 pb-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-              <Input
-                placeholder="Buscar cliente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-8 text-xs"
-              />
-            </div>
-            <div className="flex gap-2">
+          <div className="space-y-1.5 pb-1">
+            <div className="flex gap-1.5">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="flex-1 h-8 text-xs">
+                <SelectTrigger className="flex-1 h-7 text-[11px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="aberto">Aberto</SelectItem>
-                  <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+                  <SelectItem value="em_atendimento">Atendendo</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-                <SelectTrigger className="flex-1 h-8 text-xs">
+                <SelectTrigger className="flex-1 h-7 text-[11px]">
                   <SelectValue placeholder="Prioridade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -4462,7 +4231,7 @@ function TicketList({
             </div>
             {subsetoresDisponiveis.length > 0 && (
               <Select value={subsetorFilter} onValueChange={setSubsetorFilter}>
-                <SelectTrigger className="w-full h-8 text-xs">
+                <SelectTrigger className="w-full h-7 text-[11px]">
                   <SelectValue placeholder="Subsetor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -4476,23 +4245,37 @@ function TicketList({
             )}
           </div>
         )}
+
+        {/* Quick stats */}
+        <div className="flex items-center justify-between px-0.5">
+          <span className="text-[11px] text-white/30">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={() => { setStatusFilter('todos'); setPrioridadeFilter('todos'); setSubsetorFilter('todos') }}
+              className="text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Ticket List */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {tickets.length === 0 ? (
-          <div className="flex h-40 flex-col items-center justify-center text-white/30">
+          <div className="flex h-40 flex-col items-center justify-center text-white/30 px-4">
             <MessageCircle className="mb-2 h-8 w-8 opacity-30" />
             <p className="text-sm">Nenhum ticket encontrado</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/6">
+          <div>
             {tickets.map((ticket) => {
               const unreadCount = unreadCounts.get(ticket.id) || 0
               const isWaitingResponse = ticket.ultima_mensagem_remetente && isOutgoingMessage(ticket.ultima_mensagem_remetente)
               const isSelected = selectedTicket?.id === ticket.id
 
-              // Check if ticket exceeded wait time (last msg from collaborator, no client response)
+              // Check if ticket exceeded wait time
               const tempoEspera = ticket.setores?.tempo_espera_minutos || 0
               let isExpiredWait = false
               if (tempoEspera > 0 && isWaitingResponse && ticket.ultima_mensagem_em && ticket.status !== 'encerrado') {
@@ -4500,51 +4283,80 @@ function TicketList({
                 const elapsed = Date.now() - lastMsgTime
                 isExpiredWait = elapsed > tempoEspera * 60 * 1000
               }
-              
+
               return (
                 <motion.div
                   key={ticket.id}
                   role="button"
                   tabIndex={0}
-                  whileHover={{ backgroundColor: isSelected ? undefined : 'rgba(255,255,255,0.03)' }}
+                  whileHover={{ backgroundColor: isSelected ? undefined : 'rgba(255,255,255,0.025)' }}
                   onClick={() => onSelectTicket(ticket)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTicket(ticket) }}
                   className={cn(
-                    'w-full px-3 py-2.5 text-left transition-colors border-l-3 cursor-pointer',
+                    'w-full px-3 py-3 text-left transition-all cursor-pointer border-l-[3px]',
                     isSelected
-                      ? 'glass-nav-active border-l-emerald-500'
+                      ? 'bg-emerald-500/[0.07] border-l-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.05)]'
                       : isExpiredWait
-                      ? 'bg-amber-500/5 border-l-amber-500'
-                      : 'border-l-transparent hover:bg-white/[0.03]'
+                      ? 'bg-amber-500/[0.04] border-l-amber-500'
+                      : unreadCount > 0
+                      ? 'bg-white/[0.02] border-l-transparent'
+                      : 'border-l-transparent'
                   )}
                 >
-                  <div className="flex flex-col gap-1">
-                    {/* Row 1: #numero - Status Tags - Unread Badge - Ticket Icon */}
+                  <div className="flex flex-col gap-1.5">
+                    {/* Top row: Ticket # badge (left) + time since last msg (right) */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={cn(
-                          "text-xs font-semibold shrink-0",
-                          isSelected ? "text-emerald-400" : "text-white/70"
+                          "text-[11px] font-mono font-semibold shrink-0 px-1.5 py-0.5 rounded bg-white/[0.04]",
+                          isSelected ? "text-emerald-400 bg-emerald-500/10" : "text-white/50"
                         )}>
                           #{ticket.numero}
                         </span>
                         {ticket.prioridade === 'urgente' && (
-                          <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+                          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500/10">
+                            <AlertTriangle className="h-2.5 w-2.5 text-red-400" />
+                          </span>
                         )}
-                        <span className="text-white/40">-</span>
-                        {/* Status badges */}
+                      </div>
+                      <span className="text-[10px] text-white/30 shrink-0 tabular-nums">
+                        {formatDistanceToNow(new Date(ticket.ultima_mensagem_em || ticket.criado_em), {
+                          locale: ptBR,
+                          addSuffix: false,
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Middle: Client name (bold) + phone (muted) */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className={cn(
+                        "text-sm font-semibold truncate flex-1 min-w-0",
+                        isSelected ? "text-emerald-300" : unreadCount > 0 ? "text-white/90" : "text-white/75"
+                      )}>
+                        {ticket.clientes.nome}
+                      </p>
+                    </div>
+                    {ticket.clientes.telefone && (
+                      <span className="text-[10px] text-white/30 truncate -mt-1">
+                        {formatPhone(ticket.clientes.telefone)}
+                      </span>
+                    )}
+
+                    {/* Bottom row: Status badge + Unread count */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
                         {isExpiredWait ? (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/20 text-amber-400 border-0 animate-pulse">
+                          <Badge className="text-[9px] px-1.5 py-0 h-[18px] bg-amber-500/15 text-amber-400 border-0 animate-pulse">
                             Sem resposta
                           </Badge>
                         ) : isWaitingResponse && unreadCount === 0 ? (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-400 border-0">
+                          <Badge className="text-[9px] px-1.5 py-0 h-[18px] bg-amber-500/10 text-amber-400/80 border-0">
                             Aguardando
                           </Badge>
                         ) : (
                           <Badge
                             className={cn(
-                              'text-[9px] px-1.5 py-0 h-4 border-0',
+                              'text-[9px] px-1.5 py-0 h-[18px] border-0',
                               ticket.status === 'aberto' && 'bg-blue-500/10 text-blue-400',
                               ticket.status === 'em_atendimento' && 'bg-emerald-500/10 text-emerald-400'
                             )}
@@ -4552,15 +4364,18 @@ function TicketList({
                             {ticket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
                           </Badge>
                         )}
+                        {ticket.is_disparo && (
+                          <Badge className="text-[9px] px-1 py-0 h-[18px] bg-blue-500/10 text-blue-400 border-0">
+                            <Megaphone className="h-2.5 w-2.5" />
+                          </Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {/* Unread badge */}
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {unreadCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/30">
+                          <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/30">
                             {unreadCount > 99 ? '99+' : unreadCount}
                           </span>
                         )}
-                        {/* Ticket Iframe Button */}
                         <button
                           type="button"
                           title="Abrir detalhes do ticket"
@@ -4568,35 +4383,29 @@ function TicketList({
                             e.stopPropagation()
                             onOpenTicketIframe(ticket)
                           }}
-                          className="flex h-7 w-7 items-center justify-center rounded-md text-emerald-400 opacity-50 hover:opacity-100 hover:bg-emerald-500/10 transition-all"
+                          className="flex h-6 w-6 items-center justify-center rounded text-emerald-400 opacity-0 group-hover:opacity-100 hover:opacity-100 hover:bg-emerald-500/10 transition-all"
                         >
-                          <Ticket className="h-5 w-5" />
+                          <Ticket className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </div>
-                    
-                    {/* Row 2: Nome do Cliente */}
-                    <p className={cn(
-                      "text-sm font-medium line-clamp-1",
-                      isSelected ? "text-emerald-300" : "text-white/80"
-                    )}>
-  {ticket.clientes.nome}
-  </p>
-  
-  {/* Row 3: Tempo */}
-                    <span className="text-[10px] text-white/40">
-                      {formatDistanceToNow(new Date(ticket.ultima_mensagem_em || ticket.criado_em), {
-                        locale: ptBR,
-                        addSuffix: true,
-                      })}
-                    </span>
+
+                    {/* Last message preview */}
+                    {ticket.ultima_mensagem && (
+                      <p className="text-[11px] text-white/25 line-clamp-1 -mt-0.5">
+                        {ticket.ultima_mensagem_remetente && isOutgoingMessage(ticket.ultima_mensagem_remetente) && (
+                          <span className="text-white/35 mr-1">Voce:</span>
+                        )}
+                        {ticket.ultima_mensagem}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )
             })}
           </div>
         )}
-  </div>
-  </div>
+      </div>
+    </div>
   )
 }

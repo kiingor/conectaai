@@ -4,8 +4,9 @@ import React from 'react'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { User, LogOut, MessageCircle, Volume2, Play, KeyRound } from 'lucide-react'
+import { User, LogOut, MessageCircle, KeyRound, Ticket, Menu, Zap } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,11 +22,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { DisponibilidadePanel } from '@/components/workdesk/disponibilidade-panel'
 import { NotificacoesPanel } from '@/components/workdesk/notificacoes-panel'
+import { WorkdeskSidebar } from '@/components/workdesk/workdesk-sidebar'
 import { useAudioAlert, type TicketSoundType } from '@/hooks/use-audio-alert'
 
 interface ColaboradorSetor {
@@ -47,31 +55,12 @@ export default function WorkdeskLayout({
 }) {
   const [colaborador, setColaborador] = useState<Colaborador | null>(null)
   const [loading, setLoading] = useState(true)
-  const [ticketSound, setTicketSound] = useState<TicketSoundType>('default')
+  const [ticketSound] = useState<TicketSoundType>('default')
   const supabase = createClient()
   const router = useRouter()
   const pathname = usePathname()
-  const { setTicketSoundType, getTicketSoundType, playAlert, playBuhBuh, initAudioContext } = useAudioAlert()
+  const { playAlert } = useAudioAlert()
 
-  // Carregar preferencia de som salva
-  useEffect(() => {
-    const saved = localStorage.getItem('ticketSoundType') as TicketSoundType | null
-    if (saved === 'buhbuh' || saved === 'default') {
-      setTicketSound(saved)
-    }
-  }, [])
-
-  const handleSoundChange = (type: TicketSoundType) => {
-    setTicketSound(type)
-    setTicketSoundType(type)
-    // Pre-visualizar o som selecionado
-    initAudioContext()
-    if (type === 'buhbuh') {
-      playBuhBuh()
-    } else {
-      playAlert('new_ticket')
-    }
-  }
 
   const fetchColaborador = useCallback(async () => {
     console.log('[workdesk layout] fetchColaborador iniciado, pathname:', pathname)
@@ -222,6 +211,7 @@ export default function WorkdeskLayout({
   }
 
   // -- Alterar senha
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [senhaDialogOpen, setSenhaDialogOpen] = useState(false)
   const [senhaAtual, setSenhaAtual] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
@@ -313,181 +303,226 @@ export default function WorkdeskLayout({
   }
 
   return (
-    <div className="min-h-svh bg-[#06080f] ambient-glow">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between glass-header px-4 lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-emerald-500/20">
-            <MessageCircle className="h-4 w-4 text-white" />
-          </div>
-          <h1 className="text-sm font-bold brand-gradient-text tracking-tight">ConectaAI</h1>
-        </div>
+    <TooltipProvider delayDuration={200}>
+      <div className="min-h-svh bg-[#06080f] ambient-glow">
 
-        <div className="flex items-center gap-1.5">
-          {/* Status Panel */}
-          <DisponibilidadePanel
-            colaboradorId={colaborador.id}
-            isOnline={colaborador.is_online}
-            onStatusChange={handleStatusChange}
-            setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
-          />
+        {/* ===== Desktop: Slim vertical icon bar (hidden on mobile) ===== */}
+        <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex w-[60px] flex-col items-center py-4 bg-[#06080f]/80 backdrop-blur-xl border-r border-white/[0.06]">
 
-          {/* Notifications */}
-          <NotificacoesPanel
-            colaboradorId={colaborador.id}
-            setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
-          />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/8 transition-all">
-                <div className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-                  <User className="h-3.5 w-3.5 text-white/70" />
-                  <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f] ${colaborador.is_online ? 'status-dot-online' : 'status-dot-busy'}`} />
+          {/* Logo icon at top */}
+          <Link href="/workdesk" className="mb-6">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-emerald-500/20 transition-transform hover:scale-105">
+                  <MessageCircle className="h-5 w-5 text-white" />
                 </div>
-                <span className="hidden text-xs font-medium text-white/80 md:inline">{colaborador.nome}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 glass-dropdown rounded-2xl border-0 p-1">
-              <div className="px-3 py-2.5">
-                <p className="text-sm font-semibold text-white/90">{colaborador.nome}</p>
-                <p className="text-xs text-white/40">{colaborador.email}</p>
-              </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="glass-dropdown border-white/8 text-white/80">
+                ConectaAI
+              </TooltipContent>
+            </Tooltip>
+          </Link>
 
-              <DropdownMenuSeparator className="mx-2 bg-white/6" />
-
-              {/* Som de novo ticket */}
-              <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-semibold text-white/30 uppercase tracking-wider flex items-center gap-1.5">
-                <Volume2 className="h-3 w-3" />
-                Som -- Novo Ticket
-              </DropdownMenuLabel>
-
-              <div className="px-1.5 pb-1 space-y-0.5">
-                {/* Opcao Padrao */}
-                <button
-                  onClick={() => handleSoundChange('default')}
-                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
-                    ticketSound === 'default'
-                      ? 'bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20'
-                      : 'hover:bg-white/5 text-white/70'
+          {/* Navigation icons in the middle */}
+          <nav className="flex flex-col items-center gap-2 flex-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/workdesk"
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+                    pathname === '/workdesk'
+                      ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
+                      : 'text-white/30 hover:text-white/60 hover:bg-white/5'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-sm">Padrao</span>
-                  </span>
-                  {ticketSound === 'default' && (
-                    <Play className="h-3 w-3 shrink-0 opacity-60" />
-                  )}
-                </button>
+                  <Ticket className="h-5 w-5" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="glass-dropdown border-white/8 text-white/80">
+                Meus Tickets
+              </TooltipContent>
+            </Tooltip>
+          </nav>
 
-                {/* Opcao Buh Buh */}
-                <button
-                  onClick={() => handleSoundChange('buhbuh')}
-                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
-                    ticketSound === 'buhbuh'
-                      ? 'bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20'
-                      : 'hover:bg-white/5 text-white/70'
-                  }`}
+          {/* Bottom section: user avatar */}
+          <div className="flex flex-col items-center gap-1.5">
+            {/* User avatar with dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-white/5 mt-1">
+                  <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+                    <User className="h-4 w-4 text-white/50" />
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f] ${colaborador.is_online ? 'status-dot-online' : 'bg-white/25'}`} />
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-64 glass-dropdown rounded-2xl border-0 p-1">
+                <div className="px-3 py-2.5">
+                  <p className="text-sm font-semibold text-white/90">{colaborador.nome}</p>
+                  <p className="text-xs text-white/40">{colaborador.email}</p>
+                </div>
+
+                <DropdownMenuSeparator className="mx-2 bg-white/6" />
+
+
+                <DropdownMenuItem
+                  onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
+                  className="rounded-lg mx-1 text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/5"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-sm">Buh Buh</span>
-                  </span>
-                  {ticketSound === 'buhbuh' && (
-                    <Play className="h-3 w-3 shrink-0 opacity-60" />
-                  )}
-                </button>
-              </div>
-
-              <DropdownMenuSeparator className="mx-2 bg-white/6" />
-
-              <DropdownMenuItem
-                onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
-                className="rounded-lg mx-1 text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/5"
-              >
-                <KeyRound className="mr-2 h-4 w-4" />
-                Alterar Senha
-              </DropdownMenuItem>
-
-              <DropdownMenuItem onClick={handleLogout} className="text-red-400 rounded-lg mx-1 mb-1 hover:bg-red-500/10 focus:bg-red-500/10">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Dialog -- Alterar Senha */}
-          <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
-            <DialogContent className="sm:max-w-md glass-dropdown border-white/8 bg-[#0e101a]/95">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-white/90">
-                  <KeyRound className="h-4 w-4 text-emerald-400" />
+                  <KeyRound className="mr-2 h-4 w-4" />
                   Alterar Senha
-                </DialogTitle>
-              </DialogHeader>
+                </DropdownMenuItem>
 
-              <div className="space-y-4 py-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="wk-senha-atual" className="text-white/60 text-xs">Senha atual</Label>
-                  <Input
-                    id="wk-senha-atual"
-                    type="password"
-                    placeholder="Digite sua senha atual"
-                    value={senhaAtual}
-                    onChange={(e) => setSenhaAtual(e.target.value)}
-                    disabled={senhaLoading}
-                    className="glass-input text-white/90 placeholder:text-white/20"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="wk-nova-senha" className="text-white/60 text-xs">Nova senha</Label>
-                  <Input
-                    id="wk-nova-senha"
-                    type="password"
-                    placeholder="Minimo 6 caracteres"
-                    value={novaSenha}
-                    onChange={(e) => setNovaSenha(e.target.value)}
-                    disabled={senhaLoading}
-                    className="glass-input text-white/90 placeholder:text-white/20"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="wk-confirmar-senha" className="text-white/60 text-xs">Confirmar nova senha</Label>
-                  <Input
-                    id="wk-confirmar-senha"
-                    type="password"
-                    placeholder="Repita a nova senha"
-                    value={confirmarSenha}
-                    onChange={(e) => setConfirmarSenha(e.target.value)}
-                    disabled={senhaLoading}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleAlterarSenha() }}
-                    className="glass-input text-white/90 placeholder:text-white/20"
-                  />
-                </div>
-                {senhaError && (
-                  <p className="text-sm text-red-400">{senhaError}</p>
-                )}
+                <DropdownMenuItem onClick={handleLogout} className="text-red-400 rounded-lg mx-1 mb-1 hover:bg-red-500/10 focus:bg-red-500/10">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </aside>
+
+        {/* ===== Mobile: Top bar with hamburger (hidden on desktop) ===== */}
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 bg-[#06080f]/80 backdrop-blur-xl border-b border-white/[0.06] lg:hidden">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(true)}
+              className="text-white/40 hover:text-white/60 hover:bg-white/5 rounded-xl h-9 w-9"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Link href="/workdesk" className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-emerald-500/20">
+                <MessageCircle className="h-4 w-4 text-white" />
               </div>
+              <span className="text-sm font-bold brand-gradient-text tracking-tight">ConectaAI</span>
+            </Link>
+          </div>
+          <div className="flex items-center gap-1">
+            <DisponibilidadePanel
+              colaboradorId={colaborador.id}
+              isOnline={colaborador.is_online}
+              onStatusChange={handleStatusChange}
+              setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
+            />
+            <NotificacoesPanel
+              colaboradorId={colaborador.id}
+              setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
+            />
+          </div>
+        </header>
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setSenhaDialogOpen(false)}
+        {/* Mobile drawer */}
+        <WorkdeskSidebar
+          open={mobileMenuOpen}
+          onOpenChange={setMobileMenuOpen}
+          colaboradorId={colaborador.id}
+          colaboradorNome={colaborador.nome}
+          colaboradorEmail={colaborador.email}
+          isOnline={colaborador.is_online}
+          onStatusChange={handleStatusChange}
+          setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
+        />
+
+        {/* Dialog -- Alterar Senha */}
+        <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
+          <DialogContent className="sm:max-w-md glass-dropdown border-white/8 bg-[#0e101a]/95">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-white/90">
+                <KeyRound className="h-4 w-4 text-emerald-400" />
+                Alterar Senha
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="wk-senha-atual" className="text-white/60 text-xs">Senha atual</Label>
+                <Input
+                  id="wk-senha-atual"
+                  type="password"
+                  placeholder="Digite sua senha atual"
+                  value={senhaAtual}
+                  onChange={(e) => setSenhaAtual(e.target.value)}
                   disabled={senhaLoading}
-                  className="border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80"
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={handleAlterarSenha} disabled={senhaLoading} className="btn-glow rounded-lg">
-                  {senhaLoading ? 'Salvando...' : 'Salvar e sair'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </header>
+                  className="glass-input text-white/90 placeholder:text-white/20"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wk-nova-senha" className="text-white/60 text-xs">Nova senha</Label>
+                <Input
+                  id="wk-nova-senha"
+                  type="password"
+                  placeholder="Minimo 6 caracteres"
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  disabled={senhaLoading}
+                  className="glass-input text-white/90 placeholder:text-white/20"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wk-confirmar-senha" className="text-white/60 text-xs">Confirmar nova senha</Label>
+                <Input
+                  id="wk-confirmar-senha"
+                  type="password"
+                  placeholder="Repita a nova senha"
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  disabled={senhaLoading}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAlterarSenha() }}
+                  className="glass-input text-white/90 placeholder:text-white/20"
+                />
+              </div>
+              {senhaError && (
+                <p className="text-sm text-red-400">{senhaError}</p>
+              )}
+            </div>
 
-      {/* Page content */}
-      <main className="relative z-10">{children}</main>
-    </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setSenhaDialogOpen(false)}
+                disabled={senhaLoading}
+                className="border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80"
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleAlterarSenha} disabled={senhaLoading} className="btn-glow rounded-lg">
+                {senhaLoading ? 'Salvando...' : 'Salvar e sair'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Page content area -- offset by vertical bar width on desktop */}
+        <div className="relative z-10 lg:ml-[60px]">
+          {/* Desktop header bar */}
+          <header className="sticky top-0 z-40 hidden lg:flex h-14 items-center justify-between px-6 bg-[#06080f]/80 backdrop-blur-xl border-b border-white/[0.06]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg brand-gradient">
+                <Zap className="h-3.5 w-3.5 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-white/80">WorkDesk</span>
+              <span className="text-white/15">|</span>
+              <span className="text-sm text-white/40">{colaborador.nome}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <DisponibilidadePanel
+                colaboradorId={colaborador.id}
+                isOnline={colaborador.is_online}
+                onStatusChange={handleStatusChange}
+                setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
+              />
+              <NotificacoesPanel
+                colaboradorId={colaborador.id}
+                setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
+              />
+            </div>
+          </header>
+          <main>{children}</main>
+        </div>
+      </div>
+    </TooltipProvider>
   )
 }

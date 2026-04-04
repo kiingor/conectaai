@@ -9,15 +9,10 @@ import { cn } from '@/lib/utils'
 import {
   Building2,
   BarChart3,
-  MessageCircle,
   X,
   UserCog,
   Loader2,
   Activity,
-  HelpCircle,
-  ExternalLink,
-  Bug,
-  Briefcase,
   Zap,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -26,15 +21,12 @@ import { motion } from 'framer-motion'
 import { useColaborador } from '@/lib/hooks/use-data'
 
 const baseNavigation = [
-  { name: 'Empresa', href: '/dashboard/empresa', icon: Briefcase },
   { name: 'Monitoramento', href: '/dashboard/monitoramento', icon: Activity },
   { name: 'Dashboard Geral', href: '/dashboard/metricas', icon: BarChart3 },
 ]
 
-const masterNavigation = [
-  { name: 'Organizações', href: '/dashboard', icon: Building2 },
+const masterNavigationEnd = [
   { name: 'Usuarios Master', href: '/dashboard/usuarios', icon: UserCog },
-  { name: 'Logs de Erros', href: '/dashboard/logs', icon: Bug },
 ]
 
 interface DashboardSidebarProps {
@@ -42,16 +34,21 @@ interface DashboardSidebarProps {
   onOpenChange: (open: boolean) => void
 }
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapsed?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const { data: colaborador } = useColaborador()
 
-  const navigation = colaborador?.is_master
-    ? [...baseNavigation, ...masterNavigation]
+  const menuNavigation = colaborador?.is_master
+    ? [
+        { name: 'Setores', href: '/dashboard', icon: Building2 },
+        ...baseNavigation,
+      ]
     : baseNavigation
+
+  const adminNavigation = colaborador?.is_master ? masterNavigationEnd : []
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     e.preventDefault()
@@ -63,22 +60,80 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     })
   }
 
+  const renderNavItem = (item: { name: string; href: string; icon: React.ComponentType<{ className?: string }> }) => {
+    const isActive = pathname === item.href || (item.href === '/dashboard' && pathname.startsWith('/setor/'))
+    const isLoading = loadingHref === item.href && isPending
+    return (
+      <a
+        key={item.name}
+        href={item.href}
+        onClick={(e) => handleNavClick(e, item.href)}
+        title={collapsed ? item.name : undefined}
+        className={cn(
+          'group/item relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer select-none active:scale-[0.97]',
+          collapsed && 'justify-center px-0',
+          isActive
+            ? 'text-white'
+            : 'text-white/45 glass-nav-hover hover:text-white/80',
+          isLoading && 'opacity-70'
+        )}
+      >
+        {isActive && (
+          <motion.div
+            layoutId="activeNav"
+            className="absolute inset-0 rounded-2xl glass-nav-active"
+            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+          />
+        )}
+
+        <div
+          className={cn(
+            'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
+            isActive
+              ? 'bg-emerald-500/15 text-emerald-400'
+              : 'text-white/40 group-hover/item:text-white/70'
+          )}
+        >
+          {isLoading ? (
+            <Loader2 className="h-[18px] w-[18px] animate-spin" />
+          ) : (
+            <item.icon className="h-[18px] w-[18px]" />
+          )}
+        </div>
+
+        {!collapsed && (
+          <span className="relative z-10 flex-1 whitespace-nowrap">{item.name}</span>
+        )}
+
+        {isActive && !collapsed && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="relative z-10 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"
+          />
+        )}
+      </a>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col relative z-10">
       {/* Brand Section */}
-      <div className="flex h-16 items-center justify-between px-5">
+      <div className={cn('flex h-16 items-center justify-between', collapsed ? 'px-0 justify-center' : 'px-5')}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl brand-gradient shadow-lg shadow-emerald-500/20 transition-transform duration-300 group-hover:scale-105">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl brand-gradient shadow-lg shadow-emerald-500/20 transition-transform duration-300 group-hover:scale-105">
             <Zap className="h-5 w-5 text-white drop-shadow-sm" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold brand-gradient-text tracking-tight text-base leading-tight">
-              ConectaAI
-            </span>
-            <span className="text-[10px] text-white/30 font-medium tracking-wide uppercase">
-              Gestao de atendimento
-            </span>
-          </div>
+          {!collapsed && (
+            <div className="flex flex-col">
+              <span className="font-bold brand-gradient-text tracking-tight text-base leading-tight whitespace-nowrap">
+                ConectaAI
+              </span>
+              <span className="text-[10px] text-white/30 font-medium tracking-wide uppercase whitespace-nowrap">
+                Gestao de atendimento
+              </span>
+            </div>
+          )}
         </Link>
         {onClose && (
           <Button
@@ -94,95 +149,29 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* Separator */}
-      <div className="mx-5 h-px bg-white/6" />
+      <div className={cn('h-px bg-white/6', collapsed ? 'mx-3' : 'mx-5')} />
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
-          Menu
-        </p>
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || (item.href === '/dashboard/empresa' && pathname.startsWith('/setor/'))
-          const isLoading = loadingHref === item.href && isPending
-          return (
-            <a
-              key={item.name}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
-              className={cn(
-                'group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer select-none active:scale-[0.97]',
-                isActive
-                  ? 'text-white'
-                  : 'text-white/45 glass-nav-hover hover:text-white/80',
-                isLoading && 'opacity-70'
-              )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeNav"
-                  className="absolute inset-0 rounded-2xl glass-nav-active"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
+      <nav className={cn('flex-1 space-y-1 py-4', collapsed ? 'px-2' : 'px-3')}>
+        {!collapsed && (
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+            Menu
+          </p>
+        )}
+        {menuNavigation.map(renderNavItem)}
 
-              <div
-                className={cn(
-                  'relative z-10 flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300',
-                  isActive
-                    ? 'bg-emerald-500/15 text-emerald-400'
-                    : 'text-white/40 group-hover:text-white/70'
-                )}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-[18px] w-[18px] animate-spin" />
-                ) : (
-                  <item.icon className="h-[18px] w-[18px]" />
-                )}
-              </div>
-
-              <span className="relative z-10 flex-1">{item.name}</span>
-
-              {isActive && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="relative z-10 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"
-                />
-              )}
-            </a>
-          )
-        })}
+        {adminNavigation.length > 0 && (
+          <>
+            <div className={cn('my-3 h-px bg-white/6', collapsed ? 'mx-1' : 'mx-3')} />
+            {!collapsed && (
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+                Admin
+              </p>
+            )}
+            {adminNavigation.map(renderNavItem)}
+          </>
+        )}
       </nav>
-
-      {/* Separator */}
-      <div className="mx-5 h-px bg-white/6" />
-
-      {/* Footer - Support Card */}
-      <div className="p-4">
-        <div className="glass-card-elevated rounded-2xl p-4 overflow-hidden">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
-              <HelpCircle className="h-4 w-4 text-emerald-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white/90">
-                Precisa de ajuda?
-              </p>
-              <p className="mt-0.5 text-[11px] text-white/35 leading-relaxed">
-                Acesse nossa central de suporte
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full mt-3 h-8 rounded-xl text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 gap-1.5"
-          >
-            Central de Ajuda
-            <ExternalLink className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
     </div>
   )
 }
@@ -190,12 +179,19 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 export function DashboardSidebar({ open, onOpenChange }: DashboardSidebarProps) {
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - collapsed by default, expands on hover */}
       <aside
-        className="inset-y-0 left-0 z-50 hidden w-64 lg:block glass-panel"
-        style={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: '16rem' }}
+        className="group/sidebar inset-y-0 left-0 z-50 hidden lg:block glass-panel transition-all duration-300 ease-in-out w-[72px] hover:w-64 overflow-hidden"
+        style={{ position: 'fixed', top: 0, bottom: 0, left: 0 }}
       >
-        <SidebarContent />
+        {/* Collapsed content (icon-only) - visible by default, hidden on hover */}
+        <div className="absolute inset-0 group-hover/sidebar:opacity-0 group-hover/sidebar:pointer-events-none transition-opacity duration-300">
+          <SidebarContent collapsed />
+        </div>
+        {/* Expanded content (icon+text) - hidden by default, visible on hover */}
+        <div className="absolute inset-0 opacity-0 pointer-events-none group-hover/sidebar:opacity-100 group-hover/sidebar:pointer-events-auto transition-opacity duration-300">
+          <SidebarContent />
+        </div>
       </aside>
 
       {/* Mobile sidebar */}

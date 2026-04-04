@@ -24,7 +24,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
       <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
 
       {/* Main content area with ambient glow */}
-      <div className="flex min-h-screen flex-col lg:pl-64 ambient-glow">
+      <div className="flex min-h-screen flex-col lg:pl-[72px] ambient-glow">
         <DashboardHeader
           user={user}
           onMenuClick={() => setSidebarOpen(true)}

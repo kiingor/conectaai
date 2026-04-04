@@ -40,8 +40,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Users, Plus, Pencil, UserX, Loader2, Circle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Users, Plus, Pencil, UserX, Loader2, Circle, Search, Filter } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useColaborador } from '@/lib/hooks/use-data'
 
@@ -87,6 +89,9 @@ export default function ColaboradoresPage() {
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [setorFilterId, setSetorFilterId] = useState<string>('all')
 
   const supabase = createClient()
   const { toast } = useToast()
@@ -366,17 +371,39 @@ export default function ColaboradoresPage() {
     setColaboradorToDeactivate(null)
   }
 
+  const filteredColaboradores = (() => {
+    let result = colaboradores
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      result = result.filter((c) =>
+        c.nome.toLowerCase().includes(term) ||
+        c.email.toLowerCase().includes(term)
+      )
+    }
+    if (statusFilter === 'active') {
+      result = result.filter((c) => c.ativo)
+    } else if (statusFilter === 'inactive') {
+      result = result.filter((c) => !c.ativo)
+    }
+    if (setorFilterId !== 'all') {
+      result = result.filter((c) => {
+        const setorIds = getSetoresDoColaborador(c.id)
+        return setorIds.includes(setorFilterId)
+      })
+    }
+    return result
+  })()
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-5 h-[calc(100vh-130px)]">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
             <Users className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">
-              Colaboradores
-            </h1>
+            <h1 className="text-2xl font-bold text-white">Colaboradores</h1>
             <p className="text-sm text-white/40">
               Gerencie usuarios, setores e permissoes
             </p>
@@ -384,145 +411,203 @@ export default function ColaboradoresPage() {
         </div>
         <Button
           onClick={openCreateModal}
-          className="mt-4 btn-glow rounded-xl px-5 sm:mt-0"
+          className="btn-glow rounded-xl gap-2 px-5"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Novo Colaborador
         </Button>
       </div>
 
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/6">
+      {/* Search & Filter Bar */}
+      <div className="glass-card rounded-2xl p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Input
+              placeholder="Buscar por nome ou e-mail..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+            />
+          </div>
+          <Select value={setorFilterId} onValueChange={setSetorFilterId}>
+            <SelectTrigger className="w-full sm:w-44 glass-input rounded-xl text-white/70">
+              <SelectValue placeholder="Setor" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#0e1019] border-white/8">
+              <SelectItem value="all">Todos os Setores</SelectItem>
+              {setores.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-base font-semibold text-white">Lista de Colaboradores</h2>
+            <Filter className="h-4 w-4 text-white/30 shrink-0" />
+            <div className="flex rounded-xl border border-white/8 overflow-hidden">
+              {(['all', 'active', 'inactive'] as const).map((val) => (
+                <button
+                  key={val}
+                  onClick={() => setStatusFilter(val)}
+                  className={cn(
+                    'px-3 py-2 text-xs font-medium transition-colors',
+                    statusFilter === val
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : 'text-white/40 hover:bg-white/5 hover:text-white/60'
+                  )}
+                >
+                  {val === 'all' ? 'Todos' : val === 'active' ? 'Ativos' : 'Inativos'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-            </div>
-          ) : colaboradores.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="rounded-full bg-emerald-500/10 p-4">
-                <Users className="h-8 w-8 text-emerald-400" />
+      </div>
+
+      {/* Card List */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 flex items-center gap-4">
+              <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-56" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-white">
-                Nenhum colaborador cadastrado
-              </h3>
-              <p className="mt-1 text-sm text-white/40">
-                Comece cadastrando o primeiro colaborador
-              </p>
+              <Skeleton className="h-6 w-16 rounded-full" />
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/6 hover:bg-transparent">
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Nome</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">E-mail</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setores</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Permissao</TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Status</TableHead>
-                    <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-white/40">Acoes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence>
-                    {colaboradores.map((colaborador, index) => (
-                      <motion.tr
-                        key={colaborador.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={`border-b border-white/6 transition-colors hover:bg-white/[0.03] ${
-                          !colaborador.ativo ? 'opacity-50' : ''
-                        }`}
-                      >
-                        <TableCell className="font-medium text-white/90">
-                          {colaborador.nome}
-                          {!colaborador.ativo && (
-                            <Badge className="ml-2 glass-badge bg-white/5 text-white/30 border-white/10">
-                              Inativo
+          ))
+        ) : filteredColaboradores.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="rounded-full bg-emerald-500/10 p-4">
+              <Users className="h-10 w-10 text-emerald-400" />
+            </div>
+            <h3 className="mt-4 text-base font-semibold text-white">
+              Nenhum colaborador encontrado
+            </h3>
+            <p className="mt-1 text-sm text-white/40">
+              {colaboradores.length === 0 ? 'Comece cadastrando o primeiro colaborador' : 'Tente ajustar os filtros'}
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {filteredColaboradores.map((colab, index) => {
+              const setorIds = getSetoresDoColaborador(colab.id)
+              const setorNomes = setorIds.map((sid) => setores.find((s) => s.id === sid)?.nome).filter(Boolean)
+              const initials = colab.nome
+                .split(' ')
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase()
+
+              return (
+                <motion.div
+                  key={colab.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ delay: index * 0.04, duration: 0.3 }}
+                  className={cn(
+                    'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-cyan-500/60 group',
+                    colab.ativo ? 'border-l-cyan-500/30' : 'border-l-white/10 opacity-50'
+                  )}
+                >
+                  {/* Online dot + Avatar */}
+                  <div className="relative shrink-0">
+                    <div className={cn(
+                      'h-11 w-11 rounded-full flex items-center justify-center text-sm font-semibold bg-white/[0.06] text-white/50 border border-white/8',
+                    )}>
+                      {initials}
+                    </div>
+                    <span
+                      className={cn(
+                        'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0c14]',
+                        colab.is_online && colab.ativo
+                          ? 'status-dot-online bg-emerald-500'
+                          : 'bg-white/20'
+                      )}
+                    />
+                  </div>
+
+                  {/* Main Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-white/90 truncate">{colab.nome}</span>
+                      {!colab.ativo && (
+                        <Badge className="glass-badge bg-white/5 text-white/30 border-white/10 text-[10px] px-1.5 py-0">
+                          Inativo
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-white/40 truncate">{colab.email}</p>
+                    {/* Sector badges */}
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {setorNomes.length > 0 ? (
+                        <>
+                          {setorNomes.slice(0, 3).map((nome) => (
+                            <Badge key={nome} className="glass-badge bg-cyan-500/10 text-cyan-400/60 border-cyan-500/15 text-[10px] px-1.5 py-0">
+                              {nome}
+                            </Badge>
+                          ))}
+                          {setorNomes.length > 3 && (
+                            <Badge className="glass-badge bg-white/5 text-white/30 border-white/8 text-[10px] px-1.5 py-0">
+                              +{setorNomes.length - 3}
                             </Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="text-white/50">
-                          {colaborador.email}
-                        </TableCell>
-                        <TableCell>
-                          {(() => {
-                            const setorIds = getSetoresDoColaborador(colaborador.id)
-                            if (setorIds.length === 0) return <span className="text-white/25">Nenhum</span>
-                            return (
-                              <div className="flex flex-wrap gap-1">
-                                {setorIds.map((sid) => {
-                                  const s = setores.find((st) => st.id === sid)
-                                  return s ? (
-                                    <Badge key={sid} className="glass-badge bg-cyan-500/10 text-cyan-400/70 border-cyan-500/15 text-xs">
-                                      {s.nome}
-                                    </Badge>
-                                  ) : null
-                                })}
-                              </div>
-                            )
-                          })()}
-                        </TableCell>
-                        <TableCell className="text-white/50">
-                          {colaborador.permissao?.nome || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`h-2.5 w-2.5 rounded-full ${
-                                colaborador.is_online && colaborador.ativo
-                                  ? 'status-dot-online'
-                                  : 'bg-white/20'
-                              }`}
-                            />
-                            <span className="text-sm text-white/50">
-                              {colaborador.is_online && colaborador.ativo
-                                ? 'Online'
-                                : 'Offline'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditModal(colaborador)}
-                              className="text-white/40 hover:text-white hover:bg-white/5"
-                            >
-                              <Pencil className="mr-1 h-4 w-4" />
-                              Editar
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openDeactivateDialog(colaborador)}
-                              className={
-                                colaborador.ativo
-                                  ? 'text-red-400/60 hover:bg-red-500/10 hover:text-red-400'
-                                  : 'text-emerald-400/60 hover:bg-emerald-500/10 hover:text-emerald-400'
-                              }
-                            >
-                              <UserX className="mr-1 h-4 w-4" />
-                              {colaborador.ativo ? 'Desativar' : 'Reativar'}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
+                        </>
+                      ) : (
+                        <span className="text-xs text-white/20">Sem setores</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Permission role */}
+                  <div className="hidden md:block text-right shrink-0">
+                    <span className="text-[10px] uppercase tracking-wider text-white/25 block">Permissao</span>
+                    <span className="text-sm text-white/50">{colab.permissao?.nome || '-'}</span>
+                  </div>
+
+                  {/* Online status badge */}
+                  <Badge
+                    className={cn(
+                      'shrink-0',
+                      colab.is_online && colab.ativo
+                        ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+                        : 'glass-badge bg-white/5 text-white/30 border-white/10'
+                    )}
+                  >
+                    {colab.is_online && colab.ativo ? 'Online' : 'Offline'}
+                  </Badge>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                      onClick={() => openEditModal(colab)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        'h-8 w-8',
+                        colab.ativo
+                          ? 'text-red-400/60 hover:text-red-400 hover:bg-red-500/10'
+                          : 'text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-500/10'
+                      )}
+                      onClick={() => openDeactivateDialog(colab)}
+                    >
+                      <UserX className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Modal for Create/Edit */}

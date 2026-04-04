@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { useColaborador, useSetores } from '@/lib/hooks/use-data'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+// Card imports kept for potential future use
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,23 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+// Table imports kept for potential future use
+// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   Activity,
   RefreshCw,
   Search,
-  Filter,
   Clock,
   User,
   AlertCircle,
-  Eye,
   MessageCircle,
   X,
   ArrowRightLeft,
@@ -41,6 +34,14 @@ import {
   History,
   Check,
   XCircle,
+  Inbox,
+  Headphones,
+  Timer,
+  Zap,
+  BarChart3,
+  Tag,
+  Users,
+  Building2,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
@@ -745,467 +746,590 @@ export default function MonitoramentoPage() {
 
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
-            <Activity className="h-5 w-5 text-emerald-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Monitoramento</h1>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            <span className="text-xs font-medium text-emerald-400">Ao vivo</span>
-          </div>
-        </div>
+    <>
+      {/* ===== 3-PANEL LAYOUT ===== */}
+      <div className="flex h-[calc(100vh-theme(spacing.14))] gap-3 lg:gap-4">
 
-        <div className="flex flex-wrap items-center gap-2">
-          {tagsDisponiveis.length > 0 && (
-            <Select value={tagFilter} onValueChange={(val) => {
-              setTagFilter(val)
-              setSetorFilter('all')
-              setSubsetorFilter('all')
-            }}>
-              <SelectTrigger className="w-40 bg-card">
-                <SelectValue placeholder="Todas as tags" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as tags</SelectItem>
-                {tagsDisponiveis.map((tag) => (
-                  <SelectItem key={tag.id} value={tag.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.cor || '#888' }} />
-                      {tag.nome}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Select value={setorFilter} onValueChange={setSetorFilter}>
-            <SelectTrigger className="w-48 bg-card">
-              <SelectValue placeholder="Todos os setores" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os setores</SelectItem>
-              {setoresFiltradosPorTag.map((s: any) => (
-                <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {subsetoresDisponiveis.length > 0 && (
-            <Select value={subsetorFilter} onValueChange={setSubsetorFilter}>
-              <SelectTrigger className="w-44 bg-card">
-                <SelectValue placeholder="Todos subsetores" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos subsetores</SelectItem>
-                <SelectItem value="sem_subsetor">Sem subsetor</SelectItem>
-                {subsetoresDisponiveis.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Popover open={filtrosAtendenteOpen} onOpenChange={setFiltrosAtendenteOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "gap-2 bg-transparent",
-                  atendenteFilter !== 'all' && "border-primary text-primary"
-                )}
-              >
-                <User className="h-4 w-4" />
-                {atendenteFilter !== 'all'
-                  ? (atendentesUnicos.find(a => a.id === atendenteFilter)?.nome || 'Atendente')
-                  : 'Atendente'
-                }
-                {atendenteFilter !== 'all' && (
-                  <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">1</Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-3" align="end" onCloseAutoFocus={() => setFiltroAtendenteSearch('')}>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Filtrar por atendente</p>
-                <input
-                  type="text"
-                  placeholder="Buscar atendente..."
-                  value={filtroAtendenteSearch}
-                  onChange={(e) => setFiltroAtendenteSearch(e.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  autoFocus
-                />
-                <div className="space-y-1 max-h-[280px] overflow-y-auto">
-                  {!filtroAtendenteSearch && (
-                    <button
-                      onClick={() => { setAtendenteFilter('all'); setFiltrosAtendenteOpen(false) }}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-                        atendenteFilter === 'all' && "font-medium text-primary"
-                      )}
-                    >
-                      <Check className={cn("h-3.5 w-3.5", atendenteFilter !== 'all' && "invisible")} />
-                      Todos os atendentes
-                    </button>
-                  )}
-                  {atendentesUnicos
-                    .filter(a => !filtroAtendenteSearch || a.nome.toLowerCase().includes(filtroAtendenteSearch.toLowerCase()))
-                    .map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => { setAtendenteFilter(a.id); setFiltrosAtendenteOpen(false) }}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-                        atendenteFilter === a.id && "font-medium text-primary"
-                      )}
-                    >
-                      <Check className={cn("h-3.5 w-3.5", atendenteFilter !== a.id && "invisible")} />
-                      {a.nome}
-                    </button>
-                  ))}
-                  {atendentesUnicos.length === 0 && (
-                    <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum atendente ativo</p>
-                  )}
-                  {filtroAtendenteSearch && atendentesUnicos.filter(a => a.nome.toLowerCase().includes(filtroAtendenteSearch.toLowerCase())).length === 0 && (
-                    <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum resultado para &quot;{filtroAtendenteSearch}&quot;</p>
-                  )}
-                </div>
+        {/* ========== LEFT PANEL — Stats ========== */}
+        <aside className="hidden lg:flex w-[270px] shrink-0 flex-col gap-3 overflow-y-auto pr-1 pb-4">
+          {/* Header mini */}
+          <div className="flex items-center gap-2 px-1 pt-1 pb-0.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+              <Activity className="h-4 w-4 text-emerald-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-sm font-bold text-white leading-tight truncate">Monitoramento</h1>
+            </div>
+            <div className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-medium text-emerald-400">Ao vivo</span>
+            </div>
+          </div>
+
+          {/* Tickets Ativos — hero stat */}
+          <div className="glass-card-elevated rounded-xl p-3 border-l-2 border-l-emerald-500">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs font-medium text-white/50">Tickets Ativos</span>
               </div>
-            </PopoverContent>
-          </Popover>
-          <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-transparent">
-            <RefreshCw className="h-4 w-4" />
+              <span className="text-2xl font-bold brand-gradient-text tabular-nums">{stats.total}</span>
+            </div>
+          </div>
+
+          {/* Na Fila */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Inbox className="h-4 w-4 text-orange-400" />
+                <span className="text-xs font-medium text-white/50">Na Fila</span>
+              </div>
+              <span className="text-xl font-bold text-orange-400 tabular-nums">{stats.naFila}</span>
+            </div>
+          </div>
+
+          {/* Em Atendimento */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Headphones className="h-4 w-4 text-cyan-400" />
+                <span className="text-xs font-medium text-white/50">Em Atendimento</span>
+              </div>
+              <span className="text-xl font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-white/5 mx-2" />
+
+          {/* Atendentes Online */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-xs font-medium text-white/50">Atendentes Online</span>
+              </div>
+              <span className="text-xl font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</span>
+            </div>
+          </div>
+
+          {/* Atendentes em Pausa */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                <span className="text-xs font-medium text-white/50">Atendentes em Pausa</span>
+              </div>
+              <span className="text-xl font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-white/5 mx-2" />
+
+          {/* Tempo Max Fila */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Timer className="h-4 w-4 text-white/40" />
+                <span className="text-xs font-medium text-white/50">Tempo Max. Fila</span>
+              </div>
+              <span className="text-sm font-bold text-white/80 tabular-nums">{stats.tempoMaximoFila}</span>
+            </div>
+          </div>
+
+          {/* Tempo Max Resposta */}
+          <div className="glass-card-elevated rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-white/40" />
+                <span className="text-xs font-medium text-white/50">Tempo Max. Resposta</span>
+              </div>
+              <span className="text-sm font-bold text-white/80 tabular-nums">{stats.tempoMaximoResposta}</span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-white/5 mx-2" />
+
+          {/* Stats do Dia section */}
+          <div className="glass-card-elevated rounded-xl p-3 space-y-2.5">
+            <div className="flex items-center gap-2 mb-1">
+              <BarChart3 className="h-3.5 w-3.5 text-white/40" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Stats do Dia</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Recebidos</span>
+              <span className="text-sm font-bold brand-gradient-text tabular-nums">{temposHoje.totalRecebidos}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Resolvidos</span>
+              <span className="text-sm font-bold text-emerald-400 tabular-nums">{temposHoje.totalResolvidos}</span>
+            </div>
+            <div className="h-px bg-white/5" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Med. 1a Resposta</span>
+              <span className="text-xs font-semibold text-white/70 tabular-nums">{temposHoje.tempoMedioPrimeiraResposta}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Med. Resolucao</span>
+              <span className="text-xs font-semibold text-white/70 tabular-nums">{temposHoje.tempoMedioResolucao}</span>
+            </div>
+          </div>
+
+          {/* Refresh button */}
+          <Button variant="ghost" size="sm" onClick={() => mutate()} className="gap-2 text-white/40 hover:text-white/70 mx-1">
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span className="text-xs">Atualizar</span>
           </Button>
-        </div>
-      </div>
+        </aside>
 
-      {/* Stats Cards Row 1 */}
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-[2fr_1fr]">
-        {/* Atendimentos em tempo real */}
-        <div className="glass-card-elevated rounded-2xl p-5 border-l-4 border-l-emerald-500">
-          <p className="text-sm font-medium text-white/40 mb-3">
-            Atendimentos em tempo real
-          </p>
-          <div className="grid grid-cols-3 gap-3 text-center sm:grid-cols-6">
-            <div className="space-y-1">
-              <p className="text-2xl font-bold brand-gradient-text tabular-nums">{stats.total}</p>
-              <p className="text-xs text-white/40">Total</p>
+        {/* ========== CENTER PANEL — Filters + Tickets ========== */}
+        <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+          {/* Mobile-only header */}
+          <div className="flex lg:hidden items-center gap-2 mb-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+              <Activity className="h-4 w-4 text-emerald-400" />
             </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-orange-400 tabular-nums">{stats.naFila}</p>
-              <p className="text-xs text-white/40">Na fila</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</p>
-              <p className="text-xs text-white/40">Em atend.</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-emerald-400 tabular-nums">{stats.finalizados}</p>
-              <p className="text-xs text-white/40">Finalizados</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xl font-bold text-white/80 tabular-nums whitespace-nowrap">{stats.tempoMaximoFila}</p>
-              <p className="text-xs text-white/40">Max. fila</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xl font-bold text-white/80 tabular-nums whitespace-nowrap">{stats.tempoMaximoResposta}</p>
-              <p className="text-xs text-white/40">Max. resp.</p>
+            <h1 className="text-lg font-bold text-white">Monitoramento</h1>
+            <div className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-medium text-emerald-400">Ao vivo</span>
             </div>
           </div>
-        </div>
 
-        {/* Status dos atendentes */}
-        <div className="glass-card-elevated rounded-2xl p-5">
-          <p className="text-sm font-medium text-white/40 mb-3">
-            Status dos atendentes
-          </p>
-          <div className="flex justify-around text-center gap-2">
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</p>
-              <div className="flex items-center justify-center gap-1">
-                <span className="h-2 w-2 rounded-full status-dot-online" />
-                <p className="text-xs text-white/40">Online</p>
-              </div>
+          {/* Mobile stats summary (horizontal scroll) */}
+          <div className="flex lg:hidden gap-2 overflow-x-auto pb-2 mb-2 scrollbar-none">
+            <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+              <Activity className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-xs text-white/50">Ativos</span>
+              <span className="text-sm font-bold brand-gradient-text tabular-nums">{stats.total}</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</p>
-              <div className="flex items-center justify-center gap-1">
-                <span className="h-2 w-2 rounded-full status-dot-away" />
-                <p className="text-xs text-white/40">Pausa</p>
-              </div>
+            <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+              <Inbox className="h-3.5 w-3.5 text-orange-400" />
+              <span className="text-xs text-white/50">Fila</span>
+              <span className="text-sm font-bold text-orange-400 tabular-nums">{stats.naFila}</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-white/30 tabular-nums">{atendentesStats.offline}</p>
-              <div className="flex items-center justify-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-white/20" />
-                <p className="text-xs text-white/40">Offline</p>
-              </div>
+            <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+              <Headphones className="h-3.5 w-3.5 text-cyan-400" />
+              <span className="text-xs text-white/50">Atend.</span>
+              <span className="text-sm font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</span>
+            </div>
+            <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-xs text-white/50">Online</span>
+              <span className="text-sm font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</span>
+            </div>
+            <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
+              <span className="h-2 w-2 rounded-full bg-amber-400" />
+              <span className="text-xs text-white/50">Pausa</span>
+              <span className="text-sm font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Stats Cards Row 2 */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
-          <p className="text-xs text-white/40">Tempo med. 1a resposta</p>
-          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.tempoMedioPrimeiraResposta}</p>
-        </div>
-        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
-          <p className="text-xs text-white/40">Tempo med. resolucao</p>
-          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.tempoMedioResolucao}</p>
-        </div>
-        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
-          <p className="text-xs text-white/40">Tickets recebidos (Hoje)</p>
-          <p className="text-2xl font-bold brand-gradient-text">{temposHoje.totalRecebidos}</p>
-        </div>
-        <div className="glass-card-elevated rounded-2xl p-5 text-center space-y-1">
-          <p className="text-xs text-white/40">Tickets resolvidos (Hoje)</p>
-          <p className="text-2xl font-bold text-emerald-400">{temposHoje.totalResolvidos}</p>
-        </div>
-      </div>
+          {/* Compact filter bar */}
+          <div className="glass-card rounded-xl px-3 py-2.5 mb-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar ticket ou contato..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 text-xs rounded-lg glass-input"
+                />
+              </div>
 
-      {/* Monitoramento Detalhado */}
-      <div className="glass-card rounded-2xl">
-        <div className="px-5 pt-5 pb-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-white">Monitoramento detalhado</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar pelo N do ticket ou contato"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64 pl-9 h-9 rounded-2xl glass-input"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="px-5 pt-4 pb-5">
-          {/* Tabs + Filtro de colaborador */}
-          <div className="border-b border-border mb-4">
-            <div className="flex items-end justify-between gap-2">
-              <div className="flex gap-0">
+              {/* Status tab pills */}
+              <div className="flex items-center rounded-lg bg-white/5 p-0.5 gap-0.5">
                 <button
                   onClick={() => setActiveTab('em-andamento')}
                   className={cn(
-                    "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
+                    "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'em-andamento'
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                      ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-white border border-white/10 shadow-sm"
+                      : "text-white/40 hover:text-white/70"
                   )}
                 >
                   Em andamento
                   {ticketsEmAndamento.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
+                    <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-white/10 text-[10px] tabular-nums">
                       {ticketsEmAndamento.length}
-                    </Badge>
+                    </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveTab('aguardando')}
                   className={cn(
-                    "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
+                    "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'aguardando'
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                      ? "bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-white border border-white/10 shadow-sm"
+                      : "text-white/40 hover:text-white/70"
                   )}
                 >
-                  Aguardando atendimento
+                  Aguardando
                   {ticketsAguardando.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
+                    <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-orange-500/20 text-[10px] tabular-nums text-orange-300">
                       {ticketsAguardando.length}
-                    </Badge>
+                    </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveTab('atendentes')}
                   className={cn(
-                    "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
+                    "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'atendentes'
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                      ? "bg-white/10 text-white border border-white/10 shadow-sm"
+                      : "text-white/40 hover:text-white/70"
                   )}
                 >
                   Atendentes
-                  {atendentesRaw.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
-                      {atendentesRaw.length}
-                    </Badge>
-                  )}
                 </button>
               </div>
 
+              {/* Filter dropdowns */}
+              <div className="flex items-center gap-1.5">
+                {tagsDisponiveis.length > 0 && (
+                  <Select value={tagFilter} onValueChange={(val) => {
+                    setTagFilter(val)
+                    setSetorFilter('all')
+                    setSubsetorFilter('all')
+                  }}>
+                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-white/10">
+                      <Tag className="h-3 w-3 mr-1 text-white/40" />
+                      <SelectValue placeholder="Tags" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as tags</SelectItem>
+                      {tagsDisponiveis.map((tag) => (
+                        <SelectItem key={tag.id} value={tag.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: tag.cor || '#888' }} />
+                            {tag.nome}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <Select value={setorFilter} onValueChange={setSetorFilter}>
+                  <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs bg-transparent border-white/10">
+                    <Building2 className="h-3 w-3 mr-1 text-white/40" />
+                    <SelectValue placeholder="Setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os setores</SelectItem>
+                    {setoresFiltradosPorTag.map((s: any) => (
+                      <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {subsetoresDisponiveis.length > 0 && (
+                  <Select value={subsetorFilter} onValueChange={setSubsetorFilter}>
+                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-white/10">
+                      <SelectValue placeholder="Subsetor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos subsetores</SelectItem>
+                      <SelectItem value="sem_subsetor">Sem subsetor</SelectItem>
+                      {subsetoresDisponiveis.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <Popover open={filtrosAtendenteOpen} onOpenChange={setFiltrosAtendenteOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-8 gap-1.5 text-xs bg-transparent border-white/10",
+                        atendenteFilter !== 'all' && "border-emerald-500/50 text-emerald-400"
+                      )}
+                    >
+                      <Users className="h-3 w-3" />
+                      {atendenteFilter !== 'all'
+                        ? (atendentesUnicos.find(a => a.id === atendenteFilter)?.nome || 'Atendente')
+                        : 'Atendente'
+                      }
+                      {atendenteFilter !== 'all' && (
+                        <span className="h-4 min-w-[16px] px-1 rounded-full bg-emerald-500/20 text-[10px] text-emerald-400 flex items-center justify-center">1</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-3" align="end" onCloseAutoFocus={() => setFiltroAtendenteSearch('')}>
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Filtrar por atendente</p>
+                      <input
+                        type="text"
+                        placeholder="Buscar atendente..."
+                        value={filtroAtendenteSearch}
+                        onChange={(e) => setFiltroAtendenteSearch(e.target.value)}
+                        className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        autoFocus
+                      />
+                      <div className="space-y-1 max-h-[280px] overflow-y-auto">
+                        {!filtroAtendenteSearch && (
+                          <button
+                            onClick={() => { setAtendenteFilter('all'); setFiltrosAtendenteOpen(false) }}
+                            className={cn(
+                              "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted",
+                              atendenteFilter === 'all' && "font-medium text-primary"
+                            )}
+                          >
+                            <Check className={cn("h-3.5 w-3.5", atendenteFilter !== 'all' && "invisible")} />
+                            Todos os atendentes
+                          </button>
+                        )}
+                        {atendentesUnicos
+                          .filter(a => !filtroAtendenteSearch || a.nome.toLowerCase().includes(filtroAtendenteSearch.toLowerCase()))
+                          .map((a) => (
+                          <button
+                            key={a.id}
+                            onClick={() => { setAtendenteFilter(a.id); setFiltrosAtendenteOpen(false) }}
+                            className={cn(
+                              "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted",
+                              atendenteFilter === a.id && "font-medium text-primary"
+                            )}
+                          >
+                            <Check className={cn("h-3.5 w-3.5", atendenteFilter !== a.id && "invisible")} />
+                            {a.nome}
+                          </button>
+                        ))}
+                        {atendentesUnicos.length === 0 && (
+                          <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum atendente ativo</p>
+                        )}
+                        {filtroAtendenteSearch && atendentesUnicos.filter(a => a.nome.toLowerCase().includes(filtroAtendenteSearch.toLowerCase())).length === 0 && (
+                          <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum resultado para &quot;{filtroAtendenteSearch}&quot;</p>
+                        )}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <Button variant="ghost" size="icon" onClick={() => mutate()} className="h-8 w-8 text-white/40 hover:text-white/70 lg:hidden">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Tab Content */}
-          <div className="min-h-[300px]">
+          {/* ---- Ticket list (scrollable) ---- */}
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-4">
             {/* Em Andamento Tab */}
             {activeTab === 'em-andamento' && (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">1ª Resposta</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tempo atend.</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Ticket</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Número</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Contato</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor / Subsetor</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Atendente</TableHead>
-                      <TableHead className="text-xs w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : ticketsEmAndamento.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="h-32 text-center">
-                          <div className="flex flex-col items-center justify-center text-muted-foreground">
-                            <AlertCircle className="mb-2 h-8 w-8" />
-                            <p>Nenhum atendimento em andamento</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      ticketsEmAndamento.map((ticket: any) => {
-                        const aguardandoResposta = ticket.status === 'em_atendimento' && !ticket.primeira_resposta_em
-                        return (
-                          <TableRow
-                            key={ticket.id}
-                            className={cn(
-                              aguardandoResposta && "bg-yellow-50/50 dark:bg-yellow-950/20"
+              <>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="glass-card rounded-xl p-3">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-4 w-32 flex-1" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : ticketsEmAndamento.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                    <AlertCircle className="mb-3 h-10 w-10 text-white/20" />
+                    <p className="text-sm">Nenhum atendimento em andamento</p>
+                  </div>
+                ) : (
+                  ticketsEmAndamento.map((ticket: any) => {
+                    const aguardandoResposta = ticket.status === 'em_atendimento' && !ticket.primeira_resposta_em
+                    const isSelected = selectedTicket?.id === ticket.id
+                    return (
+                      <button
+                        key={ticket.id}
+                        onClick={() => openConversation(ticket)}
+                        className={cn(
+                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-white/[0.04] group cursor-pointer",
+                          aguardandoResposta && "border-l-2 border-l-yellow-500/60",
+                          isSelected && "ring-1 ring-emerald-500/50 bg-emerald-500/[0.03]"
+                        )}
+                      >
+                        {/* Row 1: ticket #, client, status, time */}
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs font-mono font-semibold text-white/70 tabular-nums shrink-0">
+                            {ticket.numero ? `#${ticket.numero}` : '--'}
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-white/20 shrink-0" />
+                          <span className="text-sm font-medium text-white truncate">{ticket.contato}</span>
+                          {ticket.telefone && (
+                            <span className="text-[11px] text-white/30 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
+                          )}
+                          <div className="ml-auto flex items-center gap-1.5 shrink-0">
+                            {aguardandoResposta ? (
+                              <Badge variant="outline" className="bg-yellow-900/40 text-yellow-300 border-yellow-700/50 text-[10px] px-1.5 py-0 h-5">
+                                <Clock className="mr-1 h-2.5 w-2.5" />
+                                Sem resposta
+                              </Badge>
+                            ) : (
+                              <span className="text-[10px] text-white/30">1a: {ticket.tempoPrimeiraResposta || '--'}</span>
                             )}
-                          >
-                            <TableCell>
-                              {aguardandoResposta ? (
-                                <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700 text-[10px]">
-                                  <Clock className="mr-1 h-3 w-3" />
-                                  Aguardando...
-                                </Badge>
-                              ) : (
-                                <span className="text-sm tabular-nums text-foreground">{ticket.tempoPrimeiraResposta || '00:00:00'}</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-sm tabular-nums text-foreground">{ticket.tempoAtendimento}</TableCell>
-                            <TableCell className="text-sm tabular-nums text-foreground font-medium">
-                              {ticket.numero ? `#${ticket.numero}` : '—'}
-                            </TableCell>
-                            <TableCell className="text-sm text-foreground">
-                              {formatPhone(ticket.telefone)}
-                            </TableCell>
-                            <TableCell className="text-sm text-foreground max-w-[140px]">
-                              <div className="flex items-center gap-1">
-                                <User className="h-3 w-3 text-muted-foreground shrink-0" />
-                                <span className="truncate" title={ticket.contato}>{ticket.contato}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-sm text-foreground">
-                              {ticket.setor}
-                              {ticket.subsetor && (
-                                <span className="text-muted-foreground"> / {ticket.subsetor}</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-sm text-foreground">
-                              {ticket.atendente ? (
-                                <div className="flex items-center gap-1.5">
-                                  <span className={cn(
-                                    'h-2 w-2 shrink-0 rounded-full',
-                                    ticket.colaboradores?.is_online && !ticket.colaboradores?.pausa_atual_id
-                                      ? 'bg-green-500'
-                                      : ticket.colaboradores?.pausa_atual_id
-                                        ? 'bg-yellow-500'
-                                        : 'bg-gray-400'
-                                  )} />
-                                  {ticket.atendente}
-                                </div>
-                              ) : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openConversation(ticket)}>
-                                <MessageCircle className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                          </div>
+                        </div>
+
+                        {/* Row 2: setor, agent, duration */}
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-white/40 truncate">
+                            {ticket.setor}
+                            {ticket.subsetor && <span className="text-white/20"> / {ticket.subsetor}</span>}
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-white/10 shrink-0" />
+                          {ticket.atendente ? (
+                            <span className="flex items-center gap-1 text-white/50 shrink-0">
+                              <span className={cn(
+                                'h-1.5 w-1.5 rounded-full',
+                                ticket.colaboradores?.is_online && !ticket.colaboradores?.pausa_atual_id
+                                  ? 'bg-emerald-500'
+                                  : ticket.colaboradores?.pausa_atual_id
+                                    ? 'bg-amber-500'
+                                    : 'bg-white/30'
+                              )} />
+                              {ticket.atendente}
+                            </span>
+                          ) : (
+                            <span className="text-white/30">Sem atendente</span>
+                          )}
+                          <div className="ml-auto flex items-center gap-1 shrink-0">
+                            <Clock className="h-3 w-3 text-white/20" />
+                            <span className="text-[11px] font-mono font-medium text-white/60 tabular-nums">{ticket.tempoAtendimento}</span>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })
+                )}
+              </>
+            )}
+
+            {/* Aguardando Tab */}
+            {activeTab === 'aguardando' && (
+              <>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="glass-card rounded-xl p-3">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-4 w-32 flex-1" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : ticketsAguardando.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                    <AlertCircle className="mb-3 h-10 w-10 text-white/20" />
+                    <p className="text-sm">Nenhum ticket aguardando</p>
+                  </div>
+                ) : (
+                  ticketsAguardando.map((ticket: any) => {
+                    const isSelected = selectedTicket?.id === ticket.id
+                    return (
+                      <button
+                        key={ticket.id}
+                        onClick={() => openConversation(ticket)}
+                        className={cn(
+                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-white/[0.04] border-l-2 border-l-orange-500/40 cursor-pointer",
+                          isSelected && "ring-1 ring-orange-500/50 bg-orange-500/[0.03]"
+                        )}
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs font-mono font-semibold text-white/70 tabular-nums shrink-0">
+                            {ticket.numero ? `#${ticket.numero}` : '--'}
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-white/20 shrink-0" />
+                          <span className="text-sm font-medium text-white truncate">{ticket.contato}</span>
+                          {ticket.telefone && (
+                            <span className="text-[11px] text-white/30 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-white/40 truncate">
+                            {ticket.setor}
+                            {ticket.subsetor && <span className="text-white/20"> / {ticket.subsetor}</span>}
+                          </span>
+                          <div className="ml-auto flex items-center gap-1 shrink-0">
+                            <Clock className="h-3 w-3 text-orange-400/60" />
+                            <span className="text-[11px] font-mono font-medium text-orange-400 tabular-nums">{ticket.tempoEspera}</span>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })
+                )}
+              </>
             )}
 
             {/* Atendentes Tab */}
             {activeTab === 'atendentes' && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="relative max-w-xs">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Buscar atendente..."
                     value={searchAtendente}
                     onChange={(e) => setSearchAtendente(e.target.value)}
-                    className="pl-9 h-9 rounded-2xl glass-input"
+                    className="pl-8 h-8 text-xs rounded-lg glass-input"
                   />
                 </div>
                 {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {Array.from({ length: 6 }).map((_, i) => (
-                      <Skeleton key={i} className="h-20 rounded-xl" />
+                      <Skeleton key={i} className="h-16 rounded-xl" />
                     ))}
                   </div>
                 ) : atendentesLista.length === 0 ? (
                   <div className="flex h-32 flex-col items-center justify-center text-muted-foreground">
-                    <AlertCircle className="mb-2 h-8 w-8" />
-                    <p>{searchAtendente ? 'Nenhum atendente encontrado' : 'Nenhum atendente neste setor'}</p>
+                    <AlertCircle className="mb-2 h-8 w-8 text-white/20" />
+                    <p className="text-sm">{searchAtendente ? 'Nenhum atendente encontrado' : 'Nenhum atendente neste setor'}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                     {atendentesLista.map((atendente: any) => {
                       const isOnline = isAtendenteOnline(atendente) && !atendente.pausa_atual_id
                       const isPausa = !!atendente.pausa_atual_id
                       return (
                         <div
                           key={atendente.id}
-                          className="flex items-center gap-3 rounded-xl border bg-card/60 px-4 py-3 transition-colors hover:bg-muted/40"
+                          className="flex items-center gap-3 glass-card rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
                         >
                           <span
                             className={cn(
-                              'h-3 w-3 shrink-0 rounded-full',
-                              isOnline ? 'bg-green-500' : isPausa ? 'bg-yellow-500' : 'bg-gray-400'
+                              'h-2.5 w-2.5 shrink-0 rounded-full',
+                              isOnline ? 'bg-emerald-500' : isPausa ? 'bg-amber-500' : 'bg-white/20'
                             )}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-foreground">{atendente.nome}</p>
+                            <p className="truncate text-sm font-medium text-white">{atendente.nome}</p>
                             <p className={cn(
-                              'text-xs',
-                              isOnline ? 'text-green-600 dark:text-green-400' : isPausa ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground'
+                              'text-[11px]',
+                              isOnline ? 'text-emerald-400' : isPausa ? 'text-amber-400' : 'text-white/30'
                             )}>
                               {isOnline ? 'Online' : isPausa ? 'Em pausa' : 'Offline'}
                             </p>
                           </div>
                           {atendente.ticketsAtivos > 0 && (
-                            <Badge variant="secondary" className="shrink-0 text-[10px]">
+                            <Badge variant="secondary" className="shrink-0 text-[10px] bg-white/5 border-white/10 text-white/60">
                               {atendente.ticketsAtivos} {atendente.ticketsAtivos === 1 ? 'ticket' : 'tickets'}
                             </Badge>
                           )}
@@ -1216,87 +1340,527 @@ export default function MonitoramentoPage() {
                 )}
               </div>
             )}
+          </div>
+        </main>
 
-            {/* Aguardando Tab */}
-            {activeTab === 'aguardando' && (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Tempo de espera</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Ticket</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Número</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Contato</TableHead>
-                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Setor / Subsetor</TableHead>
-                      <TableHead className="text-xs w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : ticketsAguardando.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="h-32 text-center">
-                          <div className="flex flex-col items-center justify-center text-muted-foreground">
-                            <AlertCircle className="mb-2 h-8 w-8" />
-                            <p>Nenhum ticket aguardando</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+        {/* ========== RIGHT PANEL — Conversation ========== */}
+        {/* Desktop: inline panel */}
+        <aside className={cn(
+          "hidden shrink-0 overflow-y-auto flex-col border-l border-white/5 bg-[#080b14]/60",
+          selectedTicket ? "lg:flex w-[380px]" : "lg:hidden"
+        )}>
+          {selectedTicket ? (
+            <>
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 shrink-0">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">Ticket #{selectedTicket.numero}</span>
+                    <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-white/10 text-white/50">
+                      {selectedTicket.status === 'em_atendimento' ? 'Em atendimento' : selectedTicket.status === 'aberto' ? 'Aberto' : selectedTicket.status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-white/40 truncate mt-0.5">
+                    {selectedTicket.contato} {selectedTicket.telefone ? `- ${formatPhone(selectedTicket.telefone)}` : ''} - {selectedTicket.setor}
+                  </p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={closeConversation} className="h-7 w-7 text-white/40 hover:text-white/70 shrink-0">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Tabs */}
+              <div className="border-b border-white/5 shrink-0">
+                <div className="flex">
+                  <button
+                    onClick={() => setConversationTab('conversa')}
+                    className={cn(
+                      "flex-1 px-4 py-2 text-xs font-medium border-b-2 transition-colors",
+                      conversationTab === 'conversa'
+                        ? "border-emerald-500 text-emerald-400"
+                        : "border-transparent text-white/40 hover:text-white/60"
+                    )}
+                  >
+                    <MessageCircle className="inline h-3 w-3 mr-1" />
+                    Conversa
+                  </button>
+                  <button
+                    onClick={() => setConversationTab('historico')}
+                    className={cn(
+                      "flex-1 px-4 py-2 text-xs font-medium border-b-2 transition-colors",
+                      conversationTab === 'historico'
+                        ? "border-emerald-500 text-emerald-400"
+                        : "border-transparent text-white/40 hover:text-white/60"
+                    )}
+                  >
+                    <History className="inline h-3 w-3 mr-1" />
+                    Historico ({ticketHistory.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              {(selectedTicket.status === 'em_atendimento' || selectedTicket.status === 'aberto') && (
+                <div className="flex gap-2 border-b border-white/5 px-3 py-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openTransferDialog}
+                    className="flex-1 gap-1 h-7 text-xs bg-transparent border-white/10 text-white/60 hover:text-white"
+                  >
+                    <ArrowRightLeft className="h-3 w-3" />
+                    Transferir
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setEncerrarDialogOpen(true)}
+                    className="flex-1 gap-1 h-7 text-xs"
+                  >
+                    <XCircle className="h-3 w-3" />
+                    Encerrar
+                  </Button>
+                </div>
+              )}
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto">
+                {conversationTab === 'conversa' && (
+                  <div className="p-3 space-y-2.5">
+                    {loadingMessages ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-5 w-5 animate-spin text-white/20" />
+                      </div>
+                    ) : conversationMessages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                        <MessageCircle className="mb-2 h-8 w-8" />
+                        <p className="text-xs">Nenhuma mensagem ainda</p>
+                      </div>
                     ) : (
-                      ticketsAguardando.map((ticket: any) => (
-                        <TableRow key={ticket.id} className="bg-orange-50/50 dark:bg-orange-950/20">
-                          <TableCell className="text-sm tabular-nums text-orange-600 font-medium">{ticket.tempoEspera}</TableCell>
-                          <TableCell className="text-sm tabular-nums text-foreground font-medium">
-                            {ticket.numero ? `#${ticket.numero}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground">
-                            {formatPhone(ticket.telefone)}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground">
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3 text-muted-foreground shrink-0" />
-                              {ticket.contato}
+                      conversationMessages.map((msg: any) => (
+                        msg.remetente === 'sistema' ? (
+                          <div key={msg.id} className="flex justify-center">
+                            <div className={cn(
+                              "flex items-center gap-2 px-2.5 py-1 rounded-lg border text-[10px] max-w-[90%]",
+                              msg.conteudo.startsWith('Transferido')
+                                ? "bg-blue-950/30 border-blue-800/50 text-blue-300"
+                                : "bg-white/5 border-white/5 text-white/40"
+                            )}>
+                              {msg.conteudo.startsWith('Transferido') ? (
+                                <ArrowRightLeft className="h-3 w-3 shrink-0 text-blue-400" />
+                              ) : (
+                                <Megaphone className="h-3 w-3 shrink-0 text-white/30" />
+                              )}
+                              <span>{msg.conteudo}</span>
+                              <span className="shrink-0 ml-1 opacity-60">
+                                {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-xs text-foreground">
-                            {ticket.setor}
-                            {ticket.subsetor && (
-                              <span className="text-muted-foreground"> / {ticket.subsetor}</span>
+                          </div>
+                        ) : (
+                          <div
+                            key={msg.id}
+                            className={cn(
+                              "flex",
+                              msg.remetente === 'cliente' ? "justify-start" : "justify-end"
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openConversation(ticket)}>
-                              <MessageCircle className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                          >
+                            <div
+                              className={cn(
+                                "max-w-[80%] rounded-lg px-3 py-2 text-[13px]",
+                                msg.remetente === 'cliente'
+                                  ? "bg-white/5 text-white/80"
+                                  : msg.remetente === 'bot'
+                                  ? "bg-blue-900/30 text-blue-200"
+                                  : "bg-emerald-600/20 text-emerald-100 border border-emerald-500/10"
+                              )}
+                            >
+                              {msg.url_imagem && (msg.tipo === 'imagem' || msg.media_type?.startsWith('image/')) && (
+                                <img src={msg.url_imagem} alt="" className="max-w-full rounded mb-1" />
+                              )}
+                              <p className="break-words">{msg.conteudo}</p>
+                              <p className="text-[10px] mt-1 opacity-50">
+                                {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                        )
                       ))
                     )}
-                  </TableBody>
-                </Table>
+                  </div>
+                )}
+
+                {conversationTab === 'historico' && (
+                  <div className="p-3 space-y-2">
+                    {loadingHistory ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-5 w-5 animate-spin text-white/20" />
+                      </div>
+                    ) : ticketHistory.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                        <History className="mb-2 h-8 w-8" />
+                        <p className="text-xs">Nenhum atendimento anterior</p>
+                      </div>
+                    ) : (
+                      ticketHistory.map((ticket: any) => (
+                        <div key={ticket.id} className="border border-white/5 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => loadHistoryMessages(ticket.id)}
+                            className="w-full px-3 py-2 text-left hover:bg-white/[0.03] transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={ticket.status === 'encerrado' ? 'secondary' : 'default'}
+                                  className="text-[10px] px-1.5 h-5"
+                                >
+                                  {ticket.status === 'encerrado' ? 'Encerrado' : ticket.status === 'em_atendimento' ? 'Em atendimento' : 'Aberto'}
+                                </Badge>
+                                <span className="text-xs font-mono font-medium text-white/60">#{ticket.numero}</span>
+                              </div>
+                              <span className="text-[10px] text-white/30">
+                                {new Date(ticket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                                {' '}
+                                {new Date(ticket.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 text-[11px] text-white/30">
+                              <span>{ticket.setores?.nome || '-'}</span>
+                              <span>-</span>
+                              <span>{ticket.colaboradores?.nome || 'Sem atendente'}</span>
+                            </div>
+                          </button>
+
+                          {expandedHistory === ticket.id && (
+                            <div className="border-t border-white/5 bg-white/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                              {!historyMessages[ticket.id] ? (
+                                <div className="flex justify-center py-2">
+                                  <Loader2 className="h-4 w-4 animate-spin text-white/20" />
+                                </div>
+                              ) : historyMessages[ticket.id].length === 0 ? (
+                                <p className="text-xs text-white/30 text-center py-2">Sem mensagens</p>
+                              ) : (
+                                historyMessages[ticket.id].map((msg: any) => (
+                                  msg.remetente === 'sistema' ? (
+                                    <div key={msg.id} className="flex justify-center">
+                                      <div className={cn(
+                                        "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
+                                        msg.conteudo.startsWith('Transferido')
+                                          ? "bg-blue-950/30 text-blue-300"
+                                          : "bg-white/5 text-white/30"
+                                      )}>
+                                        {msg.conteudo.startsWith('Transferido') ? (
+                                          <ArrowRightLeft className="h-2.5 w-2.5 shrink-0" />
+                                        ) : (
+                                          <Megaphone className="h-2.5 w-2.5 shrink-0" />
+                                        )}
+                                        <span>{msg.conteudo}</span>
+                                        <span className="opacity-60">
+                                          {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div
+                                      key={msg.id}
+                                      className={cn(
+                                        "flex",
+                                        msg.remetente === 'cliente' ? "justify-start" : "justify-end"
+                                      )}
+                                    >
+                                      <div
+                                        className={cn(
+                                          "max-w-[80%] rounded px-2 py-1 text-[11px]",
+                                          msg.remetente === 'cliente'
+                                            ? "bg-white/5 border border-white/5 text-white/70"
+                                            : "bg-emerald-600/20 text-emerald-200"
+                                        )}
+                                      >
+                                        <p className="break-words">{msg.conteudo}</p>
+                                        <p className="text-[9px] mt-0.5 opacity-50">
+                                          {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-white/20 px-6">
+              <MessageCircle className="h-12 w-12 mb-3" />
+              <p className="text-sm font-medium">Selecione um ticket</p>
+              <p className="text-xs text-white/10 mt-1 text-center">Clique em um ticket na lista para visualizar a conversa</p>
+            </div>
+          )}
+        </aside>
+
+        {/* Mobile: conversation overlay */}
+        {selectedTicket && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-[#06080f] lg:hidden">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 shrink-0">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">Ticket #{selectedTicket.numero}</span>
+                  <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-white/10 text-white/50">
+                    {selectedTicket.status === 'em_atendimento' ? 'Em atendimento' : selectedTicket.status === 'aberto' ? 'Aberto' : selectedTicket.status}
+                  </Badge>
+                </div>
+                <p className="text-xs text-white/40 truncate mt-0.5">
+                  {selectedTicket.contato} - {selectedTicket.setor}
+                </p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={closeConversation} className="h-8 w-8 text-white/40 shrink-0">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Mobile Tabs */}
+            <div className="border-b border-white/5 shrink-0">
+              <div className="flex">
+                <button
+                  onClick={() => setConversationTab('conversa')}
+                  className={cn(
+                    "flex-1 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors",
+                    conversationTab === 'conversa'
+                      ? "border-emerald-500 text-emerald-400"
+                      : "border-transparent text-white/40 hover:text-white/60"
+                  )}
+                >
+                  <MessageCircle className="inline h-3.5 w-3.5 mr-1" />
+                  Conversa
+                </button>
+                <button
+                  onClick={() => setConversationTab('historico')}
+                  className={cn(
+                    "flex-1 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors",
+                    conversationTab === 'historico'
+                      ? "border-emerald-500 text-emerald-400"
+                      : "border-transparent text-white/40 hover:text-white/60"
+                  )}
+                >
+                  <History className="inline h-3.5 w-3.5 mr-1" />
+                  Historico ({ticketHistory.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Action Buttons */}
+            {(selectedTicket.status === 'em_atendimento' || selectedTicket.status === 'aberto') && (
+              <div className="flex gap-2 border-b border-white/5 px-4 py-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openTransferDialog}
+                  className="flex-1 gap-1 bg-transparent border-white/10 text-white/60"
+                >
+                  <ArrowRightLeft className="h-4 w-4" />
+                  Transferir
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setEncerrarDialogOpen(true)}
+                  className="flex-1 gap-1"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Encerrar
+                </Button>
               </div>
             )}
+
+            {/* Mobile Messages */}
+            <div className="flex-1 overflow-y-auto">
+              {conversationTab === 'conversa' && (
+                <div className="p-4 space-y-3">
+                  {loadingMessages ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-white/20" />
+                    </div>
+                  ) : conversationMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                      <MessageCircle className="mb-2 h-8 w-8" />
+                      <p>Nenhuma mensagem ainda</p>
+                    </div>
+                  ) : (
+                    conversationMessages.map((msg: any) => (
+                      msg.remetente === 'sistema' ? (
+                        <div key={msg.id} className="flex justify-center">
+                          <div className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] max-w-[90%]",
+                            msg.conteudo.startsWith('Transferido')
+                              ? "bg-blue-950/30 border-blue-800/50 text-blue-300"
+                              : "bg-white/5 border-white/5 text-white/40"
+                          )}>
+                            {msg.conteudo.startsWith('Transferido') ? (
+                              <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+                            ) : (
+                              <Megaphone className="h-3.5 w-3.5 shrink-0 text-white/30" />
+                            )}
+                            <span>{msg.conteudo}</span>
+                            <span className="shrink-0 ml-1 opacity-60">
+                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          key={msg.id}
+                          className={cn(
+                            "flex",
+                            msg.remetente === 'cliente' ? "justify-start" : "justify-end"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                              msg.remetente === 'cliente'
+                                ? "bg-white/5 text-white/80"
+                                : msg.remetente === 'bot'
+                                ? "bg-blue-900/30 text-blue-200"
+                                : "bg-emerald-600/20 text-emerald-100 border border-emerald-500/10"
+                            )}
+                          >
+                            {msg.url_imagem && (msg.tipo === 'imagem' || msg.media_type?.startsWith('image/')) && (
+                              <img src={msg.url_imagem} alt="" className="max-w-full rounded mb-1" />
+                            )}
+                            <p className="break-words">{msg.conteudo}</p>
+                            <p className="text-[10px] mt-1 opacity-50">
+                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    ))
+                  )}
+                </div>
+              )}
+
+              {conversationTab === 'historico' && (
+                <div className="p-4 space-y-3">
+                  {loadingHistory ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-white/20" />
+                    </div>
+                  ) : ticketHistory.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                      <History className="mb-2 h-8 w-8" />
+                      <p>Nenhum atendimento anterior</p>
+                    </div>
+                  ) : (
+                    ticketHistory.map((ticket: any) => (
+                      <div key={ticket.id} className="border border-white/5 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => loadHistoryMessages(ticket.id)}
+                          className="w-full px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={ticket.status === 'encerrado' ? 'secondary' : 'default'}
+                                className="text-[10px] px-1.5 h-5"
+                              >
+                                {ticket.status === 'encerrado' ? 'Encerrado' : ticket.status === 'em_atendimento' ? 'Em atendimento' : 'Aberto'}
+                              </Badge>
+                              <span className="text-xs font-mono font-medium text-white/60">#{ticket.numero}</span>
+                            </div>
+                            <span className="text-[10px] text-white/30">
+                              {new Date(ticket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              {' '}
+                              {new Date(ticket.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-white/30">
+                            <span>{ticket.setores?.nome || '-'}</span>
+                            <span>-</span>
+                            <span>{ticket.colaboradores?.nome || 'Sem atendente'}</span>
+                          </div>
+                        </button>
+
+                        {expandedHistory === ticket.id && (
+                          <div className="border-t border-white/5 bg-white/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                            {!historyMessages[ticket.id] ? (
+                              <div className="flex justify-center py-2">
+                                <Loader2 className="h-4 w-4 animate-spin text-white/20" />
+                              </div>
+                            ) : historyMessages[ticket.id].length === 0 ? (
+                              <p className="text-xs text-white/30 text-center py-2">Sem mensagens</p>
+                            ) : (
+                              historyMessages[ticket.id].map((msg: any) => (
+                                msg.remetente === 'sistema' ? (
+                                  <div key={msg.id} className="flex justify-center">
+                                    <div className={cn(
+                                      "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
+                                      msg.conteudo.startsWith('Transferido')
+                                        ? "bg-blue-950/30 text-blue-300"
+                                        : "bg-white/5 text-white/30"
+                                    )}>
+                                      {msg.conteudo.startsWith('Transferido') ? (
+                                        <ArrowRightLeft className="h-2.5 w-2.5 shrink-0" />
+                                      ) : (
+                                        <Megaphone className="h-2.5 w-2.5 shrink-0" />
+                                      )}
+                                      <span>{msg.conteudo}</span>
+                                      <span className="opacity-60">
+                                        {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div
+                                    key={msg.id}
+                                    className={cn(
+                                      "flex",
+                                      msg.remetente === 'cliente' ? "justify-start" : "justify-end"
+                                    )}
+                                  >
+                                    <div
+                                      className={cn(
+                                        "max-w-[80%] rounded px-2 py-1 text-[11px]",
+                                        msg.remetente === 'cliente'
+                                          ? "bg-white/5 border border-white/5 text-white/70"
+                                          : "bg-emerald-600/20 text-emerald-200"
+                                      )}
+                                    >
+                                      <p className="break-words">{msg.conteudo}</p>
+                                      <p className="text-[9px] mt-0.5 opacity-50">
+                                        {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* ===== DIALOGS (kept intact) ===== */}
 
       {/* Encerrar Dialog */}
       <AlertDialog open={encerrarDialogOpen} onOpenChange={setEncerrarDialogOpen}>
         <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>⚠️ Encerrar ticket?</AlertDialogTitle>
+            <AlertDialogTitle>Encerrar ticket?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja encerrar este ticket? O ticket será movido para o histórico.
+              Tem certeza que deseja encerrar este ticket? O ticket sera movido para o historico.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1305,7 +1869,7 @@ export default function MonitoramentoPage() {
               onClick={handleEncerrarTicket}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              ✅ Confirmar Encerramento
+              Confirmar Encerramento
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1326,8 +1890,8 @@ export default function MonitoramentoPage() {
 
           <Tabs defaultValue="atendente" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="atendente">👤 Atendente</TabsTrigger>
-              <TabsTrigger value="setor">🏢 Setor</TabsTrigger>
+              <TabsTrigger value="atendente">Atendente</TabsTrigger>
+              <TabsTrigger value="setor">Setor</TabsTrigger>
             </TabsList>
 
             <TabsContent value="atendente" className="space-y-4 pt-4">
@@ -1356,7 +1920,7 @@ export default function MonitoramentoPage() {
                   <p className="text-sm text-muted-foreground">Nenhum outro atendente neste setor.</p>
                 )}
                 {atendentesDisponiveis.length > 0 && !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
-                  <p className="text-sm text-amber-600">Todos os atendentes estão offline.</p>
+                  <p className="text-sm text-amber-600">Todos os atendentes estao offline.</p>
                 )}
               </div>
               <Button
@@ -1372,7 +1936,7 @@ export default function MonitoramentoPage() {
                 {transferLoading ? 'Transferindo...' : 'Transferir para Atendente'}
               </Button>
               {selectedAtendenteTransfer && selectedAtendenteTransfer !== 'all' && !isAtendenteOnline(atendentesDisponiveis.find((a) => a.id === selectedAtendenteTransfer)) && (
-                <p className="text-sm text-destructive">Este atendente está offline. Selecione um atendente online.</p>
+                <p className="text-sm text-destructive">Este atendente esta offline. Selecione um atendente online.</p>
               )}
             </TabsContent>
 
@@ -1386,7 +1950,7 @@ export default function MonitoramentoPage() {
                   <SelectContent>
                     {setoresTransfer.length === 0 ? (
                       <div className="p-3 text-sm text-muted-foreground text-center">
-                        Nenhum setor habilitado para transferência. Configure em Configurações do Setor.
+                        Nenhum setor habilitado para transferencia. Configure em Configuracoes do Setor.
                       </div>
                     ) : (
                       setoresTransfer.map((setor) => (
@@ -1429,8 +1993,8 @@ export default function MonitoramentoPage() {
               )}
 
               {selectedSetorTransfer !== 'all' && atendentesDisponiveis.length > 0 && !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
-                <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
-                  Nenhum atendente online neste setor. O ticket irá para a fila e será atribuído automaticamente quando alguém ficar online.
+                <p className="text-sm text-blue-400 bg-blue-950/30 p-2 rounded-md border border-blue-800/30">
+                  Nenhum atendente online neste setor. O ticket ira para a fila e sera atribuido automaticamente quando alguem ficar online.
                 </p>
               )}
 
@@ -1445,259 +2009,6 @@ export default function MonitoramentoPage() {
           </Tabs>
         </DialogContent>
       </Dialog>
-
-      {/* Conversation Slide-out Panel */}
-      {selectedTicket && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg">
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={closeConversation} />
-
-          <div className="absolute inset-0 flex flex-col bg-background shadow-xl">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <div>
-                <h2 className="font-semibold">Ticket #{selectedTicket.numero}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {selectedTicket.contato} - {selectedTicket.setor}
-                </p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={closeConversation}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Tabs */}
-            <div className="border-b">
-              <div className="flex">
-                <button
-                  onClick={() => setConversationTab('conversa')}
-                  className={cn(
-                    "flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
-                    conversationTab === 'conversa'
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <MessageCircle className="inline h-3.5 w-3.5 mr-1.5" />
-                  Conversa
-                </button>
-                <button
-                  onClick={() => setConversationTab('historico')}
-                  className={cn(
-                    "flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
-                    conversationTab === 'historico'
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <History className="inline h-3.5 w-3.5 mr-1.5" />
-                  Historico ({ticketHistory.length})
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            {(selectedTicket.status === 'em_atendimento' || selectedTicket.status === 'aberto') && (
-              <div className="flex gap-2 border-b px-4 py-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={openTransferDialog}
-                  className="flex-1 gap-1 bg-transparent"
-                >
-                  <ArrowRightLeft className="h-4 w-4" />
-                  Transferir
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setEncerrarDialogOpen(true)}
-                  className="flex-1 gap-1"
-                >
-                  <XCircle className="h-4 w-4" />
-                  Encerrar
-                </Button>
-              </div>
-            )}
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Conversa Tab */}
-              {conversationTab === 'conversa' && (
-                <div className="p-4 space-y-3">
-                  {loadingMessages ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : conversationMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-                      <MessageCircle className="mb-2 h-8 w-8" />
-                      <p>Nenhuma mensagem ainda</p>
-                    </div>
-                  ) : (
-                    conversationMessages.map((msg: any) => (
-                      msg.remetente === 'sistema' ? (
-                        <div key={msg.id} className="flex justify-center">
-                          <div className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] max-w-[90%]",
-                            msg.conteudo.startsWith('Transferido')
-                              ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
-                              : "bg-muted/80 border-border text-muted-foreground"
-                          )}>
-                            {msg.conteudo.startsWith('Transferido') ? (
-                              <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
-                            ) : (
-                              <Megaphone className="h-3.5 w-3.5 shrink-0 text-primary" />
-                            )}
-                            <span>{msg.conteudo}</span>
-                            <span className="shrink-0 ml-1 opacity-60">
-                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          key={msg.id}
-                          className={cn(
-                            "flex",
-                            msg.remetente === 'cliente' ? "justify-start" : "justify-end"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-                              msg.remetente === 'cliente'
-                                ? "bg-muted"
-                                : msg.remetente === 'bot'
-                                ? "bg-blue-100 dark:bg-blue-900/30"
-                                : "bg-primary text-primary-foreground"
-                            )}
-                          >
-                            {msg.url_imagem && (msg.tipo === 'imagem' || msg.media_type?.startsWith('image/')) && (
-                              <img src={msg.url_imagem} alt="" className="max-w-full rounded mb-1" />
-                            )}
-                            <p className="break-words">{msg.conteudo}</p>
-                            <p className={cn(
-                              "text-[10px] mt-1",
-                              msg.remetente === 'cliente' ? "text-muted-foreground" : "opacity-70"
-                            )}>
-                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* Historico Tab */}
-              {conversationTab === 'historico' && (
-                <div className="p-4 space-y-3">
-                  {loadingHistory ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : ticketHistory.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-                      <History className="mb-2 h-8 w-8" />
-                      <p>Nenhum atendimento anterior</p>
-                    </div>
-                  ) : (
-                    ticketHistory.map((ticket: any) => (
-                      <div key={ticket.id} className="border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => loadHistoryMessages(ticket.id)}
-                          className="w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant={ticket.status === 'encerrado' ? 'secondary' : 'default'}
-                                className="text-[10px] px-1.5 h-5"
-                              >
-                                {ticket.status === 'encerrado' ? 'Encerrado' : ticket.status === 'em_atendimento' ? 'Em atendimento' : 'Aberto'}
-                              </Badge>
-                              <span className="text-xs font-mono font-medium">#{ticket.numero}</span>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground">
-                              {new Date(ticket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                              {' '}
-                              {new Date(ticket.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
-                            <span>{ticket.setores?.nome || '-'}</span>
-                            <span>-</span>
-                            <span>{ticket.colaboradores?.nome || 'Sem atendente'}</span>
-                          </div>
-                        </button>
-
-                        {/* Expanded messages */}
-                        {expandedHistory === ticket.id && (
-                          <div className="border-t bg-muted/30 px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
-                            {!historyMessages[ticket.id] ? (
-                              <div className="flex justify-center py-2">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              </div>
-                            ) : historyMessages[ticket.id].length === 0 ? (
-                              <p className="text-xs text-muted-foreground text-center py-2">Sem mensagens</p>
-                            ) : (
-                              historyMessages[ticket.id].map((msg: any) => (
-                                msg.remetente === 'sistema' ? (
-                                  <div key={msg.id} className="flex justify-center">
-                                    <div className={cn(
-                                      "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
-                                      msg.conteudo.startsWith('Transferido')
-                                        ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300"
-                                        : "bg-muted text-muted-foreground"
-                                    )}>
-                                      {msg.conteudo.startsWith('Transferido') ? (
-                                        <ArrowRightLeft className="h-2.5 w-2.5 shrink-0" />
-                                      ) : (
-                                        <Megaphone className="h-2.5 w-2.5 shrink-0" />
-                                      )}
-                                      <span>{msg.conteudo}</span>
-                                      <span className="opacity-60">
-                                        {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div
-                                    key={msg.id}
-                                    className={cn(
-                                      "flex",
-                                      msg.remetente === 'cliente' ? "justify-start" : "justify-end"
-                                    )}
-                                  >
-                                    <div
-                                      className={cn(
-                                        "max-w-[80%] rounded px-2 py-1 text-[11px]",
-                                        msg.remetente === 'cliente'
-                                          ? "bg-background border"
-                                          : "bg-primary/80 text-primary-foreground"
-                                      )}
-                                    >
-                                      <p className="break-words">{msg.conteudo}</p>
-                                      <p className="text-[9px] mt-0.5 opacity-60">
-                                        {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )
-                              ))
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   )
 }
