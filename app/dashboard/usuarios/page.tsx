@@ -294,12 +294,12 @@ export default function UsuariosPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
             <UserCog className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Usuarios Master</h1>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-muted-foreground/80">
               Gerencie usuarios e defina quais setores cada um pode acessar
             </p>
           </div>
@@ -314,17 +314,17 @@ export default function UsuariosPage() {
       <div className="glass-card rounded-2xl p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Buscar por nome ou e-mail..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+              className="pl-9 rounded-xl glass-input text-foreground/80 placeholder:text-muted-foreground/50"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-white/30 shrink-0" />
-            <div className="flex rounded-xl border border-white/8 overflow-hidden">
+            <Filter className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+            <div className="flex rounded-xl border border-foreground/8 overflow-hidden">
               {(['all', 'active', 'inactive'] as const).map((val) => (
                 <button
                   key={val}
@@ -333,7 +333,7 @@ export default function UsuariosPage() {
                     'px-4 py-2 text-xs font-medium transition-colors',
                     statusFilter === val
                       ? 'bg-emerald-500/15 text-emerald-400'
-                      : 'text-white/40 hover:bg-white/5 hover:text-white/60'
+                      : 'text-muted-foreground/80 hover:bg-foreground/5 hover:text-foreground/60'
                   )}
                 >
                   {val === 'all' ? 'Todos' : val === 'active' ? 'Ativos' : 'Inativos'}
@@ -358,7 +358,7 @@ export default function UsuariosPage() {
             </div>
           ))
         ) : filteredColaboradores.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-white/30">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60">
             <UserCog className="mb-3 h-10 w-10" />
             <p className="text-sm">Nenhum usuario encontrado</p>
           </div>
@@ -382,7 +382,7 @@ export default function UsuariosPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04, duration: 0.3 }}
                 className={cn(
-                  'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-emerald-500/60 group',
+                  'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-foreground/[0.03] hover:border-l-emerald-500/60 group',
                   user.ativo ? 'border-l-emerald-500/30' : 'border-l-white/10 opacity-60'
                 )}
               >
@@ -391,7 +391,7 @@ export default function UsuariosPage() {
                   'h-11 w-11 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold',
                   user.is_master
                     ? 'bg-gradient-to-br from-emerald-500/25 to-cyan-500/25 text-emerald-400 border border-emerald-500/20'
-                    : 'bg-white/[0.06] text-white/50 border border-white/8'
+                    : 'bg-foreground/[0.06] text-muted-foreground border border-foreground/8'
                 )}>
                   {initials}
                 </div>
@@ -399,18 +399,18 @@ export default function UsuariosPage() {
                 {/* Main Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-white/90 truncate">{user.nome}</span>
+                    <span className="font-medium text-foreground/90 truncate">{user.nome}</span>
                     {user.is_master && (
                       <Badge className="glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[10px] px-1.5 py-0">
                         Admin
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-white/40 truncate">{user.email}</p>
+                  <p className="text-sm text-muted-foreground/80 truncate">{user.email}</p>
                   {/* Setores inline */}
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {user.is_master ? (
-                      <span className="text-xs text-white/30">Todos os setores</span>
+                      <span className="text-xs text-muted-foreground/60">Todos os setores</span>
                     ) : setorNames.length > 0 ? (
                       <>
                         {setorNames.slice(0, 3).map((nome: string) => (
@@ -419,21 +419,21 @@ export default function UsuariosPage() {
                           </Badge>
                         ))}
                         {setorNames.length > 3 && (
-                          <Badge className="glass-badge bg-white/5 text-white/30 border-white/8 text-[10px] px-1.5 py-0">
+                          <Badge className="glass-badge bg-foreground/5 text-muted-foreground/60 border-foreground/8 text-[10px] px-1.5 py-0">
                             +{setorNames.length - 3}
                           </Badge>
                         )}
                       </>
                     ) : (
-                      <span className="text-xs text-white/20">Sem setores</span>
+                      <span className="text-xs text-muted-foreground/40">Sem setores</span>
                     )}
                   </div>
                 </div>
 
                 {/* Permission */}
                 <div className="hidden md:block text-right shrink-0">
-                  <span className="text-[10px] uppercase tracking-wider text-white/25 block">Permissao</span>
-                  <span className="text-sm text-white/50">{user.permissoes?.nome || '-'}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block">Permissao</span>
+                  <span className="text-sm text-muted-foreground">{user.permissoes?.nome || '-'}</span>
                 </div>
 
                 {/* Status */}
@@ -442,7 +442,7 @@ export default function UsuariosPage() {
                     'shrink-0',
                     user.ativo
                       ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-                      : 'glass-badge bg-white/5 text-white/30 border-white/10'
+                      : 'glass-badge bg-foreground/5 text-muted-foreground/60 border-foreground/10'
                   )}
                 >
                   {user.ativo ? 'Ativo' : 'Inativo'}
@@ -453,7 +453,7 @@ export default function UsuariosPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                    className="h-8 w-8 text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5"
                     onClick={() => openEditModal(user)}
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -475,7 +475,7 @@ export default function UsuariosPage() {
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
-        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
+        <AlertDialogContent className="bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar usuário</AlertDialogTitle>
             <AlertDialogDescription>
@@ -499,7 +499,7 @@ export default function UsuariosPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl bg-[#0e1019] border border-white/8 rounded-2xl flex flex-col max-h-[88vh] p-0 gap-0">
+        <DialogContent className="max-w-2xl bg-page-bg-alt border border-foreground/8 rounded-2xl flex flex-col max-h-[88vh] p-0 gap-0">
           {/* Header fixo */}
           <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-border/50">
             <DialogTitle>

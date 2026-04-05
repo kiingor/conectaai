@@ -357,7 +357,7 @@ export function DisponibilidadePanel({
     <Popover>
       <PopoverTrigger asChild>
         <button
-          className="group relative flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-white/5"
+          className="group relative flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-foreground/5"
           aria-label={statusLabel}
         >
           {/* Animated ring around status dot */}
@@ -366,7 +366,7 @@ export function DisponibilidadePanel({
               'absolute inset-0 rounded-full',
               currentStatus === 'online' && 'ring-2 ring-emerald-500/40',
               currentStatus === 'pausa' && 'ring-2 ring-amber-500/40',
-              currentStatus === 'offline' && 'ring-2 ring-white/10'
+              currentStatus === 'offline' && 'ring-2 ring-foreground/10'
             )}
             animate={{
               scale: currentStatus !== 'offline' ? [1, 1.15, 1] : 1,
@@ -383,11 +383,11 @@ export function DisponibilidadePanel({
             'relative w-3 h-3 rounded-full transition-colors',
             currentStatus === 'online' && 'status-dot-online',
             currentStatus === 'pausa' && 'bg-amber-500',
-            currentStatus === 'offline' && 'bg-white/25'
+            currentStatus === 'offline' && 'bg-muted-foreground/50'
           )} />
           {/* Pause timer badge */}
           {pausaAtual && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-mono text-amber-400 bg-[#06080f]/90 px-1 rounded whitespace-nowrap">
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-mono text-amber-400 bg-page-bg/90 px-1 rounded whitespace-nowrap">
               {getPauseDuration()}
             </span>
           )}
@@ -400,7 +400,7 @@ export function DisponibilidadePanel({
             className={cn(
               'w-14 h-14 rounded-full flex items-center justify-center mb-3',
               currentStatus === 'online' && 'bg-emerald-500/10 ring-2 ring-emerald-500/30',
-              currentStatus === 'offline' && 'bg-white/5 ring-2 ring-white/10',
+              currentStatus === 'offline' && 'bg-foreground/5 ring-2 ring-foreground/10',
               currentStatus === 'pausa' && 'bg-amber-500/10 ring-2 ring-amber-500/30'
             )}
             animate={{
@@ -422,14 +422,14 @@ export function DisponibilidadePanel({
             ) : (
               <div className={cn(
                 'h-5 w-5 rounded-full',
-                currentStatus === 'online' ? 'status-dot-online' : 'bg-white/20'
+                currentStatus === 'online' ? 'status-dot-online' : 'bg-foreground/20'
               )} />
             )}
           </motion.div>
           <p className={cn(
             'text-sm font-semibold',
             currentStatus === 'online' && 'text-emerald-400',
-            currentStatus === 'offline' && 'text-white/50',
+            currentStatus === 'offline' && 'text-muted-foreground',
             currentStatus === 'pausa' && 'text-amber-400'
           )}>
             {statusLabel}
@@ -450,7 +450,7 @@ export function DisponibilidadePanel({
               <Button
                 onClick={goOfflineFromPausa}
                 disabled={loading}
-                className="flex-1 gap-1.5 bg-white/5 hover:bg-white/8 text-white/50 hover:text-white/70 border border-white/8 rounded-full h-9 text-xs"
+                className="flex-1 gap-1.5 bg-foreground/5 hover:bg-foreground/8 text-muted-foreground hover:text-foreground/70 border border-foreground/8 rounded-full h-9 text-xs"
               >
                 <Power className="h-3.5 w-3.5" />
                 {loading ? '...' : 'Offline'}
@@ -479,8 +479,8 @@ export function DisponibilidadePanel({
                   className={cn(
                     'flex-1 gap-1.5 rounded-full h-9 text-xs transition-all',
                     !isOnline
-                      ? 'bg-white/8 text-white/50 border border-white/10 cursor-default'
-                      : 'bg-white/5 hover:bg-white/8 text-white/50 hover:text-white/70 border border-white/8'
+                      ? 'bg-foreground/8 text-muted-foreground border border-foreground/10 cursor-default'
+                      : 'bg-foreground/5 hover:bg-foreground/8 text-muted-foreground hover:text-foreground/70 border border-foreground/8'
                   )}
                 >
                   <Power className="h-3.5 w-3.5" />
@@ -490,14 +490,14 @@ export function DisponibilidadePanel({
 
               {/* Pause dropdown with icons */}
               {isOnline && pausas.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-white/6">
+                <div className="mt-3 pt-3 border-t border-foreground/6">
                   <div className="flex gap-2 items-center">
                     <Coffee className="h-3.5 w-3.5 text-amber-400/60 shrink-0" />
                     <Select value={selectedPausa} onValueChange={setSelectedPausa}>
-                      <SelectTrigger className="flex-1 glass-input text-white/60 border-white/8 h-8 text-xs rounded-full px-3">
+                      <SelectTrigger className="flex-1 glass-input text-foreground/60 border-foreground/8 h-8 text-xs rounded-full px-3">
                         <SelectValue placeholder="Iniciar pausa..." />
                       </SelectTrigger>
-                      <SelectContent className="glass-dropdown border-white/8">
+                      <SelectContent className="glass-dropdown border-foreground/8">
                         {pausas.map((pausa) => (
                           <SelectItem key={pausa.id} value={pausa.id} className="text-xs">
                             <span className="flex items-center gap-2">
@@ -525,7 +525,7 @@ export function DisponibilidadePanel({
           {/* Compact timeline history */}
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 w-full mt-3 pt-3 border-t border-white/6 text-[11px] text-white/30 hover:text-white/50 transition-colors"
+            className="flex items-center gap-2 w-full mt-3 pt-3 border-t border-foreground/6 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
             <History className="h-3 w-3" />
             <span>Historico</span>
@@ -548,11 +548,11 @@ export function DisponibilidadePanel({
               >
                 <div className="pt-2.5 pl-2">
                   {logs.length === 0 ? (
-                    <p className="text-[11px] text-white/20 text-center py-1.5">Sem registros</p>
+                    <p className="text-[11px] text-muted-foreground/40 text-center py-1.5">Sem registros</p>
                   ) : (
                     <div className="relative">
                       {/* Vertical timeline line */}
-                      <div className="absolute left-[3px] top-1 bottom-1 w-px bg-white/8" />
+                      <div className="absolute left-[3px] top-1 bottom-1 w-px bg-foreground/8" />
                       <div className="space-y-2.5">
                         {logs.map((log) => {
                           const isPausa = log.status.startsWith('pausa:')
@@ -575,13 +575,13 @@ export function DisponibilidadePanel({
                                 ) : (
                                   <div className={cn(
                                     'h-[7px] w-[7px] rounded-full ring-2 ring-[#0e101a]',
-                                    log.status === 'online' ? 'bg-emerald-500' : 'bg-white/25'
+                                    log.status === 'online' ? 'bg-emerald-500' : 'bg-muted-foreground/50'
                                   )} />
                                 )}
                               </div>
                               <div className="flex items-baseline gap-1.5 min-w-0">
-                                <span className="text-[11px] text-white/40 truncate">{statusText}</span>
-                                <span className="text-[10px] text-white/20 font-mono shrink-0">
+                                <span className="text-[11px] text-muted-foreground/80 truncate">{statusText}</span>
+                                <span className="text-[10px] text-muted-foreground/40 font-mono shrink-0">
                                   {format(new Date(log.timestamp), 'HH:mm', { locale: ptBR })}
                                 </span>
                               </div>

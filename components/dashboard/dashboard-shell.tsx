@@ -18,7 +18,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
   return (
     <>
       {/* Fixed dark background */}
-      <div className="fixed inset-0 -z-20" style={{ backgroundColor: '#06080f' }} />
+      <div className="fixed inset-0 -z-20 bg-page-bg" />
 
       {/* Sidebar — fixed via glass-panel */}
       <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />

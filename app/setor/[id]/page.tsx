@@ -2204,9 +2204,9 @@ const saveConfig = async () => {
   const SetorIcon = getIconComponent(setor?.icon_url)
 
   return (
-    <div className="flex h-screen flex-col bg-[#06080f]">
+    <div className="flex h-screen flex-col bg-page-bg">
       {/* Top Header */}
-      <header className="shrink-0 border-b border-white/6 glass-header">
+      <header className="shrink-0 border-b border-foreground/6 glass-header">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -2242,7 +2242,7 @@ const saveConfig = async () => {
                   </div>
                 )}
                 {setor?.descricao && (
-                  <p className="text-xs text-white/40 truncate hidden sm:block">{setor.descricao}</p>
+                  <p className="text-xs text-muted-foreground/80 truncate hidden sm:block">{setor.descricao}</p>
                 )}
               </div>
             </div>
@@ -2253,12 +2253,12 @@ const saveConfig = async () => {
               variant="outline"
               size="sm"
               onClick={() => setShowNotificationModal(true)}
-              className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white"
+              className="gap-2 bg-foreground/[0.04] border-foreground/10 text-foreground/60 hover:bg-foreground/[0.08] hover:text-foreground"
             >
               <Send className="h-4 w-4" />
               <span className="hidden sm:inline">Enviar Aviso</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white">
+            <Button variant="outline" size="sm" onClick={() => mutate()} className="gap-2 bg-foreground/[0.04] border-foreground/10 text-foreground/60 hover:bg-foreground/[0.08] hover:text-foreground">
               <RefreshCw className="h-4 w-4" />
             </Button>
             <ThemeToggle />
@@ -2292,7 +2292,7 @@ const saveConfig = async () => {
                     'flex shrink-0 items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-all cursor-pointer select-none whitespace-nowrap',
                     isActive
                       ? 'bg-emerald-500/15 text-emerald-400 border-b-2 border-emerald-500'
-                      : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80 border-b-2 border-transparent'
+                      : 'text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground/80 border-b-2 border-transparent'
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -2305,7 +2305,7 @@ const saveConfig = async () => {
       </header>
 
       {/* Main Content Area - Full Width */}
-      <main className="flex-1 overflow-y-auto bg-[#080a12] p-4 lg:p-6">
+      <main className="flex-1 overflow-y-auto bg-page-bg-alt p-4 lg:p-6">
           {/* Monitoramento Section */}
           {activeSection === 'monitoramento' && (
             <div className="space-y-4">
@@ -2413,7 +2413,7 @@ const saveConfig = async () => {
                           variant="outline"
                           size="sm"
                           className={cn(
-                            "gap-2 bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white",
+                            "gap-2 bg-foreground/[0.04] border-foreground/10 text-foreground/60 hover:bg-foreground/[0.08] hover:text-foreground",
                             atendenteFilter !== 'all' && "border-emerald-500/40 text-emerald-400"
                           )}
                         >
@@ -2477,12 +2477,12 @@ const saveConfig = async () => {
                       </PopoverContent>
                     </Popover>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
                       <Input
                         placeholder="Buscar pelo No do ticket"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-52 pl-9 h-9 glass-input text-white placeholder:text-white/25 border-white/10 rounded-lg"
+                        className="w-52 pl-9 h-9 glass-input text-white placeholder:text-muted-foreground/50 border-foreground/10 rounded-lg"
                       />
                     </div>
                   </div>
@@ -2490,7 +2490,7 @@ const saveConfig = async () => {
               </CardHeader>
               <CardContent className="pt-4">
                 {/* Tabs */}
-                <div className="border-b border-white/8 mb-4">
+                <div className="border-b border-foreground/8 mb-4">
                   <div className="flex gap-0">
                     <button
                       onClick={() => setActiveTab('em-andamento')}
@@ -2498,7 +2498,7 @@ const saveConfig = async () => {
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'em-andamento'
                           ? "border-emerald-500 text-emerald-400"
-                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
+                          : "border-transparent text-muted-foreground/80 hover:text-foreground/70 hover:border-foreground/20"
                       )}
                     >
                       Atribuido/Em andamento
@@ -2509,7 +2509,7 @@ const saveConfig = async () => {
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'aguardando'
                           ? "border-emerald-500 text-emerald-400"
-                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
+                          : "border-transparent text-muted-foreground/80 hover:text-foreground/70 hover:border-foreground/20"
                       )}
                     >
                       Aguardando atendimento
@@ -2525,7 +2525,7 @@ const saveConfig = async () => {
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'atendentes'
                           ? "border-emerald-500 text-emerald-400"
-                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
+                          : "border-transparent text-muted-foreground/80 hover:text-foreground/70 hover:border-foreground/20"
                       )}
                     >
                       Atendentes
@@ -2536,7 +2536,7 @@ const saveConfig = async () => {
                         "px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px",
                         activeTab === 'filas'
                           ? "border-emerald-500 text-emerald-400"
-                          : "border-transparent text-white/40 hover:text-white/70 hover:border-white/20"
+                          : "border-transparent text-muted-foreground/80 hover:text-foreground/70 hover:border-foreground/20"
                       )}
                     >
                       Filas
@@ -2551,14 +2551,14 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent border-white/6">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo na fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">1ª Resposta</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo atend.</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Ticket</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Contato</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Atendente</TableHead>
+                          <TableRow className="hover:bg-transparent border-foreground/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Tempo na fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">1ª Resposta</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Tempo atend.</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Ticket</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Contato</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Atendente</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -2642,12 +2642,12 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent border-white/6">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Tempo na fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Ticket</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Contato</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Fila</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Prioridade</TableHead>
+                          <TableRow className="hover:bg-transparent border-foreground/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Tempo na fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Ticket</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Contato</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Fila</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Prioridade</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -2723,11 +2723,11 @@ const saveConfig = async () => {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent border-white/6">
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Atendente</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40">Status</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40 text-center">Em atendimento</TableHead>
-                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-white/40 text-center">Finalizados hoje</TableHead>
+                          <TableRow className="hover:bg-transparent border-foreground/6">
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Atendente</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Status</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80 text-center">Em atendimento</TableHead>
+                            <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80 text-center">Finalizados hoje</TableHead>
                             <TableHead className="text-xs w-[60px]"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -3218,7 +3218,7 @@ const saveConfig = async () => {
                                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-opacity hover:opacity-80 select-none",
                                 atendente.is_online 
                                   ? "bg-green-900/30 text-green-400" 
-                                  : "bg-white/[0.05] text-white/40"
+                                  : "bg-foreground/[0.05] text-muted-foreground/80"
                               )}>
                                 {alterandoStatusId === atendente.id
                                   ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -3364,7 +3364,7 @@ const saveConfig = async () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-white">Horários de Atendimento</h1>
-              <button type="button" className="text-white/30 hover:text-white/60 transition-colors" title="Configure os dias e horários em que sua equipe está disponível para atendimento.">
+              <button type="button" className="text-muted-foreground/60 hover:text-foreground/60 transition-colors" title="Configure os dias e horários em que sua equipe está disponível para atendimento.">
                 <Info className="h-4 w-4" />
               </button>
             </div>
@@ -3436,7 +3436,7 @@ const saveConfig = async () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-white">Pausas</h1>
-              <button type="button" className="text-white/30 hover:text-white/60 transition-colors" title="Configure os tipos de pausa que os atendentes podem utilizar durante o expediente.">
+              <button type="button" className="text-muted-foreground/60 hover:text-foreground/60 transition-colors" title="Configure os tipos de pausa que os atendentes podem utilizar durante o expediente.">
                 <Info className="h-4 w-4" />
               </button>
             </div>
@@ -3543,20 +3543,20 @@ const saveConfig = async () => {
         {/* === Collapsible: Informacoes Basicas === */}
         <Collapsible defaultOpen>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
                   <Info className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Informacoes Basicas</p>
-                  <p className="text-xs text-white/40">Nome, descricao, aparencia e tag do setor</p>
+                  <p className="text-xs text-muted-foreground/80">Nome, descricao, aparencia e tag do setor</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="grid gap-6 md:grid-cols-2">
                   {/* Left column: Name, Desc, Tag */}
                   <div className="space-y-4">
@@ -3649,23 +3649,23 @@ const saveConfig = async () => {
         {/* === Collapsible: Canais (WhatsApp) === */}
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950/50">
                   <Smartphone className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Canais de Atendimento (WhatsApp)</p>
-                  <p className="text-xs text-white/40">Numeros conectados via Evolution API</p>
+                  <p className="text-xs text-muted-foreground/80">Numeros conectados via Evolution API</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {canais.length > 0 && <Badge variant="secondary" className="text-xs">{canais.length}</Badge>}
-                <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-muted-foreground">Configure os numeros de WhatsApp para este setor.</p>
                   <Button onClick={() => { setEditingCanal(null); resetCanalForm(); setIsCanalModalOpen(true) }}>
@@ -3681,20 +3681,20 @@ const saveConfig = async () => {
         {!empresaMode && (
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
                   <Settings className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Distribuicao de Tickets</p>
-                  <p className="text-xs text-white/40">Configure a atribuicao automatica de tickets</p>
+                  <p className="text-xs text-muted-foreground/80">Configure a atribuicao automatica de tickets</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="space-y-5">
                   <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                     <div className="space-y-0.5">
@@ -3724,20 +3724,20 @@ const saveConfig = async () => {
         {/* === Collapsible: Mensagens === */}
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-950/50">
                   <MessageCircle className="h-4 w-4 text-purple-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Mensagens</p>
-                  <p className="text-xs text-white/40">Mensagem de finalizacao e webhooks</p>
+                  <p className="text-xs text-muted-foreground/80">Mensagem de finalizacao e webhooks</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 {/* Mensagem de Finalizacao */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-medium">Mensagem de Finalizacao</h4>
@@ -3756,7 +3756,7 @@ const saveConfig = async () => {
                   </div>
                 </div>
                 {/* Webhooks */}
-                <div className="space-y-4 pt-4 border-t border-white/6 mt-4">
+                <div className="space-y-4 pt-4 border-t border-foreground/6 mt-4">
                   <h4 className="text-sm font-medium">Webhooks</h4>
                   <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors">
                     <input type="checkbox" className="h-4 w-4 rounded border-border accent-primary" checked={configForm.webhook_eventos.includes('ticket_encerrado')} onChange={(e) => { setConfigForm((prev) => ({ ...prev, webhook_eventos: e.target.checked ? [...prev.webhook_eventos, 'ticket_encerrado'] : prev.webhook_eventos.filter((ev) => ev !== 'ticket_encerrado') })) }} />
@@ -3782,20 +3782,20 @@ const saveConfig = async () => {
         {!empresaMode && (
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-950/50">
                   <ArrowRightLeft className="h-4 w-4 text-sky-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Transferencia</p>
-                  <p className="text-xs text-white/40">Setores disponiveis como destino de transferencia</p>
+                  <p className="text-xs text-muted-foreground/80">Setores disponiveis como destino de transferencia</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">Selecione quais setores estarao disponiveis como destino ao transferir um ticket deste setor.</p>
@@ -3879,20 +3879,20 @@ const saveConfig = async () => {
         {colaboradorLogado?.is_master && !empresaMode && (
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-950/50">
                   <Radio className="h-4 w-4 text-indigo-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Receptor / Transmissor</p>
-                  <p className="text-xs text-white/40">Encaminhamento automatico quando nao ha atendentes</p>
+                  <p className="text-xs text-muted-foreground/80">Encaminhamento automatico quando nao ha atendentes</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="space-y-5">
                   {/* Switch: Setor Receptor */}
                   <div className="flex items-center justify-between rounded-lg border border-border p-4">
@@ -3994,20 +3994,20 @@ const saveConfig = async () => {
         {/* === Collapsible: Zona de Perigo === */}
         <Collapsible>
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden border-destructive/30">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-950/50">
                   <AlertTriangle className="h-4 w-4 text-red-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">Zona de Perigo</p>
-                  <p className="text-xs text-white/40">Acoes irreversiveis para este setor</p>
+                  <p className="text-xs text-muted-foreground/80">Acoes irreversiveis para este setor</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-white/40 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-white/6 p-5">
+              <div className="border-t border-foreground/6 p-5">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/30 bg-destructive/5">
                     <div>
@@ -4943,7 +4943,7 @@ const saveConfig = async () => {
                                 return (
                                   <SelectItem key={a.id} value={a.id}>
                                     <div className="flex items-center gap-2">
-                                      <span className={`h-2 w-2 rounded-full ${online ? 'bg-green-500' : 'bg-white/20'}`} />
+                                      <span className={`h-2 w-2 rounded-full ${online ? 'bg-green-500' : 'bg-foreground/20'}`} />
                                       {a.nome}
                                       {!online && <span className="text-xs text-muted-foreground">(offline)</span>}
                                     </div>

@@ -754,7 +754,7 @@ export default function MonitoramentoPage() {
         <aside className="hidden lg:flex w-[270px] shrink-0 flex-col gap-3 overflow-y-auto pr-1 pb-4">
           {/* Header mini */}
           <div className="flex items-center gap-2 px-1 pt-1 pb-0.5">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
               <Activity className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="min-w-0 flex-1">
@@ -774,7 +774,7 @@ export default function MonitoramentoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-emerald-400" />
-                <span className="text-xs font-medium text-white/50">Tickets Ativos</span>
+                <span className="text-xs font-medium text-muted-foreground">Tickets Ativos</span>
               </div>
               <span className="text-2xl font-bold brand-gradient-text tabular-nums">{stats.total}</span>
             </div>
@@ -785,7 +785,7 @@ export default function MonitoramentoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Inbox className="h-4 w-4 text-orange-400" />
-                <span className="text-xs font-medium text-white/50">Na Fila</span>
+                <span className="text-xs font-medium text-muted-foreground">Na Fila</span>
               </div>
               <span className="text-xl font-bold text-orange-400 tabular-nums">{stats.naFila}</span>
             </div>
@@ -796,14 +796,14 @@ export default function MonitoramentoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Headphones className="h-4 w-4 text-cyan-400" />
-                <span className="text-xs font-medium text-white/50">Em Atendimento</span>
+                <span className="text-xs font-medium text-muted-foreground">Em Atendimento</span>
               </div>
               <span className="text-xl font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</span>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-white/5 mx-2" />
+          <div className="h-px bg-foreground/5 mx-2" />
 
           {/* Atendentes Online */}
           <div className="glass-card-elevated rounded-xl p-3">
@@ -813,7 +813,7 @@ export default function MonitoramentoPage() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                <span className="text-xs font-medium text-white/50">Atendentes Online</span>
+                <span className="text-xs font-medium text-muted-foreground">Atendentes Online</span>
               </div>
               <span className="text-xl font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</span>
             </div>
@@ -824,23 +824,23 @@ export default function MonitoramentoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-400" />
-                <span className="text-xs font-medium text-white/50">Atendentes em Pausa</span>
+                <span className="text-xs font-medium text-muted-foreground">Atendentes em Pausa</span>
               </div>
               <span className="text-xl font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</span>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-white/5 mx-2" />
+          <div className="h-px bg-foreground/5 mx-2" />
 
           {/* Tempo Max Fila */}
           <div className="glass-card-elevated rounded-xl p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-white/40" />
-                <span className="text-xs font-medium text-white/50">Tempo Max. Fila</span>
+                <Timer className="h-4 w-4 text-muted-foreground/80" />
+                <span className="text-xs font-medium text-muted-foreground">Tempo Max. Fila</span>
               </div>
-              <span className="text-sm font-bold text-white/80 tabular-nums">{stats.tempoMaximoFila}</span>
+              <span className="text-sm font-bold text-foreground/80 tabular-nums">{stats.tempoMaximoFila}</span>
             </div>
           </div>
 
@@ -848,44 +848,44 @@ export default function MonitoramentoPage() {
           <div className="glass-card-elevated rounded-xl p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-white/40" />
-                <span className="text-xs font-medium text-white/50">Tempo Max. Resposta</span>
+                <Zap className="h-4 w-4 text-muted-foreground/80" />
+                <span className="text-xs font-medium text-muted-foreground">Tempo Max. Resposta</span>
               </div>
-              <span className="text-sm font-bold text-white/80 tabular-nums">{stats.tempoMaximoResposta}</span>
+              <span className="text-sm font-bold text-foreground/80 tabular-nums">{stats.tempoMaximoResposta}</span>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-white/5 mx-2" />
+          <div className="h-px bg-foreground/5 mx-2" />
 
           {/* Stats do Dia section */}
           <div className="glass-card-elevated rounded-xl p-3 space-y-2.5">
             <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-3.5 w-3.5 text-white/40" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Stats do Dia</span>
+              <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/80" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">Stats do Dia</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-white/50">Recebidos</span>
+              <span className="text-xs text-muted-foreground">Recebidos</span>
               <span className="text-sm font-bold brand-gradient-text tabular-nums">{temposHoje.totalRecebidos}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-white/50">Resolvidos</span>
+              <span className="text-xs text-muted-foreground">Resolvidos</span>
               <span className="text-sm font-bold text-emerald-400 tabular-nums">{temposHoje.totalResolvidos}</span>
             </div>
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-foreground/5" />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-white/50">Med. 1a Resposta</span>
-              <span className="text-xs font-semibold text-white/70 tabular-nums">{temposHoje.tempoMedioPrimeiraResposta}</span>
+              <span className="text-xs text-muted-foreground">Med. 1a Resposta</span>
+              <span className="text-xs font-semibold text-foreground/70 tabular-nums">{temposHoje.tempoMedioPrimeiraResposta}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-white/50">Med. Resolucao</span>
-              <span className="text-xs font-semibold text-white/70 tabular-nums">{temposHoje.tempoMedioResolucao}</span>
+              <span className="text-xs text-muted-foreground">Med. Resolucao</span>
+              <span className="text-xs font-semibold text-foreground/70 tabular-nums">{temposHoje.tempoMedioResolucao}</span>
             </div>
           </div>
 
           {/* Refresh button */}
-          <Button variant="ghost" size="sm" onClick={() => mutate()} className="gap-2 text-white/40 hover:text-white/70 mx-1">
+          <Button variant="ghost" size="sm" onClick={() => mutate()} className="gap-2 text-muted-foreground/80 hover:text-foreground/70 mx-1">
             <RefreshCw className="h-3.5 w-3.5" />
             <span className="text-xs">Atualizar</span>
           </Button>
@@ -895,7 +895,7 @@ export default function MonitoramentoPage() {
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Mobile-only header */}
           <div className="flex lg:hidden items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
               <Activity className="h-4 w-4 text-emerald-400" />
             </div>
             <h1 className="text-lg font-bold text-white">Monitoramento</h1>
@@ -912,27 +912,27 @@ export default function MonitoramentoPage() {
           <div className="flex lg:hidden gap-2 overflow-x-auto pb-2 mb-2 scrollbar-none">
             <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
               <Activity className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-xs text-white/50">Ativos</span>
+              <span className="text-xs text-muted-foreground">Ativos</span>
               <span className="text-sm font-bold brand-gradient-text tabular-nums">{stats.total}</span>
             </div>
             <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
               <Inbox className="h-3.5 w-3.5 text-orange-400" />
-              <span className="text-xs text-white/50">Fila</span>
+              <span className="text-xs text-muted-foreground">Fila</span>
               <span className="text-sm font-bold text-orange-400 tabular-nums">{stats.naFila}</span>
             </div>
             <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
               <Headphones className="h-3.5 w-3.5 text-cyan-400" />
-              <span className="text-xs text-white/50">Atend.</span>
+              <span className="text-xs text-muted-foreground">Atend.</span>
               <span className="text-sm font-bold text-cyan-400 tabular-nums">{stats.emAtendimento}</span>
             </div>
             <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-white/50">Online</span>
+              <span className="text-xs text-muted-foreground">Online</span>
               <span className="text-sm font-bold text-emerald-400 tabular-nums">{atendentesStats.online}</span>
             </div>
             <div className="glass-card-elevated rounded-lg px-3 py-2 flex items-center gap-2 shrink-0">
               <span className="h-2 w-2 rounded-full bg-amber-400" />
-              <span className="text-xs text-white/50">Pausa</span>
+              <span className="text-xs text-muted-foreground">Pausa</span>
               <span className="text-sm font-bold text-amber-400 tabular-nums">{atendentesStats.pausa}</span>
             </div>
           </div>
@@ -952,19 +952,19 @@ export default function MonitoramentoPage() {
               </div>
 
               {/* Status tab pills */}
-              <div className="flex items-center rounded-lg bg-white/5 p-0.5 gap-0.5">
+              <div className="flex items-center rounded-lg bg-foreground/5 p-0.5 gap-0.5">
                 <button
                   onClick={() => setActiveTab('em-andamento')}
                   className={cn(
                     "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'em-andamento'
-                      ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-white border border-white/10 shadow-sm"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-white border border-foreground/10 shadow-sm"
+                      : "text-muted-foreground/80 hover:text-foreground/70"
                   )}
                 >
                   Em andamento
                   {ticketsEmAndamento.length > 0 && (
-                    <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-white/10 text-[10px] tabular-nums">
+                    <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-foreground/10 text-[10px] tabular-nums">
                       {ticketsEmAndamento.length}
                     </span>
                   )}
@@ -974,8 +974,8 @@ export default function MonitoramentoPage() {
                   className={cn(
                     "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'aguardando'
-                      ? "bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-white border border-white/10 shadow-sm"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-white border border-foreground/10 shadow-sm"
+                      : "text-muted-foreground/80 hover:text-foreground/70"
                   )}
                 >
                   Aguardando
@@ -990,8 +990,8 @@ export default function MonitoramentoPage() {
                   className={cn(
                     "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                     activeTab === 'atendentes'
-                      ? "bg-white/10 text-white border border-white/10 shadow-sm"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-foreground/10 text-white border border-foreground/10 shadow-sm"
+                      : "text-muted-foreground/80 hover:text-foreground/70"
                   )}
                 >
                   Atendentes
@@ -1006,8 +1006,8 @@ export default function MonitoramentoPage() {
                     setSetorFilter('all')
                     setSubsetorFilter('all')
                   }}>
-                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-white/10">
-                      <Tag className="h-3 w-3 mr-1 text-white/40" />
+                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-foreground/10">
+                      <Tag className="h-3 w-3 mr-1 text-muted-foreground/80" />
                       <SelectValue placeholder="Tags" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1025,8 +1025,8 @@ export default function MonitoramentoPage() {
                 )}
 
                 <Select value={setorFilter} onValueChange={setSetorFilter}>
-                  <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs bg-transparent border-white/10">
-                    <Building2 className="h-3 w-3 mr-1 text-white/40" />
+                  <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs bg-transparent border-foreground/10">
+                    <Building2 className="h-3 w-3 mr-1 text-muted-foreground/80" />
                     <SelectValue placeholder="Setor" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1039,7 +1039,7 @@ export default function MonitoramentoPage() {
 
                 {subsetoresDisponiveis.length > 0 && (
                   <Select value={subsetorFilter} onValueChange={setSubsetorFilter}>
-                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-white/10">
+                    <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs bg-transparent border-foreground/10">
                       <SelectValue placeholder="Subsetor" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1058,7 +1058,7 @@ export default function MonitoramentoPage() {
                       variant="outline"
                       size="sm"
                       className={cn(
-                        "h-8 gap-1.5 text-xs bg-transparent border-white/10",
+                        "h-8 gap-1.5 text-xs bg-transparent border-foreground/10",
                         atendenteFilter !== 'all' && "border-emerald-500/50 text-emerald-400"
                       )}
                     >
@@ -1122,7 +1122,7 @@ export default function MonitoramentoPage() {
                   </PopoverContent>
                 </Popover>
 
-                <Button variant="ghost" size="icon" onClick={() => mutate()} className="h-8 w-8 text-white/40 hover:text-white/70 lg:hidden">
+                <Button variant="ghost" size="icon" onClick={() => mutate()} className="h-8 w-8 text-muted-foreground/80 hover:text-foreground/70 lg:hidden">
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -1148,7 +1148,7 @@ export default function MonitoramentoPage() {
                   </div>
                 ) : ticketsEmAndamento.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                    <AlertCircle className="mb-3 h-10 w-10 text-white/20" />
+                    <AlertCircle className="mb-3 h-10 w-10 text-muted-foreground/40" />
                     <p className="text-sm">Nenhum atendimento em andamento</p>
                   </div>
                 ) : (
@@ -1160,20 +1160,20 @@ export default function MonitoramentoPage() {
                         key={ticket.id}
                         onClick={() => openConversation(ticket)}
                         className={cn(
-                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-white/[0.04] group cursor-pointer",
+                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-foreground/[0.04] group cursor-pointer",
                           aguardandoResposta && "border-l-2 border-l-yellow-500/60",
                           isSelected && "ring-1 ring-emerald-500/50 bg-emerald-500/[0.03]"
                         )}
                       >
                         {/* Row 1: ticket #, client, status, time */}
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-xs font-mono font-semibold text-white/70 tabular-nums shrink-0">
+                          <span className="text-xs font-mono font-semibold text-foreground/70 tabular-nums shrink-0">
                             {ticket.numero ? `#${ticket.numero}` : '--'}
                           </span>
-                          <span className="h-1 w-1 rounded-full bg-white/20 shrink-0" />
+                          <span className="h-1 w-1 rounded-full bg-foreground/20 shrink-0" />
                           <span className="text-sm font-medium text-white truncate">{ticket.contato}</span>
                           {ticket.telefone && (
-                            <span className="text-[11px] text-white/30 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
+                            <span className="text-[11px] text-muted-foreground/60 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
                           )}
                           <div className="ml-auto flex items-center gap-1.5 shrink-0">
                             {aguardandoResposta ? (
@@ -1182,36 +1182,36 @@ export default function MonitoramentoPage() {
                                 Sem resposta
                               </Badge>
                             ) : (
-                              <span className="text-[10px] text-white/30">1a: {ticket.tempoPrimeiraResposta || '--'}</span>
+                              <span className="text-[10px] text-muted-foreground/60">1a: {ticket.tempoPrimeiraResposta || '--'}</span>
                             )}
                           </div>
                         </div>
 
                         {/* Row 2: setor, agent, duration */}
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-white/40 truncate">
+                          <span className="text-muted-foreground/80 truncate">
                             {ticket.setor}
-                            {ticket.subsetor && <span className="text-white/20"> / {ticket.subsetor}</span>}
+                            {ticket.subsetor && <span className="text-muted-foreground/40"> / {ticket.subsetor}</span>}
                           </span>
-                          <span className="h-1 w-1 rounded-full bg-white/10 shrink-0" />
+                          <span className="h-1 w-1 rounded-full bg-foreground/10 shrink-0" />
                           {ticket.atendente ? (
-                            <span className="flex items-center gap-1 text-white/50 shrink-0">
+                            <span className="flex items-center gap-1 text-muted-foreground shrink-0">
                               <span className={cn(
                                 'h-1.5 w-1.5 rounded-full',
                                 ticket.colaboradores?.is_online && !ticket.colaboradores?.pausa_atual_id
                                   ? 'bg-emerald-500'
                                   : ticket.colaboradores?.pausa_atual_id
                                     ? 'bg-amber-500'
-                                    : 'bg-white/30'
+                                    : 'bg-foreground/30'
                               )} />
                               {ticket.atendente}
                             </span>
                           ) : (
-                            <span className="text-white/30">Sem atendente</span>
+                            <span className="text-muted-foreground/60">Sem atendente</span>
                           )}
                           <div className="ml-auto flex items-center gap-1 shrink-0">
-                            <Clock className="h-3 w-3 text-white/20" />
-                            <span className="text-[11px] font-mono font-medium text-white/60 tabular-nums">{ticket.tempoAtendimento}</span>
+                            <Clock className="h-3 w-3 text-muted-foreground/40" />
+                            <span className="text-[11px] font-mono font-medium text-foreground/60 tabular-nums">{ticket.tempoAtendimento}</span>
                           </div>
                         </div>
                       </button>
@@ -1238,7 +1238,7 @@ export default function MonitoramentoPage() {
                   </div>
                 ) : ticketsAguardando.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                    <AlertCircle className="mb-3 h-10 w-10 text-white/20" />
+                    <AlertCircle className="mb-3 h-10 w-10 text-muted-foreground/40" />
                     <p className="text-sm">Nenhum ticket aguardando</p>
                   </div>
                 ) : (
@@ -1249,24 +1249,24 @@ export default function MonitoramentoPage() {
                         key={ticket.id}
                         onClick={() => openConversation(ticket)}
                         className={cn(
-                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-white/[0.04] border-l-2 border-l-orange-500/40 cursor-pointer",
+                          "w-full text-left glass-card rounded-xl p-3 transition-all hover:bg-foreground/[0.04] border-l-2 border-l-orange-500/40 cursor-pointer",
                           isSelected && "ring-1 ring-orange-500/50 bg-orange-500/[0.03]"
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-xs font-mono font-semibold text-white/70 tabular-nums shrink-0">
+                          <span className="text-xs font-mono font-semibold text-foreground/70 tabular-nums shrink-0">
                             {ticket.numero ? `#${ticket.numero}` : '--'}
                           </span>
-                          <span className="h-1 w-1 rounded-full bg-white/20 shrink-0" />
+                          <span className="h-1 w-1 rounded-full bg-foreground/20 shrink-0" />
                           <span className="text-sm font-medium text-white truncate">{ticket.contato}</span>
                           {ticket.telefone && (
-                            <span className="text-[11px] text-white/30 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
+                            <span className="text-[11px] text-muted-foreground/60 hidden sm:inline shrink-0">{formatPhone(ticket.telefone)}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-white/40 truncate">
+                          <span className="text-muted-foreground/80 truncate">
                             {ticket.setor}
-                            {ticket.subsetor && <span className="text-white/20"> / {ticket.subsetor}</span>}
+                            {ticket.subsetor && <span className="text-muted-foreground/40"> / {ticket.subsetor}</span>}
                           </span>
                           <div className="ml-auto flex items-center gap-1 shrink-0">
                             <Clock className="h-3 w-3 text-orange-400/60" />
@@ -1300,7 +1300,7 @@ export default function MonitoramentoPage() {
                   </div>
                 ) : atendentesLista.length === 0 ? (
                   <div className="flex h-32 flex-col items-center justify-center text-muted-foreground">
-                    <AlertCircle className="mb-2 h-8 w-8 text-white/20" />
+                    <AlertCircle className="mb-2 h-8 w-8 text-muted-foreground/40" />
                     <p className="text-sm">{searchAtendente ? 'Nenhum atendente encontrado' : 'Nenhum atendente neste setor'}</p>
                   </div>
                 ) : (
@@ -1311,25 +1311,25 @@ export default function MonitoramentoPage() {
                       return (
                         <div
                           key={atendente.id}
-                          className="flex items-center gap-3 glass-card rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
+                          className="flex items-center gap-3 glass-card rounded-xl px-3 py-2.5 transition-colors hover:bg-foreground/[0.03]"
                         >
                           <span
                             className={cn(
                               'h-2.5 w-2.5 shrink-0 rounded-full',
-                              isOnline ? 'bg-emerald-500' : isPausa ? 'bg-amber-500' : 'bg-white/20'
+                              isOnline ? 'bg-emerald-500' : isPausa ? 'bg-amber-500' : 'bg-foreground/20'
                             )}
                           />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-white">{atendente.nome}</p>
                             <p className={cn(
                               'text-[11px]',
-                              isOnline ? 'text-emerald-400' : isPausa ? 'text-amber-400' : 'text-white/30'
+                              isOnline ? 'text-emerald-400' : isPausa ? 'text-amber-400' : 'text-muted-foreground/60'
                             )}>
                               {isOnline ? 'Online' : isPausa ? 'Em pausa' : 'Offline'}
                             </p>
                           </div>
                           {atendente.ticketsAtivos > 0 && (
-                            <Badge variant="secondary" className="shrink-0 text-[10px] bg-white/5 border-white/10 text-white/60">
+                            <Badge variant="secondary" className="shrink-0 text-[10px] bg-foreground/5 border-foreground/10 text-foreground/60">
                               {atendente.ticketsAtivos} {atendente.ticketsAtivos === 1 ? 'ticket' : 'tickets'}
                             </Badge>
                           )}
@@ -1346,31 +1346,31 @@ export default function MonitoramentoPage() {
         {/* ========== RIGHT PANEL — Conversation ========== */}
         {/* Desktop: inline panel */}
         <aside className={cn(
-          "hidden shrink-0 overflow-y-auto flex-col border-l border-white/5 bg-[#080b14]/60",
+          "hidden shrink-0 overflow-y-auto flex-col border-l border-foreground/5 bg-page-bg-alt",
           selectedTicket ? "lg:flex w-[380px]" : "lg:hidden"
         )}>
           {selectedTicket ? (
             <>
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 shrink-0">
+              <div className="flex items-center justify-between border-b border-foreground/5 px-4 py-3 shrink-0">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-white">Ticket #{selectedTicket.numero}</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-white/10 text-white/50">
+                    <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-foreground/10 text-muted-foreground">
                       {selectedTicket.status === 'em_atendimento' ? 'Em atendimento' : selectedTicket.status === 'aberto' ? 'Aberto' : selectedTicket.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-white/40 truncate mt-0.5">
+                  <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
                     {selectedTicket.contato} {selectedTicket.telefone ? `- ${formatPhone(selectedTicket.telefone)}` : ''} - {selectedTicket.setor}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={closeConversation} className="h-7 w-7 text-white/40 hover:text-white/70 shrink-0">
+                <Button variant="ghost" size="icon" onClick={closeConversation} className="h-7 w-7 text-muted-foreground/80 hover:text-foreground/70 shrink-0">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-white/5 shrink-0">
+              <div className="border-b border-foreground/5 shrink-0">
                 <div className="flex">
                   <button
                     onClick={() => setConversationTab('conversa')}
@@ -1378,7 +1378,7 @@ export default function MonitoramentoPage() {
                       "flex-1 px-4 py-2 text-xs font-medium border-b-2 transition-colors",
                       conversationTab === 'conversa'
                         ? "border-emerald-500 text-emerald-400"
-                        : "border-transparent text-white/40 hover:text-white/60"
+                        : "border-transparent text-muted-foreground/80 hover:text-foreground/60"
                     )}
                   >
                     <MessageCircle className="inline h-3 w-3 mr-1" />
@@ -1390,7 +1390,7 @@ export default function MonitoramentoPage() {
                       "flex-1 px-4 py-2 text-xs font-medium border-b-2 transition-colors",
                       conversationTab === 'historico'
                         ? "border-emerald-500 text-emerald-400"
-                        : "border-transparent text-white/40 hover:text-white/60"
+                        : "border-transparent text-muted-foreground/80 hover:text-foreground/60"
                     )}
                   >
                     <History className="inline h-3 w-3 mr-1" />
@@ -1401,12 +1401,12 @@ export default function MonitoramentoPage() {
 
               {/* Action Buttons */}
               {(selectedTicket.status === 'em_atendimento' || selectedTicket.status === 'aberto') && (
-                <div className="flex gap-2 border-b border-white/5 px-3 py-2 shrink-0">
+                <div className="flex gap-2 border-b border-foreground/5 px-3 py-2 shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={openTransferDialog}
-                    className="flex-1 gap-1 h-7 text-xs bg-transparent border-white/10 text-white/60 hover:text-white"
+                    className="flex-1 gap-1 h-7 text-xs bg-transparent border-foreground/10 text-foreground/60 hover:text-foreground"
                   >
                     <ArrowRightLeft className="h-3 w-3" />
                     Transferir
@@ -1429,10 +1429,10 @@ export default function MonitoramentoPage() {
                   <div className="p-3 space-y-2.5">
                     {loadingMessages ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-white/20" />
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
                       </div>
                     ) : conversationMessages.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                      <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/60">
                         <MessageCircle className="mb-2 h-8 w-8" />
                         <p className="text-xs">Nenhuma mensagem ainda</p>
                       </div>
@@ -1444,12 +1444,12 @@ export default function MonitoramentoPage() {
                               "flex items-center gap-2 px-2.5 py-1 rounded-lg border text-[10px] max-w-[90%]",
                               msg.conteudo.startsWith('Transferido')
                                 ? "bg-blue-950/30 border-blue-800/50 text-blue-300"
-                                : "bg-white/5 border-white/5 text-white/40"
+                                : "bg-foreground/5 border-foreground/5 text-muted-foreground/80"
                             )}>
                               {msg.conteudo.startsWith('Transferido') ? (
                                 <ArrowRightLeft className="h-3 w-3 shrink-0 text-blue-400" />
                               ) : (
-                                <Megaphone className="h-3 w-3 shrink-0 text-white/30" />
+                                <Megaphone className="h-3 w-3 shrink-0 text-muted-foreground/60" />
                               )}
                               <span>{msg.conteudo}</span>
                               <span className="shrink-0 ml-1 opacity-60">
@@ -1469,7 +1469,7 @@ export default function MonitoramentoPage() {
                               className={cn(
                                 "max-w-[80%] rounded-lg px-3 py-2 text-[13px]",
                                 msg.remetente === 'cliente'
-                                  ? "bg-white/5 text-white/80"
+                                  ? "bg-foreground/5 text-foreground/80"
                                   : msg.remetente === 'bot'
                                   ? "bg-blue-900/30 text-blue-200"
                                   : "bg-emerald-600/20 text-emerald-100 border border-emerald-500/10"
@@ -1494,19 +1494,19 @@ export default function MonitoramentoPage() {
                   <div className="p-3 space-y-2">
                     {loadingHistory ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-white/20" />
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
                       </div>
                     ) : ticketHistory.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                      <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/60">
                         <History className="mb-2 h-8 w-8" />
                         <p className="text-xs">Nenhum atendimento anterior</p>
                       </div>
                     ) : (
                       ticketHistory.map((ticket: any) => (
-                        <div key={ticket.id} className="border border-white/5 rounded-lg overflow-hidden">
+                        <div key={ticket.id} className="border border-foreground/5 rounded-lg overflow-hidden">
                           <button
                             onClick={() => loadHistoryMessages(ticket.id)}
-                            className="w-full px-3 py-2 text-left hover:bg-white/[0.03] transition-colors"
+                            className="w-full px-3 py-2 text-left hover:bg-foreground/[0.03] transition-colors"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -1516,15 +1516,15 @@ export default function MonitoramentoPage() {
                                 >
                                   {ticket.status === 'encerrado' ? 'Encerrado' : ticket.status === 'em_atendimento' ? 'Em atendimento' : 'Aberto'}
                                 </Badge>
-                                <span className="text-xs font-mono font-medium text-white/60">#{ticket.numero}</span>
+                                <span className="text-xs font-mono font-medium text-foreground/60">#{ticket.numero}</span>
                               </div>
-                              <span className="text-[10px] text-white/30">
+                              <span className="text-[10px] text-muted-foreground/60">
                                 {new Date(ticket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                                 {' '}
                                 {new Date(ticket.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-[11px] text-white/30">
+                            <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground/60">
                               <span>{ticket.setores?.nome || '-'}</span>
                               <span>-</span>
                               <span>{ticket.colaboradores?.nome || 'Sem atendente'}</span>
@@ -1532,13 +1532,13 @@ export default function MonitoramentoPage() {
                           </button>
 
                           {expandedHistory === ticket.id && (
-                            <div className="border-t border-white/5 bg-white/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                            <div className="border-t border-foreground/5 bg-foreground/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
                               {!historyMessages[ticket.id] ? (
                                 <div className="flex justify-center py-2">
-                                  <Loader2 className="h-4 w-4 animate-spin text-white/20" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/40" />
                                 </div>
                               ) : historyMessages[ticket.id].length === 0 ? (
-                                <p className="text-xs text-white/30 text-center py-2">Sem mensagens</p>
+                                <p className="text-xs text-muted-foreground/60 text-center py-2">Sem mensagens</p>
                               ) : (
                                 historyMessages[ticket.id].map((msg: any) => (
                                   msg.remetente === 'sistema' ? (
@@ -1547,7 +1547,7 @@ export default function MonitoramentoPage() {
                                         "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
                                         msg.conteudo.startsWith('Transferido')
                                           ? "bg-blue-950/30 text-blue-300"
-                                          : "bg-white/5 text-white/30"
+                                          : "bg-foreground/5 text-muted-foreground/60"
                                       )}>
                                         {msg.conteudo.startsWith('Transferido') ? (
                                           <ArrowRightLeft className="h-2.5 w-2.5 shrink-0" />
@@ -1572,7 +1572,7 @@ export default function MonitoramentoPage() {
                                         className={cn(
                                           "max-w-[80%] rounded px-2 py-1 text-[11px]",
                                           msg.remetente === 'cliente'
-                                            ? "bg-white/5 border border-white/5 text-white/70"
+                                            ? "bg-foreground/5 border border-foreground/5 text-foreground/70"
                                             : "bg-emerald-600/20 text-emerald-200"
                                         )}
                                       >
@@ -1595,7 +1595,7 @@ export default function MonitoramentoPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-white/20 px-6">
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/40 px-6">
               <MessageCircle className="h-12 w-12 mb-3" />
               <p className="text-sm font-medium">Selecione um ticket</p>
               <p className="text-xs text-white/10 mt-1 text-center">Clique em um ticket na lista para visualizar a conversa</p>
@@ -1605,27 +1605,27 @@ export default function MonitoramentoPage() {
 
         {/* Mobile: conversation overlay */}
         {selectedTicket && (
-          <div className="fixed inset-0 z-50 flex flex-col bg-[#06080f] lg:hidden">
+          <div className="fixed inset-0 z-50 flex flex-col bg-page-bg lg:hidden">
             {/* Mobile Header */}
-            <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 shrink-0">
+            <div className="flex items-center justify-between border-b border-foreground/5 px-4 py-3 shrink-0">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-white">Ticket #{selectedTicket.numero}</span>
-                  <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-white/10 text-white/50">
+                  <Badge variant="outline" className="text-[10px] px-1.5 h-5 border-foreground/10 text-muted-foreground">
                     {selectedTicket.status === 'em_atendimento' ? 'Em atendimento' : selectedTicket.status === 'aberto' ? 'Aberto' : selectedTicket.status}
                   </Badge>
                 </div>
-                <p className="text-xs text-white/40 truncate mt-0.5">
+                <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
                   {selectedTicket.contato} - {selectedTicket.setor}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={closeConversation} className="h-8 w-8 text-white/40 shrink-0">
+              <Button variant="ghost" size="icon" onClick={closeConversation} className="h-8 w-8 text-muted-foreground/80 shrink-0">
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
             {/* Mobile Tabs */}
-            <div className="border-b border-white/5 shrink-0">
+            <div className="border-b border-foreground/5 shrink-0">
               <div className="flex">
                 <button
                   onClick={() => setConversationTab('conversa')}
@@ -1633,7 +1633,7 @@ export default function MonitoramentoPage() {
                     "flex-1 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors",
                     conversationTab === 'conversa'
                       ? "border-emerald-500 text-emerald-400"
-                      : "border-transparent text-white/40 hover:text-white/60"
+                      : "border-transparent text-muted-foreground/80 hover:text-foreground/60"
                   )}
                 >
                   <MessageCircle className="inline h-3.5 w-3.5 mr-1" />
@@ -1645,7 +1645,7 @@ export default function MonitoramentoPage() {
                     "flex-1 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors",
                     conversationTab === 'historico'
                       ? "border-emerald-500 text-emerald-400"
-                      : "border-transparent text-white/40 hover:text-white/60"
+                      : "border-transparent text-muted-foreground/80 hover:text-foreground/60"
                   )}
                 >
                   <History className="inline h-3.5 w-3.5 mr-1" />
@@ -1656,12 +1656,12 @@ export default function MonitoramentoPage() {
 
             {/* Mobile Action Buttons */}
             {(selectedTicket.status === 'em_atendimento' || selectedTicket.status === 'aberto') && (
-              <div className="flex gap-2 border-b border-white/5 px-4 py-2 shrink-0">
+              <div className="flex gap-2 border-b border-foreground/5 px-4 py-2 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={openTransferDialog}
-                  className="flex-1 gap-1 bg-transparent border-white/10 text-white/60"
+                  className="flex-1 gap-1 bg-transparent border-foreground/10 text-foreground/60"
                 >
                   <ArrowRightLeft className="h-4 w-4" />
                   Transferir
@@ -1684,10 +1684,10 @@ export default function MonitoramentoPage() {
                 <div className="p-4 space-y-3">
                   {loadingMessages ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-white/20" />
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
                     </div>
                   ) : conversationMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/60">
                       <MessageCircle className="mb-2 h-8 w-8" />
                       <p>Nenhuma mensagem ainda</p>
                     </div>
@@ -1699,12 +1699,12 @@ export default function MonitoramentoPage() {
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] max-w-[90%]",
                             msg.conteudo.startsWith('Transferido')
                               ? "bg-blue-950/30 border-blue-800/50 text-blue-300"
-                              : "bg-white/5 border-white/5 text-white/40"
+                              : "bg-foreground/5 border-foreground/5 text-muted-foreground/80"
                           )}>
                             {msg.conteudo.startsWith('Transferido') ? (
                               <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                             ) : (
-                              <Megaphone className="h-3.5 w-3.5 shrink-0 text-white/30" />
+                              <Megaphone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                             )}
                             <span>{msg.conteudo}</span>
                             <span className="shrink-0 ml-1 opacity-60">
@@ -1724,7 +1724,7 @@ export default function MonitoramentoPage() {
                             className={cn(
                               "max-w-[80%] rounded-lg px-3 py-2 text-sm",
                               msg.remetente === 'cliente'
-                                ? "bg-white/5 text-white/80"
+                                ? "bg-foreground/5 text-foreground/80"
                                 : msg.remetente === 'bot'
                                 ? "bg-blue-900/30 text-blue-200"
                                 : "bg-emerald-600/20 text-emerald-100 border border-emerald-500/10"
@@ -1749,19 +1749,19 @@ export default function MonitoramentoPage() {
                 <div className="p-4 space-y-3">
                   {loadingHistory ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-white/20" />
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
                     </div>
                   ) : ticketHistory.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center text-white/30">
+                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/60">
                       <History className="mb-2 h-8 w-8" />
                       <p>Nenhum atendimento anterior</p>
                     </div>
                   ) : (
                     ticketHistory.map((ticket: any) => (
-                      <div key={ticket.id} className="border border-white/5 rounded-lg overflow-hidden">
+                      <div key={ticket.id} className="border border-foreground/5 rounded-lg overflow-hidden">
                         <button
                           onClick={() => loadHistoryMessages(ticket.id)}
-                          className="w-full px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+                          className="w-full px-3 py-2.5 text-left hover:bg-foreground/[0.03] transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -1771,15 +1771,15 @@ export default function MonitoramentoPage() {
                               >
                                 {ticket.status === 'encerrado' ? 'Encerrado' : ticket.status === 'em_atendimento' ? 'Em atendimento' : 'Aberto'}
                               </Badge>
-                              <span className="text-xs font-mono font-medium text-white/60">#{ticket.numero}</span>
+                              <span className="text-xs font-mono font-medium text-foreground/60">#{ticket.numero}</span>
                             </div>
-                            <span className="text-[10px] text-white/30">
+                            <span className="text-[10px] text-muted-foreground/60">
                               {new Date(ticket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                               {' '}
                               {new Date(ticket.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-white/30">
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground/60">
                             <span>{ticket.setores?.nome || '-'}</span>
                             <span>-</span>
                             <span>{ticket.colaboradores?.nome || 'Sem atendente'}</span>
@@ -1787,13 +1787,13 @@ export default function MonitoramentoPage() {
                         </button>
 
                         {expandedHistory === ticket.id && (
-                          <div className="border-t border-white/5 bg-white/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                          <div className="border-t border-foreground/5 bg-foreground/[0.02] px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
                             {!historyMessages[ticket.id] ? (
                               <div className="flex justify-center py-2">
-                                <Loader2 className="h-4 w-4 animate-spin text-white/20" />
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/40" />
                               </div>
                             ) : historyMessages[ticket.id].length === 0 ? (
-                              <p className="text-xs text-white/30 text-center py-2">Sem mensagens</p>
+                              <p className="text-xs text-muted-foreground/60 text-center py-2">Sem mensagens</p>
                             ) : (
                               historyMessages[ticket.id].map((msg: any) => (
                                 msg.remetente === 'sistema' ? (
@@ -1802,7 +1802,7 @@ export default function MonitoramentoPage() {
                                       "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
                                       msg.conteudo.startsWith('Transferido')
                                         ? "bg-blue-950/30 text-blue-300"
-                                        : "bg-white/5 text-white/30"
+                                        : "bg-foreground/5 text-muted-foreground/60"
                                     )}>
                                       {msg.conteudo.startsWith('Transferido') ? (
                                         <ArrowRightLeft className="h-2.5 w-2.5 shrink-0" />
@@ -1827,7 +1827,7 @@ export default function MonitoramentoPage() {
                                       className={cn(
                                         "max-w-[80%] rounded px-2 py-1 text-[11px]",
                                         msg.remetente === 'cliente'
-                                          ? "bg-white/5 border border-white/5 text-white/70"
+                                          ? "bg-foreground/5 border border-foreground/5 text-foreground/70"
                                           : "bg-emerald-600/20 text-emerald-200"
                                       )}
                                     >
@@ -1856,7 +1856,7 @@ export default function MonitoramentoPage() {
 
       {/* Encerrar Dialog */}
       <AlertDialog open={encerrarDialogOpen} onOpenChange={setEncerrarDialogOpen}>
-        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
+        <AlertDialogContent className="bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Encerrar ticket?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1877,7 +1877,7 @@ export default function MonitoramentoPage() {
 
       {/* Transfer Dialog */}
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5" />

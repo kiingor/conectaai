@@ -395,17 +395,17 @@ export default function MetricasPage() {
       {/* Header: Title left, filters right — one compact row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
             <Ticket className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Métricas</h1>
-            <p className="text-sm text-white/40">Indicadores de desempenho da operação</p>
+            <p className="text-sm text-muted-foreground/80">Indicadores de desempenho da operação</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Select value={setorFilter} onValueChange={setSetorFilter}>
-            <SelectTrigger className="w-48 glass-input rounded-xl text-white/70 h-9 text-sm">
+            <SelectTrigger className="w-48 glass-input rounded-xl text-foreground/70 h-9 text-sm">
               <SelectValue placeholder="Todos os setores" />
             </SelectTrigger>
             <SelectContent>
@@ -447,11 +447,11 @@ export default function MetricasPage() {
                 </div>
                 {/* Text content */}
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-white/50 block">{metric.title}</span>
+                  <span className="text-sm font-medium text-muted-foreground block">{metric.title}</span>
                   <div className={`text-3xl font-bold mt-0.5 ${
                     isAmber ? 'text-amber-400' : 'brand-gradient-text'
                   }`}>{metric.value}</div>
-                  <p className="text-xs text-white/30 mt-0.5">{metric.description}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">{metric.description}</p>
                 </div>
                 {/* Subtle accent bar on right edge */}
                 <div className={`w-1 h-14 rounded-full shrink-0 ${
@@ -544,7 +544,7 @@ export default function MetricasPage() {
                   <CardDescription>Distribuição por departamento</CardDescription>
                 </div>
                 <Select value={chartSetorFilter} onValueChange={(v) => { setChartSetorFilter(v); setSetorPage(0) }}>
-                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
+                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-foreground/70">
                     <SelectValue placeholder="Filtrar setor" />
                   </SelectTrigger>
                   <SelectContent>
@@ -596,8 +596,8 @@ export default function MetricasPage() {
                   </ChartContainer>
                   {/* Pagination */}
                   {filteredTicketsBySetor.length > ITEMS_PER_PAGE && (
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                      <span className="text-xs text-white/40">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-foreground/5">
+                      <span className="text-xs text-muted-foreground/80">
                         {setorPage * ITEMS_PER_PAGE + 1}-{Math.min((setorPage + 1) * ITEMS_PER_PAGE, filteredTicketsBySetor.length)} de {filteredTicketsBySetor.length}
                       </span>
                       <div className="flex items-center gap-1">
@@ -610,7 +610,7 @@ export default function MetricasPage() {
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="text-xs text-white/40 px-2">
+                        <span className="text-xs text-muted-foreground/80 px-2">
                           {setorPage + 1}/{setorTotalPages}
                         </span>
                         <Button
@@ -627,7 +627,7 @@ export default function MetricasPage() {
                   )}
                 </>
               ) : (
-                <div className="flex h-[400px] items-center justify-center text-white/30">
+                <div className="flex h-[400px] items-center justify-center text-muted-foreground/60">
                   Nenhum dado disponível
                 </div>
               )}
@@ -649,7 +649,7 @@ export default function MetricasPage() {
                   <CardDescription>Tickets encerrados por colaborador</CardDescription>
                 </div>
                 <Select value={chartColaboradorFilter} onValueChange={(v) => { setChartColaboradorFilter(v); setColaboradorPage(0) }}>
-                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-white/70">
+                  <SelectTrigger className="w-44 h-8 text-xs glass-input rounded-xl text-foreground/70">
                     <SelectValue placeholder="Filtrar colaborador" />
                   </SelectTrigger>
                   <SelectContent>
@@ -701,8 +701,8 @@ export default function MetricasPage() {
                   </ChartContainer>
                   {/* Pagination */}
                   {filteredTicketsByColaborador.length > ITEMS_PER_PAGE && (
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                      <span className="text-xs text-white/40">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-foreground/5">
+                      <span className="text-xs text-muted-foreground/80">
                         {colaboradorPage * ITEMS_PER_PAGE + 1}-{Math.min((colaboradorPage + 1) * ITEMS_PER_PAGE, filteredTicketsByColaborador.length)} de {filteredTicketsByColaborador.length}
                       </span>
                       <div className="flex items-center gap-1">
@@ -715,7 +715,7 @@ export default function MetricasPage() {
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="text-xs text-white/40 px-2">
+                        <span className="text-xs text-muted-foreground/80 px-2">
                           {colaboradorPage + 1}/{colaboradorTotalPages}
                         </span>
                         <Button
@@ -732,7 +732,7 @@ export default function MetricasPage() {
                   )}
                 </>
               ) : (
-                <div className="flex h-[400px] items-center justify-center text-white/30">
+                <div className="flex h-[400px] items-center justify-center text-muted-foreground/60">
                   Nenhum dado disponível
                 </div>
               )}

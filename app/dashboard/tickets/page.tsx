@@ -146,7 +146,7 @@ const statusLabels = {
 }
 
 const prioridadeColors = {
-  baixa: 'glass-badge bg-white/5 text-white/60 border-white/10',
+  baixa: 'glass-badge bg-foreground/5 text-foreground/60 border-foreground/10',
   media: 'glass-badge bg-orange-500/15 text-orange-400 border-orange-500/20',
   alta: 'glass-badge bg-red-500/15 text-red-400 border-red-500/20',
 }
@@ -635,16 +635,16 @@ export default function TicketsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
             <Ticket className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Tickets</h1>
-            <p className="text-sm text-white/40">Gerencie todos os tickets de atendimento</p>
+            <p className="text-sm text-muted-foreground/80">Gerencie todos os tickets de atendimento</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="glass-badge bg-white/5 text-white/50 border-white/10 px-2.5 py-1 rounded-full text-xs">
+          <span className="glass-badge bg-foreground/5 text-muted-foreground border-foreground/10 px-2.5 py-1 rounded-full text-xs">
             {tickets.length} tickets
           </span>
           <Button
@@ -661,19 +661,19 @@ export default function TicketsPage() {
       <div className="glass-card rounded-2xl p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Buscar por cliente, telefone ou assunto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 glass-input rounded-xl text-white/80 placeholder:text-white/25"
+              className="pl-9 glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="glass-input rounded-xl text-white/70">
+            <SelectTrigger className="glass-input rounded-xl text-foreground/70">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0e1019] border-white/8">
+            <SelectContent className="bg-page-bg-alt border-foreground/8">
               <SelectItem value="all">Todos os Status</SelectItem>
               <SelectItem value="aberto">Aberto</SelectItem>
               <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
@@ -681,10 +681,10 @@ export default function TicketsPage() {
             </SelectContent>
           </Select>
           <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-            <SelectTrigger className="glass-input rounded-xl text-white/70">
+            <SelectTrigger className="glass-input rounded-xl text-foreground/70">
               <SelectValue placeholder="Prioridade" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0e1019] border-white/8">
+            <SelectContent className="bg-page-bg-alt border-foreground/8">
               <SelectItem value="all">Todas as Prioridades</SelectItem>
               <SelectItem value="baixa">Baixa</SelectItem>
               <SelectItem value="media">Media</SelectItem>
@@ -692,10 +692,10 @@ export default function TicketsPage() {
             </SelectContent>
           </Select>
           <Select value={setorFilter} onValueChange={setSetorFilter}>
-            <SelectTrigger className="glass-input rounded-xl text-white/70">
+            <SelectTrigger className="glass-input rounded-xl text-foreground/70">
               <SelectValue placeholder="Setor" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0e1019] border-white/8">
+            <SelectContent className="bg-page-bg-alt border-foreground/8">
               <SelectItem value="all">Todos os Setores</SelectItem>
               {setores.map((setor) => (
                 <SelectItem key={setor.id} value={setor.id}>
@@ -722,7 +722,7 @@ export default function TicketsPage() {
             </div>
           ))
         ) : tickets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-white/30">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60">
             <Ticket className="mb-3 h-10 w-10" />
             <p className="text-sm">Nenhum ticket encontrado</p>
           </div>
@@ -744,16 +744,16 @@ export default function TicketsPage() {
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ delay: index * 0.03, duration: 0.3 }}
                   className={cn(
-                    'glass-card rounded-2xl border-l-2 transition-all duration-200 hover:bg-white/[0.03] group',
+                    'glass-card rounded-2xl border-l-2 transition-all duration-200 hover:bg-foreground/[0.03] group',
                     borderColor
                   )}
                 >
                   {/* Main row */}
                   <div className="p-4 flex items-center gap-4">
                     {/* Ticket # badge */}
-                    <div className="h-9 min-w-[3.5rem] rounded-lg bg-white/[0.04] border border-white/8 flex items-center justify-center shrink-0">
-                      <Hash className="h-3 w-3 text-white/30 mr-0.5" />
-                      <span className="text-xs font-mono text-white/50">
+                    <div className="h-9 min-w-[3.5rem] rounded-lg bg-foreground/[0.04] border border-foreground/8 flex items-center justify-center shrink-0">
+                      <Hash className="h-3 w-3 text-muted-foreground/60 mr-0.5" />
+                      <span className="text-xs font-mono text-muted-foreground">
                         {ticket.id.slice(0, 6)}
                       </span>
                     </div>
@@ -761,18 +761,18 @@ export default function TicketsPage() {
                     {/* Client info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-white/90 truncate">
+                        <span className="font-medium text-foreground/90 truncate">
                           {ticket.cliente?.nome || 'N/A'}
                         </span>
                         {ticket.assunto && (
-                          <span className="hidden lg:block text-xs text-white/30 truncate max-w-[200px]">
+                          <span className="hidden lg:block text-xs text-muted-foreground/60 truncate max-w-[200px]">
                             - {ticket.assunto}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Phone className="h-3 w-3 text-white/25" />
-                        <span className="text-xs text-white/35">{ticket.cliente?.telefone || '-'}</span>
+                        <Phone className="h-3 w-3 text-muted-foreground/50" />
+                        <span className="text-xs text-muted-foreground/70">{ticket.cliente?.telefone || '-'}</span>
                       </div>
                     </div>
 
@@ -788,32 +788,32 @@ export default function TicketsPage() {
 
                     {/* Sector */}
                     <div className="hidden md:block text-right shrink-0 min-w-[80px]">
-                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">Setor</span>
-                      <span className="text-xs text-white/50">{ticket.setor?.nome || '-'}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block">Setor</span>
+                      <span className="text-xs text-muted-foreground">{ticket.setor?.nome || '-'}</span>
                     </div>
 
                     {/* Agent */}
                     <div className="hidden lg:block text-right shrink-0 min-w-[80px]">
-                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">Atendente</span>
-                      <span className="text-xs text-white/50">{ticket.colaborador?.nome || '-'}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block">Atendente</span>
+                      <span className="text-xs text-muted-foreground">{ticket.colaborador?.nome || '-'}</span>
                     </div>
 
                     {/* 1st response */}
                     <div className="hidden xl:block text-right shrink-0 min-w-[70px]">
-                      <span className="text-[10px] uppercase tracking-wider text-white/25 block">1a Resp.</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block">1a Resp.</span>
                       {ticket.primeira_resposta_em ? (
                         <span className="text-emerald-400 font-mono text-xs font-medium">
                           {formatTimeDiff(ticket.criado_em, ticket.primeira_resposta_em)}
                         </span>
                       ) : ticket.status === 'encerrado' ? (
-                        <span className="text-white/25 text-xs">-</span>
+                        <span className="text-muted-foreground/50 text-xs">-</span>
                       ) : (
                         <LiveTimer startDate={ticket.criado_em} />
                       )}
                     </div>
 
                     {/* Date */}
-                    <span className="hidden sm:block text-xs text-white/35 shrink-0">
+                    <span className="hidden sm:block text-xs text-muted-foreground/70 shrink-0">
                       {format(new Date(ticket.criado_em || ticket.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                     </span>
 
@@ -822,7 +822,7 @@ export default function TicketsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                        className="h-8 w-8 text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5"
                         onClick={() => openDetailsModal(ticket)}
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -830,7 +830,7 @@ export default function TicketsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/5"
+                        className="h-8 w-8 text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5"
                         onClick={() => toggleExpand(ticket.id)}
                       >
                         {isExpanded ? (
@@ -852,23 +852,23 @@ export default function TicketsPage() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-0 border-t border-white/6 mt-0">
+                        <div className="px-4 pb-4 pt-0 border-t border-foreground/6 mt-0">
                           <div className="pt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <div className="space-y-1">
-                              <span className="text-[10px] uppercase tracking-wider text-white/30">Canal</span>
-                              <p className="text-sm text-white/60 capitalize">{ticket.canal}</p>
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Canal</span>
+                              <p className="text-sm text-foreground/60 capitalize">{ticket.canal}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[10px] uppercase tracking-wider text-white/30">Assunto</span>
-                              <p className="text-sm text-white/60">{ticket.assunto || '-'}</p>
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Assunto</span>
+                              <p className="text-sm text-foreground/60">{ticket.assunto || '-'}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[10px] uppercase tracking-wider text-white/30">Setor</span>
-                              <p className="text-sm text-white/60">{ticket.setor?.nome || 'Nao atribuido'}</p>
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Setor</span>
+                              <p className="text-sm text-foreground/60">{ticket.setor?.nome || 'Nao atribuido'}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[10px] uppercase tracking-wider text-white/30">Atendente</span>
-                              <p className="text-sm text-white/60">{ticket.colaborador?.nome || 'Nenhum'}</p>
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Atendente</span>
+                              <p className="text-sm text-foreground/60">{ticket.colaborador?.nome || 'Nenhum'}</p>
                             </div>
                           </div>
                           <div className="flex gap-2 mt-4">
@@ -876,7 +876,7 @@ export default function TicketsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => openDetailsModal(ticket)}
-                              className="border-white/10 text-white/50 hover:bg-white/5 hover:text-white text-xs"
+                              className="border-foreground/10 text-muted-foreground hover:bg-foreground/5 hover:text-foreground text-xs"
                             >
                               <Eye className="mr-1 h-3 w-3" />
                               Ver detalhes completos
@@ -895,7 +895,7 @@ export default function TicketsPage() {
 
       {/* Create Ticket Modal */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-[500px] bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <Plus className="h-5 w-5 text-emerald-400" />
@@ -904,15 +904,15 @@ export default function TicketsPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-white/70">Cliente *</Label>
+              <Label className="text-foreground/70">Cliente *</Label>
               <Select
                 value={createFormData.cliente_id}
                 onValueChange={(v) => setCreateFormData({ ...createFormData, cliente_id: v })}
               >
-                <SelectTrigger className="glass-input rounded-xl text-white/80">
+                <SelectTrigger className="glass-input rounded-xl text-foreground/80">
                   <SelectValue placeholder="Selecione um cliente" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0e1019] border-white/8">
+                <SelectContent className="bg-page-bg-alt border-foreground/8">
                   {clientes.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.nome} - {c.telefone}
@@ -922,15 +922,15 @@ export default function TicketsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-white/70">Setor</Label>
+              <Label className="text-foreground/70">Setor</Label>
               <Select
                 value={createFormData.setor_id}
                 onValueChange={(v) => setCreateFormData({ ...createFormData, setor_id: v })}
               >
-                <SelectTrigger className="glass-input rounded-xl text-white/80">
+                <SelectTrigger className="glass-input rounded-xl text-foreground/80">
                   <SelectValue placeholder="Selecione um setor" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0e1019] border-white/8">
+                <SelectContent className="bg-page-bg-alt border-foreground/8">
                   {setores.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.nome}
@@ -941,7 +941,7 @@ export default function TicketsPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-white/70">Prioridade</Label>
+                <Label className="text-foreground/70">Prioridade</Label>
                 <Select
                   value={createFormData.prioridade}
                   onValueChange={(v) =>
@@ -951,10 +951,10 @@ export default function TicketsPage() {
                     })
                   }
                 >
-                  <SelectTrigger className="glass-input rounded-xl text-white/80">
+                  <SelectTrigger className="glass-input rounded-xl text-foreground/80">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#0e1019] border-white/8">
+                  <SelectContent className="bg-page-bg-alt border-foreground/8">
                     <SelectItem value="baixa">Baixa</SelectItem>
                     <SelectItem value="media">Media</SelectItem>
                     <SelectItem value="alta">Alta</SelectItem>
@@ -962,15 +962,15 @@ export default function TicketsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-white/70">Canal</Label>
+                <Label className="text-foreground/70">Canal</Label>
                 <Select
                   value={createFormData.canal}
                   onValueChange={(v) => setCreateFormData({ ...createFormData, canal: v })}
                 >
-                  <SelectTrigger className="glass-input rounded-xl text-white/80">
+                  <SelectTrigger className="glass-input rounded-xl text-foreground/80">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#0e1019] border-white/8">
+                  <SelectContent className="bg-page-bg-alt border-foreground/8">
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
                     <SelectItem value="instagram">Instagram</SelectItem>
                     <SelectItem value="email">Email</SelectItem>
@@ -980,17 +980,17 @@ export default function TicketsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-white/70">Assunto</Label>
+              <Label className="text-foreground/70">Assunto</Label>
               <Input
                 value={createFormData.assunto}
                 onChange={(e) => setCreateFormData({ ...createFormData, assunto: e.target.value })}
                 placeholder="Descricao breve do ticket"
-                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
+                className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)} className="border-white/10 text-white/60 hover:bg-white/5">
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)} className="border-foreground/10 text-foreground/60 hover:bg-foreground/5">
               Cancelar
             </Button>
             <Button
@@ -1007,7 +1007,7 @@ export default function TicketsPage() {
 
       {/* Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[700px] bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-[700px] bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-emerald-400" />
@@ -1210,7 +1210,7 @@ export default function TicketsPage() {
           setTransferAtendentes([])
         }
       }}>
-        <DialogContent className="sm:max-w-[480px] bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-[480px] bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <ArrowRight className="h-5 w-5 text-emerald-400" />
@@ -1327,7 +1327,7 @@ export default function TicketsPage() {
 
       {/* Observation Modal */}
       <Dialog open={observationModalOpen} onOpenChange={setObservationModalOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-[400px] bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <MessageSquare className="h-5 w-5 text-emerald-400" />

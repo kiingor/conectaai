@@ -278,8 +278,8 @@ export default function WorkdeskLayout({
 
   if (loading) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[#06080f]">
-        <div className="flex items-center gap-3 text-white/50">
+      <div className="flex min-h-svh items-center justify-center bg-page-bg">
+        <div className="flex items-center gap-3 text-muted-foreground">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           <span className="text-sm">Carregando...</span>
         </div>
@@ -296,7 +296,7 @@ export default function WorkdeskLayout({
     const orgParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('org') : null
     router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[#06080f]">
+      <div className="flex min-h-svh items-center justify-center bg-page-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
       </div>
     )
@@ -304,10 +304,10 @@ export default function WorkdeskLayout({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-svh bg-[#06080f] ambient-glow">
+      <div className="min-h-svh bg-page-bg ambient-glow">
 
         {/* ===== Desktop: Slim vertical icon bar (hidden on mobile) ===== */}
-        <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex w-[60px] flex-col items-center py-4 bg-[#06080f]/80 backdrop-blur-xl border-r border-white/[0.06]">
+        <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex w-[60px] flex-col items-center py-4 bg-page-bg/80 backdrop-blur-xl border-r border-foreground/[0.06]">
 
           {/* Logo icon at top */}
           <Link href="/workdesk" className="mb-6">
@@ -317,7 +317,7 @@ export default function WorkdeskLayout({
                   <MessageCircle className="h-5 w-5 text-white" />
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right" className="glass-dropdown border-white/8 text-white/80">
+              <TooltipContent side="right" className="glass-dropdown border-foreground/8 text-foreground/80">
                 ConectaAI
               </TooltipContent>
             </Tooltip>
@@ -332,13 +332,13 @@ export default function WorkdeskLayout({
                   className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
                     pathname === '/workdesk'
                       ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
-                      : 'text-white/30 hover:text-white/60 hover:bg-white/5'
+                      : 'text-muted-foreground/60 hover:text-foreground/60 hover:bg-foreground/5'
                   }`}
                 >
                   <Ticket className="h-5 w-5" />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" className="glass-dropdown border-white/8 text-white/80">
+              <TooltipContent side="right" className="glass-dropdown border-foreground/8 text-foreground/80">
                 Meus Tickets
               </TooltipContent>
             </Tooltip>
@@ -349,25 +349,25 @@ export default function WorkdeskLayout({
             {/* User avatar with dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-white/5 mt-1">
-                  <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-                    <User className="h-4 w-4 text-white/50" />
-                    <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f] ${colaborador.is_online ? 'status-dot-online' : 'bg-white/25'}`} />
+                <button className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-foreground/5 mt-1">
+                  <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-foreground/5 ring-1 ring-foreground/10">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f] ${colaborador.is_online ? 'status-dot-online' : 'bg-muted-foreground/50'}`} />
                   </div>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-64 glass-dropdown rounded-2xl border-0 p-1">
                 <div className="px-3 py-2.5">
-                  <p className="text-sm font-semibold text-white/90">{colaborador.nome}</p>
-                  <p className="text-xs text-white/40">{colaborador.email}</p>
+                  <p className="text-sm font-semibold text-foreground/90">{colaborador.nome}</p>
+                  <p className="text-xs text-muted-foreground/80">{colaborador.email}</p>
                 </div>
 
-                <DropdownMenuSeparator className="mx-2 bg-white/6" />
+                <DropdownMenuSeparator className="mx-2 bg-foreground/6" />
 
 
                 <DropdownMenuItem
                   onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
-                  className="rounded-lg mx-1 text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/5"
+                  className="rounded-lg mx-1 text-foreground/70 hover:text-foreground hover:bg-foreground/5 focus:bg-foreground/5"
                 >
                   <KeyRound className="mr-2 h-4 w-4" />
                   Alterar Senha
@@ -383,13 +383,13 @@ export default function WorkdeskLayout({
         </aside>
 
         {/* ===== Mobile: Top bar with hamburger (hidden on desktop) ===== */}
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 bg-[#06080f]/80 backdrop-blur-xl border-b border-white/[0.06] lg:hidden">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 bg-page-bg/80 backdrop-blur-xl border-b border-foreground/[0.06] lg:hidden">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(true)}
-              className="text-white/40 hover:text-white/60 hover:bg-white/5 rounded-xl h-9 w-9"
+              className="text-muted-foreground/80 hover:text-foreground/60 hover:bg-foreground/5 rounded-xl h-9 w-9"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -428,9 +428,9 @@ export default function WorkdeskLayout({
 
         {/* Dialog -- Alterar Senha */}
         <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
-          <DialogContent className="sm:max-w-md glass-dropdown border-white/8 bg-[#0e101a]/95">
+          <DialogContent className="sm:max-w-md glass-dropdown border-foreground/8 bg-page-bg-alt/95">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-white/90">
+              <DialogTitle className="flex items-center gap-2 text-foreground/90">
                 <KeyRound className="h-4 w-4 text-emerald-400" />
                 Alterar Senha
               </DialogTitle>
@@ -438,7 +438,7 @@ export default function WorkdeskLayout({
 
             <div className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <Label htmlFor="wk-senha-atual" className="text-white/60 text-xs">Senha atual</Label>
+                <Label htmlFor="wk-senha-atual" className="text-foreground/60 text-xs">Senha atual</Label>
                 <Input
                   id="wk-senha-atual"
                   type="password"
@@ -446,11 +446,11 @@ export default function WorkdeskLayout({
                   value={senhaAtual}
                   onChange={(e) => setSenhaAtual(e.target.value)}
                   disabled={senhaLoading}
-                  className="glass-input text-white/90 placeholder:text-white/20"
+                  className="glass-input text-foreground/90 placeholder:text-muted-foreground/40"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="wk-nova-senha" className="text-white/60 text-xs">Nova senha</Label>
+                <Label htmlFor="wk-nova-senha" className="text-foreground/60 text-xs">Nova senha</Label>
                 <Input
                   id="wk-nova-senha"
                   type="password"
@@ -458,11 +458,11 @@ export default function WorkdeskLayout({
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   disabled={senhaLoading}
-                  className="glass-input text-white/90 placeholder:text-white/20"
+                  className="glass-input text-foreground/90 placeholder:text-muted-foreground/40"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="wk-confirmar-senha" className="text-white/60 text-xs">Confirmar nova senha</Label>
+                <Label htmlFor="wk-confirmar-senha" className="text-foreground/60 text-xs">Confirmar nova senha</Label>
                 <Input
                   id="wk-confirmar-senha"
                   type="password"
@@ -471,7 +471,7 @@ export default function WorkdeskLayout({
                   onChange={(e) => setConfirmarSenha(e.target.value)}
                   disabled={senhaLoading}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAlterarSenha() }}
-                  className="glass-input text-white/90 placeholder:text-white/20"
+                  className="glass-input text-foreground/90 placeholder:text-muted-foreground/40"
                 />
               </div>
               {senhaError && (
@@ -484,7 +484,7 @@ export default function WorkdeskLayout({
                 variant="outline"
                 onClick={() => setSenhaDialogOpen(false)}
                 disabled={senhaLoading}
-                className="border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80"
+                className="border-foreground/10 text-foreground/60 hover:bg-foreground/5 hover:text-foreground/80"
               >
                 Cancelar
               </Button>
@@ -498,14 +498,14 @@ export default function WorkdeskLayout({
         {/* Page content area -- offset by vertical bar width on desktop */}
         <div className="relative z-10 lg:ml-[60px]">
           {/* Desktop header bar */}
-          <header className="sticky top-0 z-40 hidden lg:flex h-14 items-center justify-between px-6 bg-[#06080f]/80 backdrop-blur-xl border-b border-white/[0.06]">
+          <header className="sticky top-0 z-40 hidden lg:flex h-14 items-center justify-between px-6 bg-page-bg/80 backdrop-blur-xl border-b border-foreground/[0.06]">
             <div className="flex items-center gap-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg brand-gradient">
                 <Zap className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="text-sm font-semibold text-white/80">WorkDesk</span>
-              <span className="text-white/15">|</span>
-              <span className="text-sm text-white/40">{colaborador.nome}</span>
+              <span className="text-sm font-semibold text-foreground/80">WorkDesk</span>
+              <span className="text-muted-foreground/30">|</span>
+              <span className="text-sm text-muted-foreground/80">{colaborador.nome}</span>
             </div>
             <div className="flex items-center gap-2">
               <DisponibilidadePanel

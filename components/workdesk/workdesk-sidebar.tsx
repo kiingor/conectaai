@@ -62,7 +62,7 @@ function MobileDrawerContent({
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#06080f]">
+    <div className="flex h-full flex-col bg-page-bg">
       {/* Header with logo and close */}
       <div className="flex h-16 items-center justify-between px-5">
         <Link href="/workdesk" className="flex items-center gap-3" onClick={onClose}>
@@ -75,7 +75,7 @@ function MobileDrawerContent({
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="text-white/30 hover:text-white/50 hover:bg-white/5 rounded-full h-8 w-8"
+          className="text-muted-foreground/60 hover:text-muted-foreground hover:bg-foreground/5 rounded-full h-8 w-8"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Fechar menu</span>
@@ -84,18 +84,18 @@ function MobileDrawerContent({
 
       {/* User info card */}
       {colaboradorNome && (
-        <div className="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-white/[0.03] p-3 border border-white/[0.06]">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-            <User className="h-4.5 w-4.5 text-white/50" />
+        <div className="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-foreground/[0.03] p-3 border border-foreground/[0.06]">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-foreground/5 ring-1 ring-foreground/10">
+            <User className="h-4.5 w-4.5 text-muted-foreground" />
             <div className={cn(
               'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#06080f]',
-              isOnline ? 'status-dot-online' : 'bg-white/25'
+              isOnline ? 'status-dot-online' : 'bg-muted-foreground/50'
             )} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-white/80 truncate">{colaboradorNome}</p>
+            <p className="text-sm font-medium text-foreground/80 truncate">{colaboradorNome}</p>
             {colaboradorEmail && (
-              <p className="text-[11px] text-white/30 truncate">{colaboradorEmail}</p>
+              <p className="text-[11px] text-muted-foreground/60 truncate">{colaboradorEmail}</p>
             )}
           </div>
         </div>
@@ -103,7 +103,7 @@ function MobileDrawerContent({
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-1">
-        <p className="px-3 pb-1.5 text-[10px] font-semibold text-white/20 uppercase tracking-widest">Menu</p>
+        <p className="px-3 pb-1.5 text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Menu</p>
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -115,7 +115,7 @@ function MobileDrawerContent({
                 'group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all',
                 isActive
                   ? 'glass-nav-active text-emerald-400'
-                  : 'text-white/40 hover:text-white/60 hover:bg-white/[0.03]'
+                  : 'text-muted-foreground/80 hover:text-foreground/60 hover:bg-foreground/[0.03]'
               )}
             >
               {isActive && (
@@ -127,7 +127,7 @@ function MobileDrawerContent({
               )}
               <item.icon className={cn(
                 'relative z-10 h-4.5 w-4.5 transition-colors',
-                isActive ? 'text-emerald-400' : 'text-white/30'
+                isActive ? 'text-emerald-400' : 'text-muted-foreground/60'
               )} />
               <span className="relative z-10">{item.name}</span>
             </Link>
@@ -138,8 +138,8 @@ function MobileDrawerContent({
       {/* Bottom section: status + logout */}
       <div className="p-4 space-y-3">
         {/* Status panel */}
-        <div className="rounded-xl bg-white/[0.03] p-3 border border-white/[0.06]">
-          <p className="text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-2.5">Status</p>
+        <div className="rounded-xl bg-foreground/[0.03] p-3 border border-foreground/[0.06]">
+          <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest mb-2.5">Status</p>
           <DisponibilidadePanel
             colaboradorId={colaboradorId}
             isOnline={isOnline}
@@ -176,7 +176,7 @@ export function WorkdeskSidebar({
     <>
       {/* Mobile-only drawer (desktop uses vertical icon bar in layout) */}
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="left" className="w-72 p-0 bg-[#06080f] border-r border-white/[0.06]">
+        <SheetContent side="left" className="w-72 p-0 bg-page-bg border-r border-foreground/[0.06]">
           <SheetTitle className="sr-only">Menu de navegacao</SheetTitle>
           <MobileDrawerContent
             onClose={() => onOpenChange(false)}

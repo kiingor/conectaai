@@ -74,7 +74,7 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
           collapsed && 'justify-center px-0',
           isActive
             ? 'text-white'
-            : 'text-white/45 glass-nav-hover hover:text-white/80',
+            : 'text-muted-foreground glass-nav-hover hover:text-foreground/80',
           isLoading && 'opacity-70'
         )}
       >
@@ -91,7 +91,7 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
             'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
             isActive
               ? 'bg-emerald-500/15 text-emerald-400'
-              : 'text-white/40 group-hover/item:text-white/70'
+              : 'text-muted-foreground/80 group-hover/item:text-foreground/70'
           )}
         >
           {isLoading ? (
@@ -129,7 +129,7 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
               <span className="font-bold brand-gradient-text tracking-tight text-base leading-tight whitespace-nowrap">
                 ConectaAI
               </span>
-              <span className="text-[10px] text-white/30 font-medium tracking-wide uppercase whitespace-nowrap">
+              <span className="text-[10px] text-muted-foreground/60 font-medium tracking-wide uppercase whitespace-nowrap">
                 Gestao de atendimento
               </span>
             </div>
@@ -140,21 +140,21 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="lg:hidden rounded-xl hover:bg-white/5 transition-colors"
+            className="lg:hidden rounded-xl hover:bg-foreground/5 transition-colors"
           >
-            <X className="h-5 w-5 text-white/60" />
+            <X className="h-5 w-5 text-foreground/60" />
             <span className="sr-only">Fechar menu</span>
           </Button>
         )}
       </div>
 
       {/* Separator */}
-      <div className={cn('h-px bg-white/6', collapsed ? 'mx-3' : 'mx-5')} />
+      <div className={cn('h-px bg-foreground/6', collapsed ? 'mx-3' : 'mx-5')} />
 
       {/* Navigation */}
       <nav className={cn('flex-1 space-y-1 py-4', collapsed ? 'px-2' : 'px-3')}>
         {!collapsed && (
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
             Menu
           </p>
         )}
@@ -162,9 +162,9 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
 
         {adminNavigation.length > 0 && (
           <>
-            <div className={cn('my-3 h-px bg-white/6', collapsed ? 'mx-1' : 'mx-3')} />
+            <div className={cn('my-3 h-px bg-foreground/6', collapsed ? 'mx-1' : 'mx-3')} />
             {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
                 Admin
               </p>
             )}

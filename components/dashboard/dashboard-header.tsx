@@ -119,9 +119,9 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
-          className="lg:hidden h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
+          className="lg:hidden h-9 w-9 rounded-xl hover:bg-foreground/5 transition-colors"
         >
-          <Menu className="h-5 w-5 text-white/60" />
+          <Menu className="h-5 w-5 text-foreground/60" />
           <span className="sr-only">Abrir menu</span>
         </Button>
       </div>
@@ -132,31 +132,31 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 rounded-xl hover:bg-white/5 transition-colors"
+          className="relative h-9 w-9 rounded-xl hover:bg-foreground/5 transition-colors"
         >
-          <Bell className="h-[18px] w-[18px] text-white/40" />
+          <Bell className="h-[18px] w-[18px] text-muted-foreground/80" />
           <span className="sr-only">Notificacoes</span>
         </Button>
 
         {/* Divider */}
-        <div className="hidden md:block h-5 w-px bg-white/6 mx-1" />
+        <div className="hidden md:block h-5 w-px bg-foreground/6 mx-1" />
 
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2 pl-1.5 pr-2.5 h-9 rounded-2xl hover:bg-white/5 transition-all"
+              className="flex items-center gap-2 pl-1.5 pr-2.5 h-9 rounded-2xl hover:bg-foreground/5 transition-all"
             >
               <Avatar className="h-7 w-7 glass-avatar-ring">
                 <AvatarFallback className="brand-gradient text-white text-[10px] font-bold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden md:block text-sm font-medium text-white/90 leading-tight capitalize">
+              <span className="hidden md:block text-sm font-medium text-foreground/90 leading-tight capitalize">
                 {userDisplayName}
               </span>
-              <ChevronDown className="hidden md:block h-3 w-3 text-white/30" />
+              <ChevronDown className="hidden md:block h-3 w-3 text-muted-foreground/60" />
             </Button>
           </DropdownMenuTrigger>
 
@@ -173,36 +173,36 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-sm font-semibold text-white/90 truncate capitalize">
+                  <p className="text-sm font-semibold text-foreground/90 truncate capitalize">
                     {userDisplayName}
                   </p>
-                  <p className="text-xs text-white/35 truncate">
+                  <p className="text-xs text-muted-foreground/70 truncate">
                     {user.email}
                   </p>
                 </div>
               </div>
             </div>
 
-            <DropdownMenuSeparator className="bg-white/6 mx-1" />
+            <DropdownMenuSeparator className="bg-foreground/6 mx-1" />
 
-            <DropdownMenuItem className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-white/5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5">
-                <UserIcon className="h-3.5 w-3.5 text-white/50" />
+            <DropdownMenuItem className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-foreground/5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground/5">
+                <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <span className="text-sm text-white/80">Meu Perfil</span>
+              <span className="text-sm text-foreground/80">Meu Perfil</span>
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={() => { resetSenhaDialog(); setSenhaDialogOpen(true) }}
-              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-white/5"
+              className="rounded-xl py-2.5 px-3 gap-2.5 cursor-pointer focus:bg-foreground/5"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5">
-                <KeyRound className="h-3.5 w-3.5 text-white/50" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground/5">
+                <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <span className="text-sm text-white/80">Alterar Senha</span>
+              <span className="text-sm text-foreground/80">Alterar Senha</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="bg-white/6 mx-1" />
+            <DropdownMenuSeparator className="bg-foreground/6 mx-1" />
 
             <DropdownMenuItem
               onClick={handleSignOut}
@@ -220,7 +220,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
         <Dialog open={senhaDialogOpen} onOpenChange={(open) => { if (!open) resetSenhaDialog(); setSenhaDialogOpen(open) }}>
           <DialogContent className="sm:max-w-md glass-card-elevated border-0 rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-white/90">
+              <DialogTitle className="flex items-center gap-2 text-foreground/90">
                 <KeyRound className="h-4 w-4 text-emerald-400" />
                 Alterar Senha
               </DialogTitle>
@@ -228,7 +228,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
 
             <div className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <Label htmlFor="senha-atual" className="text-white/60">Senha atual</Label>
+                <Label htmlFor="senha-atual" className="text-foreground/60">Senha atual</Label>
                 <Input
                   id="senha-atual"
                   type="password"
@@ -240,7 +240,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="nova-senha" className="text-white/60">Nova senha</Label>
+                <Label htmlFor="nova-senha" className="text-foreground/60">Nova senha</Label>
                 <Input
                   id="nova-senha"
                   type="password"
@@ -252,7 +252,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirmar-senha" className="text-white/60">Confirmar nova senha</Label>
+                <Label htmlFor="confirmar-senha" className="text-foreground/60">Confirmar nova senha</Label>
                 <Input
                   id="confirmar-senha"
                   type="password"
@@ -274,7 +274,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
                 variant="outline"
                 onClick={() => setSenhaDialogOpen(false)}
                 disabled={senhaLoading}
-                className="rounded-xl border-white/10 hover:bg-white/5"
+                className="rounded-xl border-foreground/10 hover:bg-foreground/5"
               >
                 Cancelar
               </Button>

@@ -204,7 +204,7 @@ export default function PermissoesPage() {
         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium glass-badge ${
           value
             ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-            : 'bg-white/5 text-white/30 border-white/10'
+            : 'bg-foreground/5 text-muted-foreground/60 border-foreground/10'
         }`}
       >
         {value ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -222,12 +222,12 @@ export default function PermissoesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
             <Shield className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Permissoes</h1>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-muted-foreground/80">
               Gerencie os tipos de permissao e controle o acesso dos colaboradores.
             </p>
           </div>
@@ -241,12 +241,12 @@ export default function PermissoesPage() {
       {/* Search Bar */}
       <div className="glass-card rounded-2xl p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
           <Input
             placeholder="Buscar permissao por nome..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+            className="pl-9 rounded-xl glass-input text-foreground/80 placeholder:text-muted-foreground/50"
           />
         </div>
       </div>
@@ -272,7 +272,7 @@ export default function PermissoesPage() {
             <h3 className="mt-4 text-base font-semibold text-white">
               {permissoes.length === 0 ? 'Nenhuma permissao cadastrada' : 'Nenhuma permissao encontrada'}
             </h3>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 text-sm text-muted-foreground/80">
               {permissoes.length === 0 ? 'Comece criando o primeiro tipo de permissao' : 'Tente ajustar a busca'}
             </p>
           </div>
@@ -285,16 +285,16 @@ export default function PermissoesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="glass-card rounded-2xl p-5 flex items-center gap-4 border-l-2 border-l-violet-500/30 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-violet-500/60 group"
+                className="glass-card rounded-2xl p-5 flex items-center gap-4 border-l-2 border-l-violet-500/30 transition-all duration-200 hover:bg-foreground/[0.03] hover:border-l-violet-500/60 group"
               >
                 {/* Shield Icon */}
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center border border-white/8 shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center border border-foreground/8 shrink-0">
                   <Shield className="h-5 w-5 text-violet-400" />
                 </div>
 
                 {/* Main Info */}
                 <div className="flex-1 min-w-0">
-                  <span className="font-medium text-white/90">{permissao.nome}</span>
+                  <span className="font-medium text-foreground/90">{permissao.nome}</span>
                   {/* Capability badges */}
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <FlagBadge value={permissao.can_view_dashboard} label="Dashboard" />
@@ -304,7 +304,7 @@ export default function PermissoesPage() {
                 </div>
 
                 {/* Collaborator count */}
-                <div className="hidden sm:flex items-center gap-1.5 shrink-0 text-white/40">
+                <div className="hidden sm:flex items-center gap-1.5 shrink-0 text-muted-foreground/80">
                   <Users className="h-3.5 w-3.5" />
                   <span className="text-sm">
                     {permissao._count || 0} colaborador{permissao._count !== 1 ? 'es' : ''}
@@ -316,7 +316,7 @@ export default function PermissoesPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                    className="h-8 w-8 text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5"
                     onClick={() => openEditModal(permissao)}
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -340,7 +340,7 @@ export default function PermissoesPage() {
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <Shield className="h-5 w-5 text-emerald-400" />
@@ -360,7 +360,7 @@ export default function PermissoesPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, nome: e.target.value })
                 }
-                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
+                className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50"
               />
             </div>
 
@@ -430,7 +430,7 @@ export default function PermissoesPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="border-white/10 text-white/60 hover:bg-white/5"
+              className="border-foreground/10 text-foreground/60 hover:bg-foreground/5"
             >
               Cancelar
             </Button>
@@ -448,7 +448,7 @@ export default function PermissoesPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
+        <AlertDialogContent className="bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">
               Excluir Permissao
@@ -460,7 +460,7 @@ export default function PermissoesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 text-white/60 hover:bg-white/5">
+            <AlertDialogCancel className="border-foreground/10 text-foreground/60 hover:bg-foreground/5">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction

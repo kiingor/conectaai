@@ -276,7 +276,7 @@ function ContactCard({ conteudo, isOutgoing }: { conteudo: string; isOutgoing: b
               'flex items-center gap-3 rounded-xl p-3 border',
               isOutgoing
                 ? 'bg-white/15 border-white/20'
-                : 'bg-white/[0.04] border-white/8'
+                : 'bg-foreground/[0.04] border-foreground/8'
             )}
           >
             <div className={cn(
@@ -286,10 +286,10 @@ function ContactCard({ conteudo, isOutgoing }: { conteudo: string; isOutgoing: b
               <User className={cn('h-5 w-5', isOutgoing ? 'text-white' : 'text-emerald-400')} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={cn('text-sm font-semibold truncate', isOutgoing ? 'text-white' : 'text-white/90')}>
+              <p className={cn('text-sm font-semibold truncate', isOutgoing ? 'text-white' : 'text-foreground/90')}>
                 {contact.name}
               </p>
-              <p className={cn('text-xs truncate', isOutgoing ? 'text-white/70' : 'text-white/40')}>
+              <p className={cn('text-xs truncate', isOutgoing ? 'text-foreground/70' : 'text-muted-foreground/80')}>
                 {formattedPhone}
               </p>
             </div>
@@ -316,7 +316,7 @@ function ContactCard({ conteudo, isOutgoing }: { conteudo: string; isOutgoing: b
               className={cn(
                 'flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all shrink-0',
                 isOutgoing
-                  ? 'bg-white/20 hover:bg-white/30 text-white'
+                  ? 'bg-white/20 hover:bg-foreground/30 text-white'
                   : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400'
               )}
             >
@@ -355,7 +355,7 @@ function getFileInfo(ext: string, mediaType?: string | null) {
     return { icon: FileCode, label: e.toUpperCase() || 'Texto', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' }
   if (['cer', 'crt', 'pem', 'p12', 'pfx', 'key'].includes(e))
     return { icon: ShieldCheck, label: 'Certificado', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
-  return { icon: FileIcon, label: e.toUpperCase() || 'Arquivo', color: 'text-white/40', bg: 'bg-white/[0.03]', border: 'border-white/8' }
+  return { icon: FileIcon, label: e.toUpperCase() || 'Arquivo', color: 'text-muted-foreground/80', bg: 'bg-foreground/[0.03]', border: 'border-foreground/8' }
 }
 
 function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMediaProps) {
@@ -391,8 +391,8 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
           className={cn(
             'inline-flex items-center gap-1.5 text-[11px] rounded-md px-2 py-1 transition-colors',
             isOutgoing
-              ? 'bg-white/20 hover:bg-white/30 text-white'
-              : 'bg-white/5 hover:bg-white/8 text-white/70'
+              ? 'bg-white/20 hover:bg-foreground/30 text-white'
+              : 'bg-foreground/5 hover:bg-foreground/8 text-foreground/70'
           )}
         >
           <Download className="h-3 w-3" />
@@ -406,7 +406,7 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
     return (
       <div className={cn(
         'mb-2 flex items-center gap-2 rounded-xl px-3 py-2',
-        isOutgoing ? 'bg-white/15' : 'bg-white/[0.04]'
+        isOutgoing ? 'bg-white/15' : 'bg-foreground/[0.04]'
       )}>
         <Music className="h-4 w-4 shrink-0 opacity-70" />
         <audio controls className="flex-1 h-8 min-w-0" preload="metadata" style={{ height: '32px' }}>
@@ -419,7 +419,7 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
           rel="noreferrer"
           className={cn(
             'shrink-0 rounded p-1 transition-colors',
-            isOutgoing ? 'hover:bg-white/20 text-white' : 'hover:bg-white/8 text-white/60'
+            isOutgoing ? 'hover:bg-white/20 text-white' : 'hover:bg-foreground/8 text-foreground/60'
           )}
           title="Baixar áudio"
         >
@@ -457,10 +457,10 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
     >
       <Icon className={cn('h-6 w-6 shrink-0', color)} />
       <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-sm font-medium text-white/80 truncate">{fileName}</span>
-        <span className="text-[10px] text-white/40">{label} · Clique para baixar</span>
+        <span className="text-sm font-medium text-foreground/80 truncate">{fileName}</span>
+        <span className="text-[10px] text-muted-foreground/80">{label} · Clique para baixar</span>
       </div>
-      <Download className="h-4 w-4 text-white/40 shrink-0" />
+      <Download className="h-4 w-4 text-muted-foreground/80 shrink-0" />
     </a>
   )
 }
@@ -2620,10 +2620,10 @@ const tempId = `temp-${Date.now()}`
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#06080f]">
+      <div className="flex h-screen items-center justify-center bg-page-bg">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-          <p className="text-white/40 text-sm">Carregando tickets...</p>
+          <p className="text-muted-foreground/80 text-sm">Carregando tickets...</p>
         </div>
       </div>
     )
@@ -2633,8 +2633,8 @@ const tempId = `temp-${Date.now()}`
     <TooltipProvider delayDuration={200}>
     <div className="flex h-screen flex-col overflow-hidden">
       {/* Mobile top bar — only shows on small screens */}
-      <div className="flex items-center justify-between border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl px-3 py-2 md:hidden">
-        <span className="text-sm font-semibold text-white/70">Tickets</span>
+      <div className="flex items-center justify-between border-b border-foreground/6 bg-page-bg/90 backdrop-blur-xl px-3 py-2 md:hidden">
+        <span className="text-sm font-semibold text-foreground/70">Tickets</span>
         <Badge variant="outline" className="text-[10px] tabular-nums">
           {filteredTickets.length}
         </Badge>
@@ -2645,11 +2645,11 @@ const tempId = `temp-${Date.now()}`
             COLUMN 1 — Ticket List (340px)
            ═══════════════════════════════════════════════════════════════════════ */}
         <aside className={cn(
-          "w-full md:w-[340px] shrink-0 border-r border-white/5 bg-[#06080f]/60 backdrop-blur-xl h-full overflow-hidden flex flex-col",
+          "w-full md:w-[340px] shrink-0 border-r border-foreground/5 bg-page-bg/60 backdrop-blur-xl h-full overflow-hidden flex flex-col",
           selectedTicket ? "hidden md:flex" : "flex"
         )}>
           {/* Top section: Disparo + Search */}
-          <div className="p-3 space-y-2 shrink-0 border-b border-white/5">
+          <div className="p-3 space-y-2 shrink-0 border-b border-foreground/5">
             {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
             {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
               setorCanalConfig !== 'evolution_api') && (
@@ -2687,11 +2687,11 @@ const tempId = `temp-${Date.now()}`
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-between h-8 text-xs px-2 font-normal hover:bg-white/5 text-white/50"
+                    className="w-full justify-between h-8 text-xs px-2 font-normal hover:bg-foreground/5 text-muted-foreground"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <Layers className="h-3.5 w-3.5 shrink-0 text-white/40" />
-                      <span className="truncate text-white/40">
+                      <Layers className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                      <span className="truncate text-muted-foreground/80">
                         {meusSubsetorIds.length === 0
                           ? 'Nenhum subsetor'
                           : meusSubsetorIds.length === subsetoresDisponiveis.length
@@ -2699,11 +2699,11 @@ const tempId = `temp-${Date.now()}`
                           : `${meusSubsetorIds.length} subsetor${meusSubsetorIds.length > 1 ? 'es' : ''}`}
                       </span>
                     </div>
-                    <ChevronDown className="h-3 w-3 shrink-0 text-white/40" />
+                    <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground/80" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="start">
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 px-1">
+                  <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider mb-2 px-1">
                     Meus Subsetores
                   </p>
                   <div className="space-y-0.5">
@@ -2712,7 +2712,7 @@ const tempId = `temp-${Date.now()}`
                       return (
                         <label
                           key={subsetor.id}
-                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-white/[0.05] cursor-pointer"
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-foreground/[0.05] cursor-pointer"
                         >
                           <Checkbox
                             checked={isActive}
@@ -2764,7 +2764,7 @@ const tempId = `temp-${Date.now()}`
           {selectedTicket ? (
             <>
               {/* Chat Header — compact */}
-              <div className="flex items-center justify-between border-b border-white/5 bg-[#06080f]/80 backdrop-blur-xl px-4 py-2.5 gap-3">
+              <div className="flex items-center justify-between border-b border-foreground/5 bg-page-bg/80 backdrop-blur-xl px-4 py-2.5 gap-3">
                 {/* Left: back button (mobile) + client info */}
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   {/* Mobile back button */}
@@ -2782,7 +2782,7 @@ const tempId = `temp-${Date.now()}`
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h2 className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome}</h2>
+                      <h2 className="text-sm font-semibold text-foreground/90 truncate">{selectedTicket.clientes.nome}</h2>
                       <Badge
                         variant={selectedTicket.status === 'aberto' ? 'default' : 'secondary'}
                         className={cn(
@@ -2794,17 +2794,17 @@ const tempId = `temp-${Date.now()}`
                         {selectedTicket.status === 'aberto' ? 'Aberto' : 'Atendendo'}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-white/40">
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground/80">
                       <span className="font-mono">#{selectedTicket.numero}</span>
                       {selectedTicket.setores && (
                         <>
-                          <span className="text-white/15">|</span>
+                          <span className="text-muted-foreground/30">|</span>
                           <span style={{ color: selectedTicket.setores.cor || '#6b7280' }}>
                             {selectedTicket.setores.nome}
                           </span>
                         </>
                       )}
-                      <span className="text-white/15">|</span>
+                      <span className="text-muted-foreground/30">|</span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {formatDistanceToNow(new Date(selectedTicket.criado_em), { locale: ptBR, addSuffix: true })}
@@ -2900,7 +2900,7 @@ const tempId = `temp-${Date.now()}`
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     </div>
                   ) : mensagens.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center text-white/40">
+                    <div className="flex h-full flex-col items-center justify-center text-muted-foreground/80">
                       <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
                       <p>Nenhuma mensagem ainda</p>
                     </div>
@@ -2932,7 +2932,7 @@ const tempId = `temp-${Date.now()}`
                                 {isPreviousTicket && (
                                   <div className="flex items-center gap-3 py-3">
                                     <div className="flex-1 h-px bg-border" />
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/8 text-xs text-white/40">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-foreground/8 text-xs text-muted-foreground/80">
                                       <History className="h-3 w-3" />
                                       <span>
                                         Atendimento anterior -{' '}
@@ -2974,7 +2974,7 @@ const tempId = `temp-${Date.now()}`
                                       "flex items-center gap-2 px-4 py-2 rounded-lg border text-xs max-w-[90%]",
                                       msg.conteudo.startsWith('Transferido')
                                         ? "bg-blue-500/5 border-blue-500/20 text-blue-400"
-                                        : "bg-white/[0.03] border-white/8 text-white/40"
+                                        : "bg-foreground/[0.03] border-foreground/8 text-muted-foreground/80"
                                     )}>
                                       {msg.conteudo.startsWith('Transferido') ? (
                                         <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 text-blue-400" />
@@ -3007,7 +3007,7 @@ const tempId = `temp-${Date.now()}`
                                       'max-w-[85%] lg:max-w-[75%] rounded-2xl px-3 py-2 lg:px-4 lg:py-2.5 break-all overflow-hidden',
                                       isOutgoingMessage(msg.remetente)
                                         ? 'brand-gradient text-white rounded-br-md shadow-lg shadow-emerald-500/10'
-                                        : 'bg-white/[0.05] text-white/90 rounded-bl-md border border-white/6',
+                                        : 'bg-foreground/[0.05] text-foreground/90 rounded-bl-md border border-foreground/6',
                                       msgStatus === 'error' && 'bg-red-500 text-white'
                                     )}
                                   >
@@ -3060,7 +3060,7 @@ const tempId = `temp-${Date.now()}`
               </div>
 
   {/* Input Area */}
-  <div className="border-t border-white/6 glass-header p-3">
+  <div className="border-t border-foreground/6 glass-header p-3">
   {/* Disparo locked warning */}
   {selectedTicket?.is_disparo && isDisparoLocked(selectedTicket) && (
   <div className="mb-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
@@ -3091,17 +3091,17 @@ const tempId = `temp-${Date.now()}`
 
                 {/* Template Suggestions */}
                 {showTemplates && filteredTemplates.length > 0 && (
-                  <div className="mb-2 max-h-48 overflow-y-auto rounded-lg border border-white/8 bg-[#0a0d16] shadow-lg shadow-black/40">
+                  <div className="mb-2 max-h-48 overflow-y-auto rounded-lg border border-foreground/8 bg-[#0a0d16] shadow-lg shadow-black/40">
                     {filteredTemplates.map((template) => (
                       <button
                         key={template.id}
                         onClick={() => selectTemplate(template)}
-                        className="w-full px-3 py-2 text-left hover:bg-white/[0.05] transition-colors border-b border-white/6 last:border-b-0"
+                        className="w-full px-3 py-2 text-left hover:bg-foreground/[0.05] transition-colors border-b border-foreground/6 last:border-b-0"
                       >
                         <div className="flex items-center gap-2">
                           <code className="text-xs font-semibold text-emerald-400">/{template.atalho}</code>
                         </div>
-                        <p className="text-xs text-white/50 line-clamp-1 mt-0.5">
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                           {template.mensagem}
                         </p>
                       </button>
@@ -3111,12 +3111,12 @@ const tempId = `temp-${Date.now()}`
 
 {/* Emoji Picker */}
                   {showEmojiPicker && (
-                    <div className="mb-2 flex flex-wrap gap-1 rounded-lg border bg-white/[0.03] p-2">
+                    <div className="mb-2 flex flex-wrap gap-1 rounded-lg border bg-foreground/[0.03] p-2">
                       {commonEmojis.map((emoji) => (
                         <button
                           key={emoji}
                           onClick={() => insertEmoji(emoji)}
-                          className="rounded p-1.5 text-lg hover:bg-white/[0.08] transition-colors"
+                          className="rounded p-1.5 text-lg hover:bg-foreground/[0.08] transition-colors"
                         >
                           {emoji}
                         </button>
@@ -3135,18 +3135,18 @@ const tempId = `temp-${Date.now()}`
 
 {/* File Preview */}
                     {filePreview && (
-                      <div className="mb-2 p-2 bg-white/[0.02] rounded-lg border border-white/6">
+                      <div className="mb-2 p-2 bg-foreground/[0.02] rounded-lg border border-foreground/6">
                         <div className="relative inline-block">
   {filePreview.startsWith('file:') ? (
   (() => { const { icon: FIcon, label, color, bg, border } = getFileInfo(filePreview.replace('file:', '').split('.').pop() || '', selectedFile?.type); return (
   <div className={cn('flex items-center gap-2 px-3 py-2 rounded border', bg, border)}>
     <FIcon className={cn('h-6 w-6', color)} />
-    <span className="text-sm text-white/80 max-w-[200px] truncate">{filePreview.replace('file:', '')}</span>
+    <span className="text-sm text-foreground/80 max-w-[200px] truncate">{filePreview.replace('file:', '')}</span>
   </div>) })()
   ) : filePreview.startsWith('video:') ? (
   <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 rounded border border-blue-500/20">
   <Video className="h-6 w-6 text-blue-400" />
-  <span className="text-sm text-white/80">{filePreview.replace('video:', '')}</span>
+  <span className="text-sm text-foreground/80">{filePreview.replace('video:', '')}</span>
   </div>
   ) : (
   <img
@@ -3174,7 +3174,7 @@ const tempId = `temp-${Date.now()}`
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         className="shrink-0"
                       >
-                        <Smile className="h-5 w-5 text-white/40" />
+                        <Smile className="h-5 w-5 text-muted-foreground/80" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -3183,7 +3183,7 @@ const tempId = `temp-${Date.now()}`
   className="shrink-0"
   disabled={isWindowExpired || (selectedTicket?.is_disparo === true && isDisparoLocked(selectedTicket))}
                       >
-                        <ImageIcon className="h-5 w-5 text-white/40" />
+                        <ImageIcon className="h-5 w-5 text-muted-foreground/80" />
                       </Button>
                       <div className="relative flex-1">
                   <Input
@@ -3221,11 +3221,11 @@ const tempId = `temp-${Date.now()}`
             </>
           ) : (
             <div className="flex h-full flex-col items-center justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.03] border border-white/6 mb-4">
-                <MessageCircle className="h-8 w-8 text-white/20" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-foreground/[0.03] border border-foreground/6 mb-4">
+                <MessageCircle className="h-8 w-8 text-muted-foreground/40" />
               </div>
-              <h2 className="text-lg font-semibold text-white/50">Selecione um ticket</h2>
-              <p className="mt-1 text-sm text-white/25">Escolha um ticket na lista para iniciar o atendimento</p>
+              <h2 className="text-lg font-semibold text-muted-foreground">Selecione um ticket</h2>
+              <p className="mt-1 text-sm text-muted-foreground/50">Escolha um ticket na lista para iniciar o atendimento</p>
             </div>
           )}
         </main>
@@ -3234,7 +3234,7 @@ const tempId = `temp-${Date.now()}`
             COLUMN 3 — Client Info Panel (right, 280px, collapsible)
            ═════════════════════════════════════════════════���═════════════════════ */}
         {showClientPanel && selectedTicket && (
-          <aside className="hidden md:flex w-[280px] shrink-0 border-l border-white/5 bg-[#06080f]/60 backdrop-blur-xl overflow-y-auto flex-col">
+          <aside className="hidden md:flex w-[280px] shrink-0 border-l border-foreground/5 bg-page-bg/60 backdrop-blur-xl overflow-y-auto flex-col">
             <div className="p-4 space-y-5">
               {/* Client Card */}
               <div>
@@ -3243,9 +3243,9 @@ const tempId = `temp-${Date.now()}`
                     <UserCircle className="h-6 w-6 text-emerald-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome || 'Sem nome'}</p>
+                    <p className="text-sm font-semibold text-foreground/90 truncate">{selectedTicket.clientes.nome || 'Sem nome'}</p>
                     {selectedTicket.clientes.telefone && (
-                      <p className="text-xs text-white/40 truncate">{formatPhone(selectedTicket.clientes.telefone)}</p>
+                      <p className="text-xs text-muted-foreground/80 truncate">{formatPhone(selectedTicket.clientes.telefone)}</p>
                     )}
                   </div>
                 </div>
@@ -3279,53 +3279,53 @@ const tempId = `temp-${Date.now()}`
 
               {/* Client Details */}
               <div>
-                <h4 className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+                <h4 className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider mb-2">
                   Dados do Cliente
                 </h4>
-                <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
+                <div className="rounded-lg border border-foreground/6 bg-foreground/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">CNPJ</span>
-                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                    <span className="text-muted-foreground/80 shrink-0 w-16">CNPJ</span>
+                    <span className="font-medium text-foreground/80 flex-1 text-right truncate">
                       {selectedTicket.clientes.CNPJ ? formatCNPJ(selectedTicket.clientes.CNPJ) : '—'}
                     </span>
                     {selectedTicket.clientes.CNPJ && (
-                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.CNPJ!.replace(/\D/g, ''), 'CNPJ')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.CNPJ!.replace(/\D/g, ''), 'CNPJ')} className="shrink-0 text-muted-foreground/60 hover:text-foreground/60 transition-colors">
                         <Copy className="h-3 w-3" />
                       </button>
                     )}
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Registro</span>
-                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Registro</span>
+                    <span className="font-medium text-foreground/80 flex-1 text-right truncate">
                       {selectedTicket.clientes.Registro || '—'}
                     </span>
                     {selectedTicket.clientes.Registro && (
-                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.Registro!, 'Registro')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.Registro!, 'Registro')} className="shrink-0 text-muted-foreground/60 hover:text-foreground/60 transition-colors">
                         <Copy className="h-3 w-3" />
                       </button>
                     )}
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">PDV</span>
-                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                    <span className="text-muted-foreground/80 shrink-0 w-16">PDV</span>
+                    <span className="font-medium text-foreground/80 flex-1 text-right truncate">
                       {selectedTicket.clientes.PDV || '—'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Telefone</span>
-                    <span className="font-medium text-white/80 flex-1 text-right truncate">
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Telefone</span>
+                    <span className="font-medium text-foreground/80 flex-1 text-right truncate">
                       {selectedTicket.clientes.telefone ? formatPhone(selectedTicket.clientes.telefone) : '—'}
                     </span>
                     {selectedTicket.clientes.telefone && (
-                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.telefone!, 'Telefone')} className="shrink-0 text-white/30 hover:text-white/60 transition-colors">
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.telefone!, 'Telefone')} className="shrink-0 text-muted-foreground/60 hover:text-foreground/60 transition-colors">
                         <Copy className="h-3 w-3" />
                       </button>
                     )}
                   </div>
                   {selectedTicket.clientes.created_at && (
                     <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                      <span className="text-white/40 shrink-0 w-16">Desde</span>
-                      <span className="font-medium text-white/80 flex-1 text-right">
+                      <span className="text-muted-foreground/80 shrink-0 w-16">Desde</span>
+                      <span className="font-medium text-foreground/80 flex-1 text-right">
                         {format(new Date(selectedTicket.clientes.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                       </span>
                     </div>
@@ -3335,41 +3335,41 @@ const tempId = `temp-${Date.now()}`
 
               {/* Ticket Info */}
               <div>
-                <h4 className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+                <h4 className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider mb-2">
                   Info do Ticket
                 </h4>
-                <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
+                <div className="rounded-lg border border-foreground/6 bg-foreground/[0.02] divide-y divide-white/6 overflow-hidden text-xs">
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Ticket</span>
-                    <span className="font-bold text-white/90 flex-1 text-right select-all">#{selectedTicket.numero}</span>
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Ticket</span>
+                    <span className="font-bold text-foreground/90 flex-1 text-right select-all">#{selectedTicket.numero}</span>
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Prioridade</span>
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Prioridade</span>
                     <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4', selectedTicket.prioridade === 'urgente' && 'border-red-500/30 text-red-400')}>
                       {selectedTicket.prioridade === 'urgente' ? 'Urgente' : 'Normal'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Canal</span>
-                    <span className="font-medium text-white/80 capitalize">{selectedTicket.canal}</span>
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Canal</span>
+                    <span className="font-medium text-foreground/80 capitalize">{selectedTicket.canal}</span>
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 shrink-0 w-16">Criado em</span>
-                    <span className="font-medium text-white/80">
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Criado em</span>
+                    <span className="font-medium text-foreground/80">
                       {new Date(selectedTicket.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   {selectedTicket.primeira_resposta_em && (
                     <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                      <span className="text-white/40 shrink-0 w-16">1a Resposta</span>
-                      <span className="font-medium text-white/80">
+                      <span className="text-muted-foreground/80 shrink-0 w-16">1a Resposta</span>
+                      <span className="font-medium text-foreground/80">
                         {formatDistanceToNow(new Date(selectedTicket.primeira_resposta_em), { locale: ptBR, addSuffix: true })}
                       </span>
                     </div>
                   )}
                   {selectedTicket.setores && (
                     <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                      <span className="text-white/40 shrink-0 w-16">Setor</span>
+                      <span className="text-muted-foreground/80 shrink-0 w-16">Setor</span>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-medium" style={{ borderColor: selectedTicket.setores.cor || '#6b7280', color: selectedTicket.setores.cor || '#6b7280' }}>
                         {selectedTicket.setores.nome}
                       </Badge>
@@ -3393,29 +3393,29 @@ const tempId = `temp-${Date.now()}`
                   <UserCircle className="h-5 w-5 text-emerald-400" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white/90 truncate">{selectedTicket.clientes.nome}</p>
+                  <p className="text-sm font-semibold text-foreground/90 truncate">{selectedTicket.clientes.nome}</p>
                   {selectedTicket.clientes.telefone && (
-                    <p className="text-xs text-white/40">{formatPhone(selectedTicket.clientes.telefone)}</p>
+                    <p className="text-xs text-muted-foreground/80">{formatPhone(selectedTicket.clientes.telefone)}</p>
                   )}
                 </div>
               </div>
-              <div className="rounded-lg border border-white/6 bg-white/[0.02] divide-y divide-white/6 text-xs">
+              <div className="rounded-lg border border-foreground/6 bg-foreground/[0.02] divide-y divide-white/6 text-xs">
                 {selectedTicket.clientes.CNPJ && (
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 w-16">CNPJ</span>
-                    <span className="text-white/80 truncate">{formatCNPJ(selectedTicket.clientes.CNPJ)}</span>
+                    <span className="text-muted-foreground/80 w-16">CNPJ</span>
+                    <span className="text-foreground/80 truncate">{formatCNPJ(selectedTicket.clientes.CNPJ)}</span>
                   </div>
                 )}
                 {selectedTicket.clientes.Registro && (
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 w-16">Registro</span>
-                    <span className="text-white/80 truncate">{selectedTicket.clientes.Registro}</span>
+                    <span className="text-muted-foreground/80 w-16">Registro</span>
+                    <span className="text-foreground/80 truncate">{selectedTicket.clientes.Registro}</span>
                   </div>
                 )}
                 {selectedTicket.clientes.PDV && (
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-white/40 w-16">PDV</span>
-                    <span className="text-white/80 truncate">{selectedTicket.clientes.PDV}</span>
+                    <span className="text-muted-foreground/80 w-16">PDV</span>
+                    <span className="text-foreground/80 truncate">{selectedTicket.clientes.PDV}</span>
                   </div>
                 )}
               </div>
@@ -3501,10 +3501,10 @@ const tempId = `temp-${Date.now()}`
                                   <span
                                     className={cn(
                                       'h-2 w-2 rounded-full shrink-0',
-                                      online ? 'bg-green-500' : 'bg-white/30'
+                                      online ? 'bg-green-500' : 'bg-foreground/30'
                                     )}
                                   />
-                                  <span className={cn('flex-1', !online ? 'text-white/40' : '')}>
+                                  <span className={cn('flex-1', !online ? 'text-muted-foreground/80' : '')}>
                                     {atendente.nome}
                                   </span>
                                   {atendente.handlesSubsetor && selectedTicket?.subsetor_id && (
@@ -3513,7 +3513,7 @@ const tempId = `temp-${Date.now()}`
                                     </Badge>
                                   )}
                                   {!online && (
-                                    <span className="text-xs text-white/40">(Offline)</span>
+                                    <span className="text-xs text-muted-foreground/80">(Offline)</span>
                                   )}
                                 </div>
                               </SelectItem>
@@ -3522,7 +3522,7 @@ const tempId = `temp-${Date.now()}`
                         </SelectContent>
                       </Select>
                       {atendentesDisponiveis.length === 0 && (
-                        <p className="text-sm text-white/40">
+                        <p className="text-sm text-muted-foreground/80">
                           Nenhum outro atendente neste setor.
                         </p>
                       )}
@@ -3562,7 +3562,7 @@ const tempId = `temp-${Date.now()}`
                         </SelectTrigger>
                         <SelectContent>
                           {setores.length === 0 ? (
-                            <div className="p-3 text-sm text-white/40 text-center">
+                            <div className="p-3 text-sm text-muted-foreground/80 text-center">
                               Nenhum setor habilitado para transferência. Configure em Configurações do Setor.
                             </div>
                           ) : (
@@ -3575,7 +3575,7 @@ const tempId = `temp-${Date.now()}`
                         </SelectContent>
                       </Select>
                       {setores.length === 0 && (
-                        <p className="text-sm text-white/40">
+                        <p className="text-sm text-muted-foreground/80">
                           Nenhum setor habilitado. Configure os destinos em Configurações do Setor.
                         </p>
                       )}
@@ -3610,14 +3610,14 @@ const tempId = `temp-${Date.now()}`
                                     <span
                                       className={cn(
                                         'h-2 w-2 rounded-full',
-                                        online ? 'bg-green-500' : 'bg-white/30'
+                                        online ? 'bg-green-500' : 'bg-foreground/30'
                                       )}
                                     />
-                                    <span className={!online ? 'text-white/40' : ''}>
+                                    <span className={!online ? 'text-muted-foreground/80' : ''}>
                                       {atendente.nome}
                                     </span>
                                     {!online && (
-                                      <span className="text-xs text-white/40">(Offline)</span>
+                                      <span className="text-xs text-muted-foreground/80">(Offline)</span>
                                     )}
                                   </div>
                                 </SelectItem>
@@ -3706,16 +3706,16 @@ const tempId = `temp-${Date.now()}`
 
                 {/* Client data found */}
                 {disparoCliente && (
-                  <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-1.5">
-                    <p className="text-sm font-medium text-white/90">{disparoCliente.nome}</p>
+                  <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-1.5">
+                    <p className="text-sm font-medium text-foreground/90">{disparoCliente.nome}</p>
                     {disparoCliente.cnpj && (
-                      <p className="text-xs text-white/40">CNPJ: {formatCNPJ(disparoCliente.cnpj)}</p>
+                      <p className="text-xs text-muted-foreground/80">CNPJ: {formatCNPJ(disparoCliente.cnpj)}</p>
                     )}
                     {disparoCliente.registro && (
-                      <p className="text-xs text-white/40">Registro: {disparoCliente.registro}</p>
+                      <p className="text-xs text-muted-foreground/80">Registro: {disparoCliente.registro}</p>
                     )}
                     {disparoCliente.telefone && (
-                      <p className="text-xs text-white/40">Telefone: {formatPhone(disparoCliente.telefone)}</p>
+                      <p className="text-xs text-muted-foreground/80">Telefone: {formatPhone(disparoCliente.telefone)}</p>
                     )}
                     <Button
                       variant="ghost"
@@ -3772,9 +3772,9 @@ const tempId = `temp-${Date.now()}`
             {disparoStep === 'canal' && (
               <div className="space-y-3">
                 {/* Client summary */}
-                <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-0.5">
+                <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-0.5">
                   <p className="text-sm font-medium">{disparoCliente?.nome}</p>
-                  <p className="text-xs text-white/40">{formatPhone(disparoTelefone)}</p>
+                  <p className="text-xs text-muted-foreground/80">{formatPhone(disparoTelefone)}</p>
                 </div>
 
                 <Label className="text-sm font-medium">Escolha o canal de envio</Label>
@@ -3791,7 +3791,7 @@ const tempId = `temp-${Date.now()}`
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-green-400">WhatsApp</p>
-                      <p className="text-[10px] text-white/40">Oficial (template)</p>
+                      <p className="text-[10px] text-muted-foreground/80">Oficial (template)</p>
                     </div>
                   </button>
 
@@ -3806,7 +3806,7 @@ const tempId = `temp-${Date.now()}`
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-blue-400">Não Oficial</p>
-                      <p className="text-[10px] text-white/40">Evolution API</p>
+                      <p className="text-[10px] text-muted-foreground/80">Evolution API</p>
                     </div>
                   </button>
                 </div>
@@ -3814,7 +3814,7 @@ const tempId = `temp-${Date.now()}`
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-white/40"
+                  className="w-full text-muted-foreground/80"
                   onClick={() => setDisparoStep('telefone')}
                 >
                   ← Voltar
@@ -3826,9 +3826,9 @@ const tempId = `temp-${Date.now()}`
             {disparoStep === 'mensagem_evolution' && (
               <div className="space-y-3">
                 {/* Client summary */}
-                <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-0.5">
+                <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-0.5">
                   <p className="text-sm font-medium">{disparoCliente?.nome}</p>
-                  <p className="text-xs text-white/40">{formatPhone(disparoTelefone)}</p>
+                  <p className="text-xs text-muted-foreground/80">{formatPhone(disparoTelefone)}</p>
                   <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-400">
                     <Zap className="h-2.5 w-2.5" />
                     Evolution API
@@ -3838,12 +3838,12 @@ const tempId = `temp-${Date.now()}`
                 <div className="space-y-1.5">
                   <Label>Mensagem de abertura</Label>
                   <textarea
-                    className="w-full min-h-[120px] resize-none rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30"
+                    className="w-full min-h-[120px] resize-none rounded-lg border border-foreground/8 bg-foreground/[0.03] px-3 py-2 text-sm text-foreground/90 placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30"
                     placeholder="Digite a mensagem..."
                     value={disparoMensagemEvolution}
                     onChange={(e) => setDisparoMensagemEvolution(e.target.value)}
                   />
-                  <p className="text-[10px] text-white/40">
+                  <p className="text-[10px] text-muted-foreground/80">
                     O ticket será criado e atribuído a você imediatamente. Você poderá enviar mais mensagens sem aguardar a resposta do cliente.
                   </p>
                 </div>
@@ -3965,16 +3965,16 @@ const tempId = `temp-${Date.now()}`
 
             {/* Cliente encontrado */}
             {selecionarClienteData && (
-              <div className="rounded-lg border border-white/8 bg-white/[0.03] p-3 space-y-1.5">
-                <p className="text-sm font-semibold text-white/90">{selecionarClienteData.nome}</p>
+              <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-1.5">
+                <p className="text-sm font-semibold text-foreground/90">{selecionarClienteData.nome}</p>
                 {selecionarClienteData.cnpj && (
-                  <p className="text-xs text-white/40">CNPJ: {formatCNPJ(selecionarClienteData.cnpj)}</p>
+                  <p className="text-xs text-muted-foreground/80">CNPJ: {formatCNPJ(selecionarClienteData.cnpj)}</p>
                 )}
                 {selecionarClienteData.registro && (
-                  <p className="text-xs text-white/40">Registro: {selecionarClienteData.registro}</p>
+                  <p className="text-xs text-muted-foreground/80">Registro: {selecionarClienteData.registro}</p>
                 )}
                 {selecionarClienteData.telefone && (
-                  <p className="text-xs text-white/40">Telefone: {formatPhone(selecionarClienteData.telefone)}</p>
+                  <p className="text-xs text-muted-foreground/80">Telefone: {formatPhone(selecionarClienteData.telefone)}</p>
                 )}
                 <Button
                   variant="ghost"
@@ -4097,9 +4097,9 @@ const tempId = `temp-${Date.now()}`
             if (e.target === e.currentTarget) setTicketIframeTicket(null)
           }}
         >
-          <div className="relative w-full max-w-[96vw] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-[#06080f] flex flex-col" style={{ height: 'calc(100vh - 88px)' }}>
+          <div className="relative w-full max-w-[96vw] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-page-bg flex flex-col" style={{ height: 'calc(100vh - 88px)' }}>
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/6 bg-[#06080f]/90 backdrop-blur-xl shrink-0">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-foreground/6 bg-page-bg/90 backdrop-blur-xl shrink-0">
               <div className="flex items-center gap-1.5">
                 <Ticket className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="text-xs font-semibold">
@@ -4185,19 +4185,19 @@ function TicketList({
       <div className="shrink-0 px-3 pt-3 pb-2 space-y-2">
         {/* Search input with filter icon */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
           <Input
             placeholder="Buscar cliente..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-9 h-9 text-xs bg-white/[0.03] border-white/8"
+            className="pl-9 pr-9 h-9 text-xs bg-foreground/[0.03] border-foreground/8"
           />
           <button
             type="button"
             onClick={() => setFiltersOpen(!filtersOpen)}
             className={cn(
               'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors',
-              filtersOpen || hasActiveFilter ? 'text-emerald-400' : 'text-white/30 hover:text-white/50'
+              filtersOpen || hasActiveFilter ? 'text-emerald-400' : 'text-muted-foreground/60 hover:text-muted-foreground'
             )}
           >
             <Filter className="h-3.5 w-3.5" />
@@ -4248,7 +4248,7 @@ function TicketList({
 
         {/* Quick stats */}
         <div className="flex items-center justify-between px-0.5">
-          <span className="text-[11px] text-white/30">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
+          <span className="text-[11px] text-muted-foreground/60">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
           {hasActiveFilter && (
             <button
               type="button"
@@ -4264,7 +4264,7 @@ function TicketList({
       {/* Ticket List */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {tickets.length === 0 ? (
-          <div className="flex h-40 flex-col items-center justify-center text-white/30 px-4">
+          <div className="flex h-40 flex-col items-center justify-center text-muted-foreground/60 px-4">
             <MessageCircle className="mb-2 h-8 w-8 opacity-30" />
             <p className="text-sm">Nenhum ticket encontrado</p>
           </div>
@@ -4299,7 +4299,7 @@ function TicketList({
                       : isExpiredWait
                       ? 'bg-amber-500/[0.04] border-l-amber-500'
                       : unreadCount > 0
-                      ? 'bg-white/[0.02] border-l-transparent'
+                      ? 'bg-foreground/[0.02] border-l-transparent'
                       : 'border-l-transparent'
                   )}
                 >
@@ -4308,8 +4308,8 @@ function TicketList({
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={cn(
-                          "text-[11px] font-mono font-semibold shrink-0 px-1.5 py-0.5 rounded bg-white/[0.04]",
-                          isSelected ? "text-emerald-400 bg-emerald-500/10" : "text-white/50"
+                          "text-[11px] font-mono font-semibold shrink-0 px-1.5 py-0.5 rounded bg-foreground/[0.04]",
+                          isSelected ? "text-emerald-400 bg-emerald-500/10" : "text-muted-foreground"
                         )}>
                           #{ticket.numero}
                         </span>
@@ -4319,7 +4319,7 @@ function TicketList({
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-white/30 shrink-0 tabular-nums">
+                      <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
                         {formatDistanceToNow(new Date(ticket.ultima_mensagem_em || ticket.criado_em), {
                           locale: ptBR,
                           addSuffix: false,
@@ -4331,13 +4331,13 @@ function TicketList({
                     <div className="flex items-center gap-2 min-w-0">
                       <p className={cn(
                         "text-sm font-semibold truncate flex-1 min-w-0",
-                        isSelected ? "text-emerald-300" : unreadCount > 0 ? "text-white/90" : "text-white/75"
+                        isSelected ? "text-emerald-300" : unreadCount > 0 ? "text-foreground/90" : "text-foreground/75"
                       )}>
                         {ticket.clientes.nome}
                       </p>
                     </div>
                     {ticket.clientes.telefone && (
-                      <span className="text-[10px] text-white/30 truncate -mt-1">
+                      <span className="text-[10px] text-muted-foreground/60 truncate -mt-1">
                         {formatPhone(ticket.clientes.telefone)}
                       </span>
                     )}
@@ -4392,9 +4392,9 @@ function TicketList({
 
                     {/* Last message preview */}
                     {ticket.ultima_mensagem && (
-                      <p className="text-[11px] text-white/25 line-clamp-1 -mt-0.5">
+                      <p className="text-[11px] text-muted-foreground/50 line-clamp-1 -mt-0.5">
                         {ticket.ultima_mensagem_remetente && isOutgoingMessage(ticket.ultima_mensagem_remetente) && (
-                          <span className="text-white/35 mr-1">Voce:</span>
+                          <span className="text-muted-foreground/70 mr-1">Voce:</span>
                         )}
                         {ticket.ultima_mensagem}
                       </p>

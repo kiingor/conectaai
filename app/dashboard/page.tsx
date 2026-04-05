@@ -405,15 +405,15 @@ export default function DashboardPage() {
 
             {/* Name + Description */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm leading-snug line-clamp-1 tracking-tight text-white/90">
+              <h3 className="font-semibold text-sm leading-snug line-clamp-1 tracking-tight text-foreground/90">
                 {setor.nome}
               </h3>
               {setor.descricao ? (
-                <p className="text-xs text-white/30 mt-0.5 line-clamp-1 leading-relaxed">
+                <p className="text-xs text-muted-foreground/60 mt-0.5 line-clamp-1 leading-relaxed">
                   {setor.descricao}
                 </p>
               ) : (
-                <p className="text-xs text-white/15 mt-0.5 italic">Sem descricao</p>
+                <p className="text-xs text-muted-foreground/30 mt-0.5 italic">Sem descricao</p>
               )}
             </div>
 
@@ -421,14 +421,14 @@ export default function DashboardPage() {
             <div className="hidden md:flex items-center shrink-0">
               {setor.tags ? (
                 <span
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold text-white/90"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold text-foreground/90"
                   style={{ backgroundColor: hexToRgba(setor.tags.cor, 0.6) }}
                 >
                   <Tag className="h-2.5 w-2.5" />
                   {setor.tags.nome}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-white/5 text-white/25">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-foreground/5 text-muted-foreground/50">
                   Sem tag
                 </span>
               )}
@@ -452,7 +452,7 @@ export default function DashboardPage() {
                   )
                 })
               ) : (
-                <span className="text-[10px] text-white/15 italic">Sem canal</span>
+                <span className="text-[10px] text-muted-foreground/30 italic">Sem canal</span>
               )}
             </div>
 
@@ -460,14 +460,14 @@ export default function DashboardPage() {
             <div
               className={cn(
                 'shrink-0 h-7 w-7 rounded-lg flex items-center justify-center',
-                'bg-white/5 group-hover:bg-white/10',
+                'bg-foreground/5 group-hover:bg-foreground/10',
                 'transition-all duration-300',
               )}
             >
               {isNavigating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-white/60" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-foreground/60" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white/70 transition-colors" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/80 group-hover:text-foreground/70 transition-colors" />
               )}
             </div>
           </div>
@@ -487,7 +487,7 @@ export default function DashboardPage() {
             </div>
             <h1 className="text-2xl font-bold tracking-tight brand-gradient-text">Setores</h1>
           </div>
-          <p className="text-white/35 text-sm ml-[42px]">
+          <p className="text-muted-foreground/70 text-sm ml-[42px]">
             Gerencie e acesse todos os setores da sua organizacao
           </p>
         </div>
@@ -516,8 +516,8 @@ export default function DashboardPage() {
               <Building2 className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalSetores}</p>
-              <p className="text-[11px] text-white/35 font-medium">Setores</p>
+              <p className="text-xl font-bold text-foreground/90 tabular-nums">{stats.totalSetores}</p>
+              <p className="text-[11px] text-muted-foreground/70 font-medium">Setores</p>
             </div>
           </div>
           <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-3.5">
@@ -525,8 +525,8 @@ export default function DashboardPage() {
               <Hash className="h-5 w-5 text-cyan-400" />
             </div>
             <div>
-              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalTags}</p>
-              <p className="text-[11px] text-white/35 font-medium">Tags</p>
+              <p className="text-xl font-bold text-foreground/90 tabular-nums">{stats.totalTags}</p>
+              <p className="text-[11px] text-muted-foreground/70 font-medium">Tags</p>
             </div>
           </div>
           <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-3.5 col-span-2 sm:col-span-1">
@@ -534,8 +534,8 @@ export default function DashboardPage() {
               <Wifi className="h-5 w-5 text-violet-400" />
             </div>
             <div>
-              <p className="text-xl font-bold text-white/90 tabular-nums">{stats.totalCanais}</p>
-              <p className="text-[11px] text-white/35 font-medium">Canais Ativos</p>
+              <p className="text-xl font-bold text-foreground/90 tabular-nums">{stats.totalCanais}</p>
+              <p className="text-[11px] text-muted-foreground/70 font-medium">Canais Ativos</p>
             </div>
           </div>
         </motion.div>
@@ -544,12 +544,12 @@ export default function DashboardPage() {
       {/* Filter / Search Bar */}
       <div className="glass-card rounded-2xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
           <Input
             placeholder="Buscar setor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 rounded-xl glass-input text-sm placeholder:text-white/25 border-white/8"
+            className="pl-9 h-9 rounded-xl glass-input text-sm placeholder:text-muted-foreground/50 border-foreground/8"
           />
         </div>
 
@@ -562,7 +562,7 @@ export default function DashboardPage() {
               'px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
               activeTagFilter === null
                 ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30'
-                : 'bg-white/5 text-white/40 hover:bg-white/8 hover:text-white/60'
+                : 'bg-foreground/5 text-muted-foreground/80 hover:bg-foreground/8 hover:text-foreground/60'
             )}
           >
             Todos
@@ -576,7 +576,7 @@ export default function DashboardPage() {
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
                 activeTagFilter === tag.id
                   ? 'text-white'
-                  : 'text-white/50 hover:text-white/70'
+                  : 'text-muted-foreground hover:text-foreground/70'
               )}
               style={{
                 backgroundColor: activeTagFilter === tag.id ? hexToRgba(tag.cor, 0.25) : 'rgba(255,255,255,0.04)',
@@ -597,8 +597,8 @@ export default function DashboardPage() {
               className={cn(
                 'px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200',
                 activeTagFilter === 'untagged'
-                  ? 'bg-white/10 text-white/70 ring-1 ring-white/20'
-                  : 'bg-white/5 text-white/40 hover:bg-white/8 hover:text-white/60'
+                  ? 'bg-foreground/10 text-foreground/70 ring-1 ring-foreground/20'
+                  : 'bg-foreground/5 text-muted-foreground/80 hover:bg-foreground/8 hover:text-foreground/60'
               )}
             >
               Sem Tag
@@ -616,7 +616,7 @@ export default function DashboardPage() {
                 setTagForm({ nome: '', cor: '#10b981', ordem: 0 })
                 setIsTagsDialogOpen(true)
               }}
-              className="gap-1.5 h-8 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 text-xs"
+              className="gap-1.5 h-8 rounded-xl text-muted-foreground/80 hover:text-foreground/70 hover:bg-foreground/5 text-xs"
             >
               <Tag className="h-3.5 w-3.5" />
               Gerenciar Tags
@@ -630,14 +630,14 @@ export default function DashboardPage() {
         <div className="space-y-2.5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4">
-              <Skeleton className="h-10 w-10 rounded-xl shrink-0 bg-white/5" />
+              <Skeleton className="h-10 w-10 rounded-xl shrink-0 bg-foreground/5" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-36 bg-white/5" />
-                <Skeleton className="h-3 w-56 bg-white/5" />
+                <Skeleton className="h-4 w-36 bg-foreground/5" />
+                <Skeleton className="h-3 w-56 bg-foreground/5" />
               </div>
-              <Skeleton className="h-6 w-16 rounded-full bg-white/5 hidden md:block" />
-              <Skeleton className="h-6 w-20 rounded-full bg-white/5 hidden lg:block" />
-              <Skeleton className="h-7 w-7 rounded-lg bg-white/5" />
+              <Skeleton className="h-6 w-16 rounded-full bg-foreground/5 hidden md:block" />
+              <Skeleton className="h-6 w-20 rounded-full bg-foreground/5 hidden lg:block" />
+              <Skeleton className="h-7 w-7 rounded-lg bg-foreground/5" />
             </div>
           ))}
         </div>
@@ -645,10 +645,10 @@ export default function DashboardPage() {
         <div className="glass-card-elevated rounded-2xl p-16">
           <div className="flex flex-col items-center justify-center text-center">
             <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl glass-card">
-              <MessageCircle className="h-8 w-8 text-white/20" />
+              <MessageCircle className="h-8 w-8 text-muted-foreground/40" />
             </div>
-            <h3 className="text-lg font-semibold text-white/80">Nenhum setor encontrado</h3>
-            <p className="mt-1.5 text-sm text-white/35 max-w-xs">
+            <h3 className="text-lg font-semibold text-foreground/80">Nenhum setor encontrado</h3>
+            <p className="mt-1.5 text-sm text-muted-foreground/70 max-w-xs">
               {searchTerm || activeTagFilter
                 ? 'Nenhum setor corresponde aos filtros aplicados'
                 : colaborador?.is_master
@@ -690,29 +690,29 @@ export default function DashboardPage() {
                   {group.tag ? (
                     <>
                       <span
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white/90"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold text-foreground/90"
                         style={{ backgroundColor: hexToRgba(group.tag.cor, 0.5) }}
                       >
                         <Tag className="h-2.5 w-2.5" />
                         {group.tag.nome}
                       </span>
-                      <span className="text-[11px] text-white/20 tabular-nums">
+                      <span className="text-[11px] text-muted-foreground/40 tabular-nums">
                         {group.setores.length}
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/5 text-white/35">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-foreground/5 text-muted-foreground/70">
                         <Tag className="h-2.5 w-2.5" />
                         Sem Tag
                       </span>
-                      <span className="text-[11px] text-white/20 tabular-nums">
+                      <span className="text-[11px] text-muted-foreground/40 tabular-nums">
                         {group.setores.length}
                       </span>
                     </>
                   )}
                 </div>
-                <div className="flex-1 h-px bg-white/5" />
+                <div className="flex-1 h-px bg-foreground/5" />
               </div>
 
               {/* Sector rows */}
@@ -743,10 +743,10 @@ export default function DashboardPage() {
                 <PreviewIcon className="h-5.5 w-5.5 text-white drop-shadow-sm" />
               </div>
               <div>
-                <DialogTitle className="text-lg text-white/90">
+                <DialogTitle className="text-lg text-foreground/90">
                   {newSetor.nome || 'Novo Setor'}
                 </DialogTitle>
-                <DialogDescription className="text-white/35">
+                <DialogDescription className="text-muted-foreground/70">
                   Preencha os dados abaixo para criar um novo setor
                 </DialogDescription>
               </div>
@@ -759,7 +759,7 @@ export default function DashboardPage() {
               {/* Top fields: Name + Description + Tag */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome" className="text-white/60">Nome do Setor</Label>
+                  <Label htmlFor="nome" className="text-foreground/60">Nome do Setor</Label>
                   <Input
                     id="nome"
                     value={newSetor.nome}
@@ -772,7 +772,7 @@ export default function DashboardPage() {
                 {/* Tag selector */}
                 {tags.length > 0 ? (
                   <div className="space-y-2">
-                    <Label className="text-white/60">Tag</Label>
+                    <Label className="text-foreground/60">Tag</Label>
                     <Select
                       value={newSetor.tag_id || 'none'}
                       onValueChange={(v) => setNewSetor((prev) => ({ ...prev, tag_id: v === 'none' ? '' : v }))}
@@ -780,7 +780,7 @@ export default function DashboardPage() {
                       <SelectTrigger className="rounded-xl glass-input">
                         <SelectValue placeholder="Selecionar tag..." />
                       </SelectTrigger>
-                      <SelectContent className="glass-dropdown rounded-xl border-white/8">
+                      <SelectContent className="glass-dropdown rounded-xl border-foreground/8">
                         <SelectItem value="none">Sem tag</SelectItem>
                         {tags.map((tag) => (
                           <SelectItem key={tag.id} value={tag.id}>
@@ -802,7 +802,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="descricao" className="text-white/60">Descricao</Label>
+                <Label htmlFor="descricao" className="text-foreground/60">Descricao</Label>
                 <Textarea
                   id="descricao"
                   value={newSetor.descricao}
@@ -819,8 +819,8 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Color Picker */}
                 <div className="space-y-2.5">
-                  <Label className="text-white/60">Cor do Setor</Label>
-                  <div className="glass-card rounded-xl p-3 border border-white/6">
+                  <Label className="text-foreground/60">Cor do Setor</Label>
+                  <div className="glass-card rounded-xl p-3 border border-foreground/6">
                     <div className="grid grid-cols-5 gap-2.5">
                       {AVAILABLE_COLORS.map((color) => (
                         <button
@@ -830,7 +830,7 @@ export default function DashboardPage() {
                           className={cn(
                             'h-8 w-8 rounded-full border-2 transition-all duration-200 mx-auto',
                             newSetor.cor === color.value
-                              ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
+                              ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-foreground/20'
                               : 'border-transparent hover:scale-110'
                           )}
                           style={{ backgroundColor: color.value }}
@@ -843,8 +843,8 @@ export default function DashboardPage() {
 
                 {/* Icon Picker */}
                 <div className="space-y-2.5">
-                  <Label className="text-white/60">Icone do Setor</Label>
-                  <div className="glass-card rounded-xl p-3 border border-white/6">
+                  <Label className="text-foreground/60">Icone do Setor</Label>
+                  <div className="glass-card rounded-xl p-3 border border-foreground/6">
                     <div className="grid grid-cols-6 gap-1.5">
                       {AVAILABLE_ICONS.map((iconItem) => (
                         <button
@@ -855,11 +855,11 @@ export default function DashboardPage() {
                             'flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200',
                             newSetor.icon_url === iconItem.name
                               ? 'border-emerald-500/60 bg-emerald-500/10 shadow-sm shadow-emerald-500/20'
-                              : 'border-white/6 hover:border-emerald-500/30 hover:bg-white/5'
+                              : 'border-foreground/6 hover:border-emerald-500/30 hover:bg-foreground/5'
                           )}
                           title={iconItem.name}
                         >
-                          <iconItem.icon className="h-4 w-4 text-white/60" />
+                          <iconItem.icon className="h-4 w-4 text-foreground/60" />
                         </button>
                       ))}
                     </div>
@@ -874,7 +874,7 @@ export default function DashboardPage() {
               variant="outline"
               onClick={() => setIsCreateOpen(false)}
               disabled={saving}
-              className="rounded-xl border-white/10 hover:bg-white/5 text-white/60"
+              className="rounded-xl border-foreground/10 hover:bg-foreground/5 text-foreground/60"
             >
               Cancelar
             </Button>
@@ -900,24 +900,24 @@ export default function DashboardPage() {
       <Dialog open={isTagsDialogOpen} onOpenChange={setIsTagsDialogOpen}>
         <DialogContent className="glass-card-elevated rounded-2xl max-w-md border-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg text-white/90">
+            <DialogTitle className="flex items-center gap-2 text-lg text-foreground/90">
               <Tag className="h-5 w-5 text-emerald-400" />
               Gerenciar Tags
             </DialogTitle>
-            <DialogDescription className="text-white/35">
+            <DialogDescription className="text-muted-foreground/70">
               Crie tags para organizar e agrupar seus setores
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             {/* Tag form */}
-            <div className="glass-card rounded-xl p-4 space-y-3 border border-white/8">
-              <p className="text-sm font-medium text-white/70">
+            <div className="glass-card rounded-xl p-4 space-y-3 border border-foreground/8">
+              <p className="text-sm font-medium text-foreground/70">
                 {editingTag ? 'Editar Tag' : 'Nova Tag'}
               </p>
               <div className="flex gap-3">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="tag-nome" className="text-white/50">Nome</Label>
+                  <Label htmlFor="tag-nome" className="text-muted-foreground">Nome</Label>
                   <Input
                     id="tag-nome"
                     placeholder="Ex: Comercial, Suporte..."
@@ -928,7 +928,7 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div className="w-20 space-y-2">
-                  <Label htmlFor="tag-ordem" className="text-white/50">Ordem</Label>
+                  <Label htmlFor="tag-ordem" className="text-muted-foreground">Ordem</Label>
                   <Input
                     id="tag-ordem"
                     type="number"
@@ -943,7 +943,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-white/50">Cor</Label>
+                <Label className="text-muted-foreground">Cor</Label>
                 <div className="flex flex-wrap gap-2">
                   {AVAILABLE_COLORS.map((color) => (
                     <button
@@ -953,7 +953,7 @@ export default function DashboardPage() {
                       className={cn(
                         'h-7 w-7 rounded-full border-2 transition-all duration-200',
                         tagForm.cor === color.value
-                          ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-white/20'
+                          ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-[#06080f] ring-foreground/20'
                           : 'border-transparent hover:scale-110'
                       )}
                       style={{ backgroundColor: color.value }}
@@ -971,7 +971,7 @@ export default function DashboardPage() {
                       setEditingTag(null)
                       setTagForm({ nome: '', cor: '#10b981', ordem: 0 })
                     }}
-                    className="text-white/50 hover:text-white/70 hover:bg-white/5"
+                    className="text-muted-foreground hover:text-foreground/70 hover:bg-foreground/5"
                   >
                     <X className="h-4 w-4 mr-1" />
                     Cancelar
@@ -1004,7 +1004,7 @@ export default function DashboardPage() {
                   <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
                 </div>
               ) : tags.length === 0 ? (
-                <div className="text-center py-6 text-white/30">
+                <div className="text-center py-6 text-muted-foreground/60">
                   <Tag className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">Nenhuma tag criada ainda</p>
                 </div>
@@ -1012,7 +1012,7 @@ export default function DashboardPage() {
                 tags.map((tag) => (
                   <div
                     key={tag.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-white/6 bg-white/3"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-foreground/6 bg-foreground/3"
                   >
                     <span
                       className="h-4 w-4 rounded-full shrink-0 shadow-sm"
@@ -1021,21 +1021,21 @@ export default function DashboardPage() {
                         boxShadow: `0 0 8px ${hexToRgba(tag.cor, 0.3)}`,
                       }}
                     />
-                    <span className="flex-1 text-sm font-medium text-white/70">{tag.nome}</span>
-                    <span className="text-xs text-white/25 tabular-nums w-8 text-center">
+                    <span className="flex-1 text-sm font-medium text-foreground/70">{tag.nome}</span>
+                    <span className="text-xs text-muted-foreground/50 tabular-nums w-8 text-center">
                       #{tag.ordem ?? 0}
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 hover:bg-white/5"
+                        className="h-7 w-7 hover:bg-foreground/5"
                         onClick={() => {
                           setEditingTag(tag)
                           setTagForm({ nome: tag.nome, cor: tag.cor, ordem: tag.ordem ?? 0 })
                         }}
                       >
-                        <Pencil className="h-3.5 w-3.5 text-white/40" />
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground/80" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -1061,7 +1061,7 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               onClick={() => setIsTagsDialogOpen(false)}
-              className="rounded-xl border-white/10 hover:bg-white/5 text-white/60"
+              className="rounded-xl border-foreground/10 hover:bg-foreground/5 text-foreground/60"
             >
               Fechar
             </Button>

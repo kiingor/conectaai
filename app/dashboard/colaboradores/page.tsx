@@ -399,12 +399,12 @@ export default function ColaboradoresPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-foreground/10">
             <Users className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Colaboradores</h1>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-muted-foreground/80">
               Gerencie usuarios, setores e permissoes
             </p>
           </div>
@@ -422,19 +422,19 @@ export default function ColaboradoresPage() {
       <div className="glass-card rounded-2xl p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Buscar por nome ou e-mail..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 rounded-xl glass-input text-white/80 placeholder:text-white/25"
+              className="pl-9 rounded-xl glass-input text-foreground/80 placeholder:text-muted-foreground/50"
             />
           </div>
           <Select value={setorFilterId} onValueChange={setSetorFilterId}>
-            <SelectTrigger className="w-full sm:w-44 glass-input rounded-xl text-white/70">
+            <SelectTrigger className="w-full sm:w-44 glass-input rounded-xl text-foreground/70">
               <SelectValue placeholder="Setor" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0e1019] border-white/8">
+            <SelectContent className="bg-page-bg-alt border-foreground/8">
               <SelectItem value="all">Todos os Setores</SelectItem>
               {setores.map((s) => (
                 <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
@@ -442,8 +442,8 @@ export default function ColaboradoresPage() {
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-white/30 shrink-0" />
-            <div className="flex rounded-xl border border-white/8 overflow-hidden">
+            <Filter className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+            <div className="flex rounded-xl border border-foreground/8 overflow-hidden">
               {(['all', 'active', 'inactive'] as const).map((val) => (
                 <button
                   key={val}
@@ -452,7 +452,7 @@ export default function ColaboradoresPage() {
                     'px-3 py-2 text-xs font-medium transition-colors',
                     statusFilter === val
                       ? 'bg-emerald-500/15 text-emerald-400'
-                      : 'text-white/40 hover:bg-white/5 hover:text-white/60'
+                      : 'text-muted-foreground/80 hover:bg-foreground/5 hover:text-foreground/60'
                   )}
                 >
                   {val === 'all' ? 'Todos' : val === 'active' ? 'Ativos' : 'Inativos'}
@@ -484,7 +484,7 @@ export default function ColaboradoresPage() {
             <h3 className="mt-4 text-base font-semibold text-white">
               Nenhum colaborador encontrado
             </h3>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 text-sm text-muted-foreground/80">
               {colaboradores.length === 0 ? 'Comece cadastrando o primeiro colaborador' : 'Tente ajustar os filtros'}
             </p>
           </div>
@@ -508,14 +508,14 @@ export default function ColaboradoresPage() {
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ delay: index * 0.04, duration: 0.3 }}
                   className={cn(
-                    'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-white/[0.03] hover:border-l-cyan-500/60 group',
+                    'glass-card rounded-2xl p-4 flex items-center gap-4 border-l-2 transition-all duration-200 hover:bg-foreground/[0.03] hover:border-l-cyan-500/60 group',
                     colab.ativo ? 'border-l-cyan-500/30' : 'border-l-white/10 opacity-50'
                   )}
                 >
                   {/* Online dot + Avatar */}
                   <div className="relative shrink-0">
                     <div className={cn(
-                      'h-11 w-11 rounded-full flex items-center justify-center text-sm font-semibold bg-white/[0.06] text-white/50 border border-white/8',
+                      'h-11 w-11 rounded-full flex items-center justify-center text-sm font-semibold bg-foreground/[0.06] text-muted-foreground border border-foreground/8',
                     )}>
                       {initials}
                     </div>
@@ -524,7 +524,7 @@ export default function ColaboradoresPage() {
                         'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0c14]',
                         colab.is_online && colab.ativo
                           ? 'status-dot-online bg-emerald-500'
-                          : 'bg-white/20'
+                          : 'bg-foreground/20'
                       )}
                     />
                   </div>
@@ -532,14 +532,14 @@ export default function ColaboradoresPage() {
                   {/* Main Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-white/90 truncate">{colab.nome}</span>
+                      <span className="font-medium text-foreground/90 truncate">{colab.nome}</span>
                       {!colab.ativo && (
-                        <Badge className="glass-badge bg-white/5 text-white/30 border-white/10 text-[10px] px-1.5 py-0">
+                        <Badge className="glass-badge bg-foreground/5 text-muted-foreground/60 border-foreground/10 text-[10px] px-1.5 py-0">
                           Inativo
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-white/40 truncate">{colab.email}</p>
+                    <p className="text-sm text-muted-foreground/80 truncate">{colab.email}</p>
                     {/* Sector badges */}
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {setorNomes.length > 0 ? (
@@ -550,21 +550,21 @@ export default function ColaboradoresPage() {
                             </Badge>
                           ))}
                           {setorNomes.length > 3 && (
-                            <Badge className="glass-badge bg-white/5 text-white/30 border-white/8 text-[10px] px-1.5 py-0">
+                            <Badge className="glass-badge bg-foreground/5 text-muted-foreground/60 border-foreground/8 text-[10px] px-1.5 py-0">
                               +{setorNomes.length - 3}
                             </Badge>
                           )}
                         </>
                       ) : (
-                        <span className="text-xs text-white/20">Sem setores</span>
+                        <span className="text-xs text-muted-foreground/40">Sem setores</span>
                       )}
                     </div>
                   </div>
 
                   {/* Permission role */}
                   <div className="hidden md:block text-right shrink-0">
-                    <span className="text-[10px] uppercase tracking-wider text-white/25 block">Permissao</span>
-                    <span className="text-sm text-white/50">{colab.permissao?.nome || '-'}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block">Permissao</span>
+                    <span className="text-sm text-muted-foreground">{colab.permissao?.nome || '-'}</span>
                   </div>
 
                   {/* Online status badge */}
@@ -573,7 +573,7 @@ export default function ColaboradoresPage() {
                       'shrink-0',
                       colab.is_online && colab.ativo
                         ? 'glass-badge bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-                        : 'glass-badge bg-white/5 text-white/30 border-white/10'
+                        : 'glass-badge bg-foreground/5 text-muted-foreground/60 border-foreground/10'
                     )}
                   >
                     {colab.is_online && colab.ativo ? 'Online' : 'Offline'}
@@ -584,7 +584,7 @@ export default function ColaboradoresPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5"
+                      className="h-8 w-8 text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5"
                       onClick={() => openEditModal(colab)}
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -612,7 +612,7 @@ export default function ColaboradoresPage() {
 
       {/* Modal for Create/Edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-md bg-[#0e1019] border border-white/8 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <Users className="h-5 w-5 text-emerald-400" />
@@ -638,7 +638,7 @@ export default function ColaboradoresPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, nome: e.target.value })
                 }
-                className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
+                className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50"
               />
             </div>
 
@@ -655,7 +655,7 @@ export default function ColaboradoresPage() {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 disabled={!!editingColaborador}
-                className="glass-input rounded-xl text-white/80 placeholder:text-white/25 disabled:opacity-50"
+                className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50 disabled:opacity-50"
               />
               {editingColaborador && (
                 <p className="text-xs text-muted-foreground">
@@ -677,7 +677,7 @@ export default function ColaboradoresPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, senha: e.target.value })
                   }
-                  className="glass-input rounded-xl text-white/80 placeholder:text-white/25"
+                  className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50"
                 />
               </div>
             )}
@@ -724,7 +724,7 @@ export default function ColaboradoresPage() {
                   setFormData({ ...formData, permissao_id: value })
                 }
               >
-                <SelectTrigger className="glass-input rounded-xl text-white/80 placeholder:text-white/25">
+                <SelectTrigger className="glass-input rounded-xl text-foreground/80 placeholder:text-muted-foreground/50">
                   <SelectValue placeholder="Selecione uma permissao" />
                 </SelectTrigger>
                 <SelectContent>
@@ -742,7 +742,7 @@ export default function ColaboradoresPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="border-white/10 text-white/60 hover:bg-white/5"
+              className="border-foreground/10 text-foreground/60 hover:bg-foreground/5"
             >
               Cancelar
             </Button>
@@ -760,7 +760,7 @@ export default function ColaboradoresPage() {
 
       {/* Deactivate Confirmation Dialog */}
       <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
-        <AlertDialogContent className="bg-[#0e1019] border border-white/8 rounded-2xl">
+        <AlertDialogContent className="bg-page-bg-alt border border-foreground/8 rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {colaboradorToDeactivate?.ativo
@@ -774,7 +774,7 @@ export default function ColaboradoresPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 text-white/60 hover:bg-white/5">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="border-foreground/10 text-foreground/60 hover:bg-foreground/5">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeactivate}
               className={

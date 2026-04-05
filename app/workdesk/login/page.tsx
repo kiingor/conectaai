@@ -176,7 +176,7 @@ export default function WorkdeskLoginPage() {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-sm text-white/40 mt-1"
+            className="text-sm text-muted-foreground/80 mt-1"
           >
             Area do Atendente
           </motion.span>
@@ -197,14 +197,14 @@ export default function WorkdeskLoginPage() {
                 <h2 className="text-2xl font-bold tracking-tight text-white">
                   Bom te ver!
                 </h2>
-                <p className="mt-1 text-sm text-white/40">
+                <p className="mt-1 text-sm text-muted-foreground/80">
                   Entre com suas credenciais para acessar sua area de trabalho
                 </p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-white/70">
+                  <Label htmlFor="email" className="text-sm font-medium text-foreground/70">
                     E-mail
                   </Label>
                   <Input
@@ -214,13 +214,13 @@ export default function WorkdeskLoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 glass-input rounded-xl text-white placeholder:text-white/30 focus-visible:ring-0"
+                    className="h-12 glass-input rounded-xl text-white placeholder:text-muted-foreground/60 focus-visible:ring-0"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium text-white/70">
+                    <Label htmlFor="password" className="text-sm font-medium text-foreground/70">
                       Senha
                     </Label>
                     <button
@@ -239,12 +239,12 @@ export default function WorkdeskLoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 glass-input rounded-xl text-white placeholder:text-white/30 pr-12 focus-visible:ring-0"
+                      className="h-12 glass-input rounded-xl text-white placeholder:text-muted-foreground/60 pr-12 focus-visible:ring-0"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/80 hover:text-foreground/70 transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -284,15 +284,15 @@ export default function WorkdeskLoginPage() {
               <div className="mt-8 grid grid-cols-3 gap-3">
                 <div className="text-center glass rounded-xl px-3 py-2">
                   <p className="text-base font-bold text-white">24/7</p>
-                  <p className="text-xs text-white/30">Suporte</p>
+                  <p className="text-xs text-muted-foreground/60">Suporte</p>
                 </div>
                 <div className="text-center glass rounded-xl px-3 py-2">
                   <p className="text-base font-bold text-white">99%</p>
-                  <p className="text-xs text-white/30">Uptime</p>
+                  <p className="text-xs text-muted-foreground/60">Uptime</p>
                 </div>
                 <div className="text-center glass rounded-xl px-3 py-2">
                   <p className="text-base font-bold brand-gradient-text">Ativo</p>
-                  <p className="text-xs text-white/30">Status</p>
+                  <p className="text-xs text-muted-foreground/60">Status</p>
                 </div>
               </div>
             </motion.div>
@@ -310,7 +310,7 @@ export default function WorkdeskLoginPage() {
               <button
                 type="button"
                 onClick={goToLogin}
-                className="mb-6 flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors"
+                className="mb-6 flex items-center gap-2 text-sm text-muted-foreground/80 hover:text-foreground/70 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Voltar ao login
@@ -323,14 +323,14 @@ export default function WorkdeskLoginPage() {
                 <h2 className="text-2xl font-bold tracking-tight text-white">
                   Recuperar senha
                 </h2>
-                <p className="mt-1 text-sm text-white/40">
+                <p className="mt-1 text-sm text-muted-foreground/80">
                   Informe seu e-mail e enviaremos um link para redefinir sua senha.
                 </p>
               </div>
 
               <form onSubmit={handleForgotPassword} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="forgot-email" className="text-sm font-medium text-white/70">
+                  <Label htmlFor="forgot-email" className="text-sm font-medium text-foreground/70">
                     E-mail
                   </Label>
                   <Input
@@ -340,7 +340,7 @@ export default function WorkdeskLoginPage() {
                     required
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    className="h-12 glass-input rounded-xl text-white placeholder:text-white/30 focus-visible:ring-0"
+                    className="h-12 glass-input rounded-xl text-white placeholder:text-muted-foreground/60 focus-visible:ring-0"
                   />
                 </div>
 
@@ -400,22 +400,22 @@ export default function WorkdeskLoginPage() {
               <h2 className="text-2xl font-bold tracking-tight text-white">
                 E-mail enviado!
               </h2>
-              <p className="mt-3 text-sm text-white/50">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Enviamos um link de recuperacao para{' '}
-                <span className="font-medium text-white/80">{forgotEmail}</span>.
+                <span className="font-medium text-foreground/80">{forgotEmail}</span>.
                 <br />
                 Verifique sua caixa de entrada e spam.
               </p>
 
-              <div className="mt-6 glass rounded-xl px-4 py-3 text-sm text-white/40">
-                O link expira em <span className="font-medium text-white/70">1 hora</span>.
+              <div className="mt-6 glass rounded-xl px-4 py-3 text-sm text-muted-foreground/80">
+                O link expira em <span className="font-medium text-foreground/70">1 hora</span>.
               </div>
 
               <Button
                 type="button"
                 variant="outline"
                 onClick={goToLogin}
-                className="mt-6 h-12 w-full rounded-xl border-white/10 text-white/70 hover:bg-white/5 hover:text-white"
+                className="mt-6 h-12 w-full rounded-xl border-foreground/10 text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar ao login
@@ -432,9 +432,9 @@ export default function WorkdeskLoginPage() {
           transition={{ delay: 0.5 }}
           className="mt-8 flex items-center justify-center gap-2"
         >
-          <div className="h-px flex-1 bg-white/5" />
+          <div className="h-px flex-1 bg-foreground/5" />
           <span className="text-xs font-medium brand-gradient-text">ConectaAI</span>
-          <div className="h-px flex-1 bg-white/5" />
+          <div className="h-px flex-1 bg-foreground/5" />
         </motion.div>
       </motion.div>
     </div>
