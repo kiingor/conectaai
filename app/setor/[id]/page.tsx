@@ -1389,6 +1389,7 @@ const saveConfig = async () => {
     try {
       const payload: any = {
         setor_id: setorId,
+        organizacao_id: setor?.organizacao_id,
         nome: canalForm.nome.trim(),
         tipo: canalForm.tipo,
         ativo: canalForm.ativo,
@@ -1577,6 +1578,7 @@ const saveConfig = async () => {
     try {
       const payload = {
         setor_id: setorId,
+        organizacao_id: setor?.organizacao_id,
         nome: canalForm.nome.trim(),
         tipo: 'evolution_api',
         ativo: true,
@@ -1593,9 +1595,9 @@ const saveConfig = async () => {
         closeCanalModal()
         fetchCanais()
       }, 2000)
-    } catch (err) {
-      console.error('[saveEvoCanal]', err)
-      toast.error('Erro ao salvar canal')
+    } catch (err: any) {
+      console.error('[saveEvoCanal] message:', err?.message, 'code:', err?.code, 'details:', err?.details, 'hint:', err?.hint, 'full:', JSON.stringify(err))
+      toast.error('Erro ao salvar canal: ' + (err?.message || JSON.stringify(err)))
     }
   }
 
@@ -3672,6 +3674,52 @@ const saveConfig = async () => {
                     <Plus className="mr-2 h-4 w-4" /> Adicionar Canal
                   </Button>
                 </div>
+                {canais.length > 0 && (
+                  <div className="space-y-3">
+                    {canais.map((canal) => {
+                      const status = canalStatuses[canal.id]
+                      const isOpen = status === 'open'
+                      const isConnecting = status === 'connecting'
+                      const isChecking = checkingCanalId === canal.id
+                      return (
+                        <div key={canal.id} className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('h-2.5 w-2.5 rounded-full', isOpen ? 'bg-green-400' : isConnecting ? 'bg-yellow-400 animate-pulse' : 'bg-red-400')} />
+                            <div>
+                              <p className="text-sm font-medium">{canal.nome}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {isOpen ? 'Conectado' : isConnecting ? 'Conectando...' : status === 'close' ? 'Desconectado' : 'Status desconhecido'}
+                                {canal.instancia && <span className="ml-1 opacity-60">· {canal.instancia}</span>}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => checkInstanciaStatus(canal)}
+                              disabled={isChecking}
+                              title="Verificar status"
+                            >
+                              {isChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                            </Button>
+                            {!isOpen && (
+                              <Button variant="ghost" size="sm" onClick={() => openReconnect(canal)} title="Reconectar">
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="sm" onClick={() => openEditCanal(canal)} title="Editar">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteCanal(canal.id)} title="Excluir">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </CollapsibleContent>
           </Card>
