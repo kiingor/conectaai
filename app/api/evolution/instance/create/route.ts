@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const EVOLUTION_BASE_URL = 'https://whatsapi.mensageria.softcomtecnologia.com'
+const EVOLUTION_BASE_URL = 'https://evolution.conectaai.net'
 const EVOLUTION_GLOBAL_KEY =
-  'duukhYWkWdrmqcREwVqdNumyokmudpPEUuN4B70YqyQrxL5212IfXWUFYCHfejvTGBw4fc378VGMmUcpF7549ktNWMrnjMF8HBmYxHM9xzhItqPlINrmejamx77FPF8d'
+  'eVo2026xK9mT4wBqL7nRjZ3cY8hF1dSgP5vA0iUoWlEbNfQrHs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         qrcode: true,
         groupsIgnore: true,
         webhook: {
-          url: 'https://n8n-webhook.mensageria.softcomtecnologia.com/webhook/evolution',
+          url: 'http://82.25.64.199:5678/webhook/evolution',
           byEvents: false,
           base64: false,
           events: ['MESSAGES_UPSERT'],

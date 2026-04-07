@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const EVOLUTION_BASE_URL = 'https://whatsapi.mensageria.softcomtecnologia.com'
+const EVOLUTION_BASE_URL = 'https://evolution.conectaai.net'
 const EVOLUTION_GLOBAL_KEY =
-  'duukhYWkWdrmqcREwVqdNumyokmudpPEUuN4B70YqyQrxL5212IfXWUFYCHfejvTGBw4fc378VGMmUcpF7549ktNWMrnjMF8HBmYxHM9xzhItqPlINrmejamx77FPF8d'
+  'eVo2026xK9mT4wBqL7nRjZ3cY8hF1dSgP5vA0iUoWlEbNfQrHs'
 
 export async function GET(
   _request: NextRequest,
