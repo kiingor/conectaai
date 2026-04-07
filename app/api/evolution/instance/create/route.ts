@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         qrcode: true,
         groupsIgnore: true,
         webhook: {
-          url: 'http://82.25.64.199:5678/webhook/evolution',
+          url: 'https://n8n.conectaai.net/webhook/evolution',
           byEvents: false,
           base64: false,
           events: ['MESSAGES_UPSERT'],
