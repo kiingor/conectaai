@@ -4,10 +4,16 @@ import { type NextRequest } from 'next/server'
 export const ORG_ID_HEADER = 'x-org-id'
 export const ORG_ID_COOKIE = 'org_id'
 
+// Subdomínios reservados que não representam uma organização
+const RESERVED_SUBDOMAINS = ['www', 'app', 'api', 'admin', 'supabase', 'mail', 'smtp', 'ftp']
+
+// Domínio raiz da plataforma (ex: conectaai.net)
+export const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'conectaai.net'
+
 /**
  * Extrai o slug do subdomínio a partir do hostname.
- * "empresa1.softcomhub.com" → "empresa1"
- * "softcomhub.com" (sem subdomínio) → null
+ * "empresa1.conectaai.net" → "empresa1"
+ * "conectaai.net" (sem subdomínio) → null
  * "localhost" → null
  * "empresa1.localhost" → "empresa1" (dev local)
  */
@@ -22,17 +28,19 @@ export function extractSlugFromHost(host: string): string | null {
 
   // Dev local: empresa1.localhost → 2 partes
   if (parts.length === 2 && parts[1] === 'localhost') {
-    return parts[0] !== 'www' ? parts[0] : null
+    const sub = parts[0]
+    return !RESERVED_SUBDOMAINS.includes(sub) ? sub : null
   }
 
-  // Ignorar domínios de plataforma (Vercel, etc.)
+  // Ignorar domínios de plataforma (Vercel preview, etc.)
   const rootDomain = parts.slice(-2).join('.')
-  const ignoredDomains = ['vercel.app', 'vercel-dns.com', 'now.sh']
-  if (ignoredDomains.includes(rootDomain)) return null
+  const ignoredRoots = ['vercel.app', 'vercel-dns.com', 'now.sh']
+  if (ignoredRoots.includes(rootDomain)) return null
 
-  // Produção: empresa1.softcomhub.com → 3+ partes, slug é parts[0]
-  if (parts.length >= 3 && parts[0] !== 'www') {
-    return parts[0]
+  // Produção: empresa1.conectaai.net → 3+ partes, slug é parts[0]
+  if (parts.length >= 3) {
+    const sub = parts[0]
+    return !RESERVED_SUBDOMAINS.includes(sub) ? sub : null
   }
 
   return null
