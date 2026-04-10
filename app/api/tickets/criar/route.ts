@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Check if there's already an open ticket for this cliente in this setor + org
     const { data: existingTicket } = await supabase
       .from('tickets')
-      .select('id, status, colaborador_id, subsetor_id')
+      .select('id, status, colaborador_id')
       .eq('cliente_id', finalClienteId)
       .eq('setor_id', setor_id)
       .eq('organizacao_id', orgId)
@@ -95,30 +95,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingTicket) {
-      // If subsetor changed, update the existing ticket
-      if (subsetor_id && existingTicket.subsetor_id !== subsetor_id) {
-        await supabase
-          .from('tickets')
-          .update({ subsetor_id })
-          .eq('id', existingTicket.id)
-
-        // Log the subsetor change
-        await supabase.from('ticket_logs').insert({
-          ticket_id: existingTicket.id,
-          tipo: 'transferencia',
-          descricao: `Ticket transferido para subsetor`,
-          organizacao_id: orgId,
-        })
-
-        return NextResponse.json({
-          success: true,
-          ticket_id: existingTicket.id,
-          existing: true,
-          subsetor_updated: true,
-          message: 'Ticket existente atualizado com novo subsetor'
-        })
-      }
-
       return NextResponse.json({
         success: true,
         ticket_id: existingTicket.id,
@@ -127,12 +103,12 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create and distribute the ticket with subsetor
+    // Create and distribute the ticket
     const result = await criarEDistribuirTicket(
       finalClienteId,
       setor_id,
       canal,
-      subsetor_id || null,
+      null,
       orgId
     )
 

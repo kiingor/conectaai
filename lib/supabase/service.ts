@@ -9,16 +9,24 @@ import { createClient } from '@supabase/supabase-js'
  * Never expose this client to the browser.
  */
 export function createServiceClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
+  const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+  const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      '[ServiceClient] NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not set',
-    )
+  if (!supabaseUrl) {
+    throw new Error('[ServiceClient] NEXT_PUBLIC_SUPABASE_URL is not set')
   }
 
-  return createClient(supabaseUrl, serviceRoleKey, {
+  const key = serviceRoleKey || anonKey
+  if (!key) {
+    throw new Error('[ServiceClient] SUPABASE_SERVICE_ROLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is not set')
+  }
+
+  if (!serviceRoleKey) {
+    console.warn('[ServiceClient] SUPABASE_SERVICE_ROLE_KEY not set — falling back to anon key. RLS will apply.')
+  }
+
+  return createClient(supabaseUrl, key, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
