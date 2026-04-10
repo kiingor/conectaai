@@ -133,6 +133,7 @@ interface Ticket {
   colaborador_id: string | null
   setor_id: string
   subsetor_id: string | null
+  organizacao_id: string | null
   status: 'aberto' | 'em_atendimento' | 'encerrado'
   prioridade: 'normal' | 'urgente'
   canal: string
@@ -189,6 +190,7 @@ interface Colaborador {
   setor_id: string | null
   permissao_id: string | null
   is_online: boolean
+  organizacao_id: string | null
   permissoes?: {
     can_see_all_tickets: boolean
   }
@@ -2252,6 +2254,7 @@ const insertEmoji = (emoji: string) => {
     // corrupt the newly-selected ticket's state.
     const capturedTicketId = selectedTicket.id
     const capturedTicket = selectedTicket
+    const capturedColaborador = colaborador
     
 const tempId = `temp-${Date.now()}`
     const messageContent = messageInput.trim()
@@ -2403,6 +2406,7 @@ const tempId = `temp-${Date.now()}`
           media_type: fileToUpload?.type || null,
           phone_number_id: phoneNumberId,
           canal_envio: canalEnvioValue,
+          organizacao_id: capturedTicket.organizacao_id || capturedColaborador.organizacao_id,
         })
         .select()
         .single()
