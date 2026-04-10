@@ -167,27 +167,10 @@ export default function MonitoramentoPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch subsetores when setor filter changes
+  // Subsetores desativados por enquanto
   useEffect(() => {
-    async function fetchSubsetores() {
-      const targetSetorIds = setorFilter !== 'all' ? [setorFilter] : setorIdsFiltrados
-      if (targetSetorIds.length === 0) {
-        setSubsetoresDisponiveis([])
-        return
-      }
-      const { data } = await supabase
-        .from('subsetores')
-        .select('id, nome')
-        .in('setor_id', targetSetorIds)
-        .eq('ativo', true)
-        .order('nome')
-      setSubsetoresDisponiveis(data || [])
-      setSubsetorFilter('all') // Reset subsetor filter when setor changes
-    }
-    if (colaborador && setorIdsFiltrados.length > 0) {
-      fetchSubsetores()
-    }
-  }, [setorFilter, tagFilter, colaborador, setorIdsFiltrados.length, supabase])
+    setSubsetoresDisponiveis([])
+  }, [])
 
   // Fetch monitoring data
   const { data, isLoading, mutate } = useSWR(
@@ -200,7 +183,7 @@ export default function MonitoramentoPage() {
       // Fetch active tickets (aberto + em_atendimento) across all accessible setores
       let ticketsQuery = supabase
         .from('tickets')
-        .select('*, clientes(nome, telefone), colaboradores(id, nome, is_online, pausa_atual_id), setores(id, nome), subsetores(id, nome)')
+        .select('*, clientes(nome, telefone), colaboradores(id, nome, is_online, pausa_atual_id), setores(id, nome)')
         .in('setor_id', targetSetorIds)
         .in('status', ['aberto', 'em_atendimento'])
       const { data: ticketsAtivos } = await ticketsQuery
