@@ -24,10 +24,10 @@ export async function GET(request: NextRequest) {
     let canalQ = supabase
       .from('setor_canais')
       .select(`
-        id, setor_id, nome, tipo, ativo, instancia, max_disparos_dia, criado_em,
+        id, setor_id, organizacao_id, nome, tipo, ativo, instancia, max_disparos_dia, criado_em,
         phone_number_id, whatsapp_token, template_id, template_language,
         evolution_base_url, evolution_api_key,
-        setores(id, nome)
+        setores(id, nome, organizacao_id, organizacoes(id, nome, slug))
       `)
       .or(`evolution_api_key.eq.${identifier},instancia.eq.${identifier},phone_number_id.eq.${identifier}`)
     if (orgId) canalQ = canalQ.eq('organizacao_id', orgId)
@@ -103,10 +103,15 @@ export async function GET(request: NextRequest) {
             descricao: s.descricao,
           }))
 
+          const org = setor?.organizacoes as any
+
           return {
             source: 'setor_canais',
             setor_id: canalMatch.setor_id,
             setor_nome: setor?.nome || null,
+            organizacao_id: canalMatch.organizacao_id || setor?.organizacao_id || null,
+            organizacao_nome: org?.nome || null,
+            organizacao_slug: org?.slug || null,
             canal: {
               ...canalBase,
               ...canalEspecifico,
