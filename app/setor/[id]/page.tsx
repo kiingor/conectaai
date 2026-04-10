@@ -1498,9 +1498,8 @@ const saveConfig = async () => {
 
   // ---- Evolution API helpers ----
 
-  const EVOLUTION_BASE_URL_CONST = 'https://whatsapi.mensageria.softcomtecnologia.com'
-  const EVOLUTION_GLOBAL_KEY_CONST =
-    'duukhYWkWdrmqcREwVqdNumyokmudpPEUuN4B70YqyQrxL5212IfXWUFYCHfejvTGBw4fc378VGMmUcpF7549ktNWMrnjMF8HBmYxHM9xzhItqPlINrmejamx77FPF8d'
+  const EVOLUTION_BASE_URL_CONST = 'https://evolution.conectaai.net'
+  const EVOLUTION_GLOBAL_KEY_CONST = 'eVo2026xK9mT4wBqL7nRjZ3cY8hF1dSgP5vA0iUoWlEbNfQrHs'
 
   function generateInstanceName(nome: string): string {
     const slug = nome
