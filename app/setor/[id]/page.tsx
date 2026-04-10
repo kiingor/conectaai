@@ -1212,6 +1212,7 @@ const saveConfig = async () => {
       } else {
         const { error } = await supabase.from('templates_mensagem').insert({
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
           atalho: atalhoClean,
           mensagem: templateForm.mensagem,
         })
@@ -1358,6 +1359,7 @@ const saveConfig = async () => {
         .filter(([, setorDestinoId]) => setorDestinoId !== null)
         .map(([tipo, setor_destino_id]) => ({
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
           tipo,
           setor_destino_id,
         }))
@@ -1718,6 +1720,7 @@ const saveConfig = async () => {
       } else {
         const { error } = await supabase.from('pausas').insert({
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
           nome: pausaForm.nome.trim(),
           descricao: pausaForm.descricao.trim() || null,
         })
@@ -1796,6 +1799,7 @@ const saveConfig = async () => {
         // Use upsert to create or update
         const horarioData = {
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
           dia_semana: horario.dia_semana,
           hora_inicio: horario.hora_inicio,
           hora_fim: horario.hora_fim,
@@ -1916,6 +1920,7 @@ const saveConfig = async () => {
         const { error } = await supabase.from('colaboradores_setores').insert({
           colaborador_id: existingColaborador.id,
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
         })
         if (error) throw error
 
@@ -1982,6 +1987,7 @@ const saveConfig = async () => {
           .insert({
             nome: atendenteForm.nome,
             email: atendenteForm.email.trim().toLowerCase(),
+            organizacao_id: setor?.organizacao_id,
             permissao_id: atendentePermissao?.id,
             ativo: true,
             is_online: false,
@@ -1998,6 +2004,7 @@ const saveConfig = async () => {
           .insert({
             colaborador_id: colaboradorData.id,
             setor_id: setorId,
+            organizacao_id: setor?.organizacao_id,
           })
 
         if (linkError) throw linkError
