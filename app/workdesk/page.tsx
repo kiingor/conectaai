@@ -687,7 +687,7 @@ export default function WorkdeskPage() {
   const fetchTickets = useCallback(async (colab: Colaborador) => {
     let query = supabase
       .from('tickets')
-      .select('*, numero, clientes(*), setores(id, nome, cor, canal, tempo_espera_minutos), subsetores(id, nome)')
+      .select('*, numero, clientes(*), setores(id, nome, cor, canal, tempo_espera_minutos)')
       .in('status', ['aberto', 'em_atendimento'])
       .order('criado_em', { ascending: false })
 
@@ -752,34 +752,14 @@ export default function WorkdeskPage() {
     }
   }, [supabase])
 
-  // Fetch subsetores for the colaborador's setores
-  const fetchSubsetoresDisponiveis = useCallback(async (colab: Colaborador) => {
-    if (!colab.setores_vinculados || colab.setores_vinculados.length === 0) {
-      setSubsetoresDisponiveis([])
-      return
-    }
-    
-    const setorIds = colab.setores_vinculados.map((s: ColaboradorSetor) => s.setor_id)
-    const { data } = await supabase
-      .from('subsetores')
-      .select('id, nome, setor_id')
-      .in('setor_id', setorIds)
-      .eq('ativo', true)
-      .order('nome')
-    
-    if (data) {
-      setSubsetoresDisponiveis(data)
-    }
-  }, [supabase])
+  // Subsetores desativados por enquanto
+  const fetchSubsetoresDisponiveis = useCallback(async (_colab: Colaborador) => {
+    setSubsetoresDisponiveis([])
+  }, [])
 
-  // Fetch subsetores onde o colaborador está ativo (colaboradores_subsetores)
-  const fetchMeusSubsetores = useCallback(async (colab: Colaborador) => {
-    const { data } = await supabase
-      .from('colaboradores_subsetores')
-      .select('subsetor_id')
-      .eq('colaborador_id', colab.id)
-    setMeusSubsetorIds(data?.map((d: any) => d.subsetor_id) || [])
-  }, [supabase])
+  const fetchMeusSubsetores = useCallback(async (_colab: Colaborador) => {
+    setMeusSubsetorIds([])
+  }, [])
 
 // Fetch messages for selected ticket (including client history from last 7 days)
   const fetchMensagens = useCallback(
@@ -1775,17 +1755,7 @@ const handleEncerrarTicket = async () => {
             .neq('id', colaborador?.id || '')
 
           if (colaboradoresData) {
-            let finalAtendentes: any[] = colaboradoresData.map((a: any) => ({ ...a, handlesSubsetor: false }))
-            if (selectedTicket?.subsetor_id) {
-              const { data: subColab } = await supabase
-                .from('colaboradores_subsetores')
-                .select('colaborador_id')
-                .eq('subsetor_id', selectedTicket.subsetor_id)
-              const subColabIds = new Set(subColab?.map((s: any) => s.colaborador_id) || [])
-              finalAtendentes = finalAtendentes.map((a: any) => ({ ...a, handlesSubsetor: subColabIds.has(a.id) }))
-              finalAtendentes.sort((a: any, b: any) => Number(b.handlesSubsetor) - Number(a.handlesSubsetor))
-            }
-            setAtendentesDisponiveis(finalAtendentes)
+            setAtendentesDisponiveis(colaboradoresData.map((a: any) => ({ ...a, handlesSubsetor: false })))
           }
         }
       }
@@ -1818,17 +1788,7 @@ const handleEncerrarTicket = async () => {
         .eq('ativo', true)
 
       if (colaboradoresData) {
-        let finalAtendentes: any[] = colaboradoresData.map((a: any) => ({ ...a, handlesSubsetor: false }))
-        if (selectedTicket?.subsetor_id) {
-          const { data: subColab } = await supabase
-            .from('colaboradores_subsetores')
-            .select('colaborador_id')
-            .eq('subsetor_id', selectedTicket.subsetor_id)
-          const subColabIds = new Set(subColab?.map((s: any) => s.colaborador_id) || [])
-          finalAtendentes = finalAtendentes.map((a: any) => ({ ...a, handlesSubsetor: subColabIds.has(a.id) }))
-          finalAtendentes.sort((a: any, b: any) => Number(b.handlesSubsetor) - Number(a.handlesSubsetor))
-        }
-        setAtendentesDisponiveis(finalAtendentes)
+        setAtendentesDisponiveis(colaboradoresData.map((a: any) => ({ ...a, handlesSubsetor: false })))
       }
     } else {
       setAtendentesDisponiveis([])
