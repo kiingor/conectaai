@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
 /**
@@ -15,7 +15,7 @@ import { NextResponse } from 'next/server'
  */
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createServiceClient()
 
     let body: { setorId?: string; organizacaoId?: string } = {}
     try {

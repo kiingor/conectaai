@@ -107,7 +107,7 @@ export default function WorkdeskLayout({
 
     let colaboradorQuery = supabase
       .from('colaboradores')
-      .select('id, nome, email, is_online, pausa_atual_id')
+      .select('id, nome, email, is_online, pausa_atual_id, organizacao_id')
       .eq('email', user.email!)
     if (orgId) colaboradorQuery = colaboradorQuery.eq('organizacao_id', orgId)
     let { data: colaboradorData, error: colabError } = await colaboradorQuery.maybeSingle()
@@ -118,7 +118,7 @@ export default function WorkdeskLayout({
       console.log('[workdesk layout] nao encontrado na org, tentando fallback sem filtro de org')
       const fallback = await supabase
         .from('colaboradores')
-        .select('id, nome, email, is_online, pausa_atual_id')
+        .select('id, nome, email, is_online, pausa_atual_id, organizacao_id')
         .eq('email', user.email!)
         .limit(1)
         .maybeSingle()
@@ -403,6 +403,7 @@ export default function WorkdeskLayout({
           <div className="flex items-center gap-1">
             <DisponibilidadePanel
               colaboradorId={colaborador.id}
+              organizacaoId={colaborador.organizacao_id}
               isOnline={colaborador.is_online}
               onStatusChange={handleStatusChange}
               setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}
@@ -419,6 +420,7 @@ export default function WorkdeskLayout({
           open={mobileMenuOpen}
           onOpenChange={setMobileMenuOpen}
           colaboradorId={colaborador.id}
+          organizacaoId={colaborador.organizacao_id}
           colaboradorNome={colaborador.nome}
           colaboradorEmail={colaborador.email}
           isOnline={colaborador.is_online}
@@ -510,6 +512,7 @@ export default function WorkdeskLayout({
             <div className="flex items-center gap-2">
               <DisponibilidadePanel
                 colaboradorId={colaborador.id}
+                organizacaoId={colaborador.organizacao_id}
                 isOnline={colaborador.is_online}
                 onStatusChange={handleStatusChange}
                 setorIds={colaborador.setores_vinculados?.map((s) => s.setor_id) || []}

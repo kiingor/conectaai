@@ -24,6 +24,7 @@ interface WorkdeskSidebarProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   colaboradorId: string
+  organizacaoId?: string | null
   colaboradorNome?: string
   colaboradorEmail?: string
   isOnline: boolean
@@ -34,6 +35,7 @@ interface WorkdeskSidebarProps {
 function MobileDrawerContent({
   onClose,
   colaboradorId,
+  organizacaoId,
   colaboradorNome,
   colaboradorEmail,
   isOnline,
@@ -42,6 +44,7 @@ function MobileDrawerContent({
 }: {
   onClose: () => void
   colaboradorId: string
+  organizacaoId?: string | null
   colaboradorNome?: string
   colaboradorEmail?: string
   isOnline: boolean
@@ -142,6 +145,7 @@ function MobileDrawerContent({
           <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest mb-2.5">Status</p>
           <DisponibilidadePanel
             colaboradorId={colaboradorId}
+            organizacaoId={organizacaoId}
             isOnline={isOnline}
             onStatusChange={onStatusChange}
             setorIds={setorIds}
@@ -166,6 +170,7 @@ export function WorkdeskSidebar({
   open,
   onOpenChange,
   colaboradorId,
+  organizacaoId,
   colaboradorNome,
   colaboradorEmail,
   isOnline,
@@ -181,6 +186,7 @@ export function WorkdeskSidebar({
           <MobileDrawerContent
             onClose={() => onOpenChange(false)}
             colaboradorId={colaboradorId}
+            organizacaoId={organizacaoId}
             colaboradorNome={colaboradorNome}
             colaboradorEmail={colaboradorEmail}
             isOnline={isOnline}

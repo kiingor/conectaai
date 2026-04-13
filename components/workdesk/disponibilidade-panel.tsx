@@ -45,6 +45,7 @@ interface PausaColaborador {
 
 interface DisponibilidadePanelProps {
   colaboradorId: string
+  organizacaoId?: string | null
   isOnline: boolean
   onStatusChange: (newStatus: boolean) => void
   setorIds?: string[]
@@ -52,6 +53,7 @@ interface DisponibilidadePanelProps {
 
 export function DisponibilidadePanel({
   colaboradorId,
+  organizacaoId,
   isOnline,
   onStatusChange,
   setorIds = [],
@@ -192,6 +194,7 @@ export function DisponibilidadePanel({
     const { error: logError } = await supabase.from('disponibilidade_logs').insert({
       colaborador_id: colaboradorId,
       status: newStatus ? 'online' : 'offline',
+      ...(organizacaoId ? { organizacao_id: organizacaoId } : {}),
     })
 
     if (logError) {
@@ -204,7 +207,7 @@ export function DisponibilidadePanel({
 
     // If coming online, process the ticket queue
     if (newStatus) {
-      fetch('/api/tickets/process-queue', {
+      fetch('/api/tickets/auto-assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colaboradorId }),
