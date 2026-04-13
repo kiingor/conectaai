@@ -127,7 +127,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown } from 'lucide-react'
+import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown, BookOpen, Copy } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 const supabase = createClient()
@@ -192,6 +192,7 @@ const ALL_SIDEBAR_ITEMS = [
     { id: 'horarios', name: 'Horários de atendimento', icon: Clock, description: 'Defina dias e horários disponíveis' },
     { id: 'pausas', name: 'Pausas', icon: Coffee, description: 'Gerencie os tipos de pausas dos atendentes' },
     { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações da empresa' },
+    { id: 'base-conhecimento', name: 'Base de Conhecimento', icon: BookOpen, description: 'Base de conhecimento vetorial para IA' },
   ]
 
 // Fetcher function
@@ -618,6 +619,17 @@ export default function SetorPage() {
   const [pausaForm, setPausaForm] = useState({ nome: '', descricao: '' })
   const [deletingPausaId, setDeletingPausaId] = useState<string | null>(null)
 
+  // Base de Conhecimento state
+  const [bcDocs, setBcDocs] = useState<any[]>([])
+  const [bcLoading, setBcLoading] = useState(false)
+  const [bcApiKey, setBcApiKey] = useState('')
+  const [bcApiKeyMasked, setBcApiKeyMasked] = useState('')
+  const [bcModelo, setBcModelo] = useState('text-embedding-004')
+  const [bcUploading, setBcUploading] = useState(false)
+  const [bcSavingKey, setBcSavingKey] = useState(false)
+  const [bcTotal, setBcTotal] = useState(0)
+  const [bcDeletingId, setBcDeletingId] = useState<string | null>(null)
+
   // Available template variables
   const templateVariables = [
     { key: '{{cliente_nome}}', label: 'Nome do Cliente' },
@@ -781,6 +793,14 @@ export default function SetorPage() {
     setPausas(pausasData)
   }, [pausasLength]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Load Base de Conhecimento data when section becomes active
+  useEffect(() => {
+    if (activeSection === 'base-conhecimento' && setor?.organizacao_id) {
+      fetchBcDocs()
+      fetchBcConfig()
+    }
+  }, [activeSection, setor?.organizacao_id]) // eslint-disable-line react-hooks/exhaustive-deps
+
 // Track unsaved changes in config form
   useEffect(() => {
     if (setor?.id) {
@@ -879,6 +899,42 @@ export default function SetorPage() {
   const fetchTagsList = async () => {
     const { data } = await supabase.from('tags').select('id, nome, cor').order('nome')
     if (data) setTagsList(data)
+  }
+
+  // Base de Conhecimento: fetch docs and config
+  const fetchBcDocs = async () => {
+    if (!setor?.organizacao_id) return
+    setBcLoading(true)
+    try {
+      const res = await fetch(`/api/setor/${setorId}/base-conhecimento?page=1&limit=50`, {
+        headers: { 'x-org-id': setor.organizacao_id },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        setBcDocs(json.docs || [])
+        setBcTotal(json.total || 0)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setBcLoading(false)
+    }
+  }
+
+  const fetchBcConfig = async () => {
+    if (!setor?.organizacao_id) return
+    try {
+      const res = await fetch(`/api/setor/${setorId}/configuracoes-ia`, {
+        headers: { 'x-org-id': setor.organizacao_id },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        setBcApiKeyMasked(json.google_ai_api_key_masked || '')
+        setBcModelo(json.google_ai_modelo || 'text-embedding-004')
+      }
+    } catch {
+      // ignore
+    }
   }
 
   // Fetch setores destino de transferência configurados
@@ -5087,6 +5143,275 @@ const saveConfig = async () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Base de Conhecimento Section */}
+      {activeSection === 'base-conhecimento' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-white">Base de Conhecimento</h1>
+          </div>
+
+          {/* Card 1 — Identificadores para n8n */}
+          <Collapsible defaultOpen>
+            <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-950/50">
+                    <Hash className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white">Identificadores para n8n</p>
+                    <p className="text-xs text-muted-foreground/80">Use estes IDs nas integrações do n8n</p>
+                  </div>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="border-t border-foreground/6 p-5 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Setor ID (setor_id)</Label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 rounded-lg bg-muted/50 px-3 py-2 text-sm font-mono text-foreground truncate">
+                        {setorId}
+                      </code>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0 h-9 w-9"
+                        onClick={() => {
+                          navigator.clipboard.writeText(setorId)
+                          toast.success('Copiado!')
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground/70">
+                      Use este ID no parâmetro <code className="text-xs bg-muted/50 px-1 rounded">setor_id</code> ao chamar{' '}
+                      <code className="text-xs bg-muted/50 px-1 rounded">POST /api/setor/{'{setor_id}'}/base-conhecimento/buscar</code>
+                    </p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Card 2 — Configurações de IA */}
+          <Collapsible defaultOpen>
+            <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
+                    <Zap className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white">Configurações de IA</p>
+                    <p className="text-xs text-muted-foreground/80">Google AI API Key para geração de embeddings</p>
+                  </div>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="border-t border-foreground/6 p-5 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bc-api-key">Google AI API Key</Label>
+                    <Input
+                      id="bc-api-key"
+                      type="password"
+                      placeholder={bcApiKeyMasked || 'AIza...'}
+                      value={bcApiKey}
+                      onFocus={() => setBcApiKey('')}
+                      onChange={(e) => setBcApiKey(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground/70">
+                      Necessária para gerar embeddings com o modelo <code className="bg-muted/50 px-1 rounded">text-embedding-004</code>.
+                      Obtenha em <span className="text-blue-400">Google AI Studio</span>.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bc-modelo">Modelo</Label>
+                    <Select value={bcModelo} onValueChange={setBcModelo}>
+                      <SelectTrigger id="bc-modelo">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text-embedding-004">text-embedding-004</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    disabled={bcSavingKey}
+                    onClick={async () => {
+                      if (!setor?.organizacao_id) return
+                      setBcSavingKey(true)
+                      try {
+                        const body: Record<string, string> = { google_ai_modelo: bcModelo }
+                        if (bcApiKey) body.google_ai_api_key = bcApiKey
+                        const res = await fetch(`/api/setor/${setorId}/configuracoes-ia`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'x-org-id': setor.organizacao_id,
+                          },
+                          body: JSON.stringify(body),
+                        })
+                        if (!res.ok) throw new Error('Erro ao salvar')
+                        toast.success('Configurações de IA salvas!')
+                        setBcApiKey('')
+                        await fetchBcConfig()
+                      } catch {
+                        toast.error('Erro ao salvar configurações de IA')
+                      } finally {
+                        setBcSavingKey(false)
+                      }
+                    }}
+                  >
+                    {bcSavingKey ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : 'Salvar'}
+                  </Button>
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Card 3 — Documentos */}
+          <Collapsible defaultOpen>
+            <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-950/50">
+                    <BookOpen className="h-4 w-4 text-green-400" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white">Documentos</p>
+                    <p className="text-xs text-muted-foreground/80">
+                      {bcTotal > 0 ? `${bcTotal} chunk${bcTotal !== 1 ? 's' : ''} indexado${bcTotal !== 1 ? 's' : ''}` : 'Nenhum documento indexado'}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="border-t border-foreground/6 p-5 space-y-4">
+                  {/* Upload */}
+                  <div className="flex items-center gap-3">
+                    <Input
+                      id="bc-file-upload"
+                      type="file"
+                      accept=".txt,.pdf"
+                      className="flex-1"
+                      disabled={bcUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file || !setor?.organizacao_id) return
+                        setBcUploading(true)
+                        try {
+                          const formData = new FormData()
+                          formData.append('arquivo', file)
+                          const res = await fetch(`/api/setor/${setorId}/base-conhecimento`, {
+                            method: 'POST',
+                            headers: { 'x-org-id': setor.organizacao_id },
+                            body: formData,
+                          })
+                          const json = await res.json()
+                          if (!res.ok) {
+                            toast.error(json.error || 'Erro ao fazer upload')
+                          } else {
+                            toast.success(`Upload concluído: ${json.inseridos} inserido${json.inseridos !== 1 ? 's' : ''}, ${json.duplicados} duplicado${json.duplicados !== 1 ? 's' : ''}`)
+                            await fetchBcDocs()
+                          }
+                        } catch {
+                          toast.error('Erro ao fazer upload do arquivo')
+                        } finally {
+                          setBcUploading(false)
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                    {bcUploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />}
+                  </div>
+                  <p className="text-xs text-muted-foreground/70">Formatos suportados: PDF, TXT. Tamanho máximo: 10MB.</p>
+
+                  {/* Docs list */}
+                  {bcLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : bcDocs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground/60">
+                      <BookOpen className="h-8 w-8" />
+                      <p className="text-sm">Nenhum documento indexado ainda</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Arquivo</TableHead>
+                          <TableHead className="w-20 text-center">Chunk</TableHead>
+                          <TableHead className="w-36">Indexado em</TableHead>
+                          <TableHead className="w-12" />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bcDocs.map((doc: any) => (
+                          <TableRow key={doc.id}>
+                            <TableCell className="font-medium truncate max-w-[200px]">{doc.arquivo_nome || doc.titulo}</TableCell>
+                            <TableCell className="text-center text-muted-foreground">{doc.chunk_index}</TableCell>
+                            <TableCell className="text-muted-foreground text-xs">
+                              {new Date(doc.criado_em).toLocaleString('pt-BR', {
+                                day: '2-digit', month: '2-digit', year: '2-digit',
+                                hour: '2-digit', minute: '2-digit',
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                disabled={bcDeletingId === doc.id}
+                                onClick={async () => {
+                                  if (!setor?.organizacao_id) return
+                                  setBcDeletingId(doc.id)
+                                  try {
+                                    const res = await fetch(
+                                      `/api/setor/${setorId}/base-conhecimento/${doc.id}`,
+                                      {
+                                        method: 'DELETE',
+                                        headers: { 'x-org-id': setor.organizacao_id },
+                                      },
+                                    )
+                                    if (!res.ok) throw new Error()
+                                    toast.success('Chunk removido')
+                                    setBcDocs((prev) => prev.filter((d) => d.id !== doc.id))
+                                    setBcTotal((prev) => Math.max(0, prev - 1))
+                                  } catch {
+                                    toast.error('Erro ao remover chunk')
+                                  } finally {
+                                    setBcDeletingId(null)
+                                  }
+                                }}
+                              >
+                                {bcDeletingId === doc.id
+                                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  : <Trash2 className="h-3.5 w-3.5" />
+                                }
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </div>
       )}
 
