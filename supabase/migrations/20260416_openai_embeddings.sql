@@ -32,6 +32,11 @@ CREATE OR REPLACE FUNCTION buscar_base_conhecimento(
   LIMIT p_limite;
 $$ LANGUAGE sql SECURITY DEFINER;
 
+-- Garante colunas de chaves de IA na organizacao (caso 20260415 nao tenha sido aplicada)
+ALTER TABLE organizacoes ADD COLUMN IF NOT EXISTS google_ai_api_key TEXT;
+ALTER TABLE organizacoes ADD COLUMN IF NOT EXISTS google_ai_modelo  TEXT DEFAULT 'text-embedding-3-small';
+ALTER TABLE organizacoes ADD COLUMN IF NOT EXISTS openai_api_key    TEXT;
+
 -- Atualiza o modelo default na organizacao (quem nao definiu fica com o novo)
 UPDATE organizacoes
    SET google_ai_modelo = 'text-embedding-3-small'
