@@ -127,7 +127,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown } from 'lucide-react'
+import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown, Brain, Upload, FileCheck2, Power } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 const supabase = createClient()
@@ -191,6 +191,7 @@ const ALL_SIDEBAR_ITEMS = [
     { id: 'atendentes', name: 'Atendentes', icon: Users, description: 'Gerencie os atendentes da empresa' },
     { id: 'horarios', name: 'Horários de atendimento', icon: Clock, description: 'Defina dias e horários disponíveis' },
     { id: 'pausas', name: 'Pausas', icon: Coffee, description: 'Gerencie os tipos de pausas dos atendentes' },
+    { id: 'rag', name: 'Agente (RAG)', icon: Brain, description: 'Prompt e base de conhecimento do agente de retaguarda' },
     { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações da empresa' },
   ]
 
@@ -512,7 +513,29 @@ export default function SetorPage() {
   is_receptor: false,
   transmissao_ativa: false,
   setor_receptor_id: '' as string,
+  rag_ativo: false,
+  google_ai_api_key: '',
+  google_ai_modelo: 'text-embedding-004',
   })
+
+  // RAG state
+  const [showGoogleAiKey, setShowGoogleAiKey] = useState(false)
+  const [ragDocumentos, setRagDocumentos] = useState<Array<{
+    chave: string
+    titulo: string
+    arquivo_nome: string | null
+    tipo: string
+    total_chunks: number
+    ativo: boolean
+    criado_em: string
+    ids: string[]
+  }>>([])
+  const [loadingRagDocs, setLoadingRagDocs] = useState(false)
+  const [ragUploadOpen, setRagUploadOpen] = useState(false)
+  const [ragUploadFile, setRagUploadFile] = useState<File | null>(null)
+  const [ragUploadTitulo, setRagUploadTitulo] = useState('')
+  const [ragUploading, setRagUploading] = useState(false)
+  const [ragUploadProgresso, setRagUploadProgresso] = useState<string | null>(null)
 
 // Templates state
   const [templates, setTemplates] = useState<any[]>([])
@@ -815,7 +838,11 @@ export default function SetorPage() {
         is_receptor: setor.is_receptor || false,
         transmissao_ativa: setor.transmissao_ativa || false,
         setor_receptor_id: setor.setor_receptor_id || '',
+        rag_ativo: setor.rag_ativo || false,
+        google_ai_api_key: setor.google_ai_api_key || '',
+        google_ai_modelo: setor.google_ai_modelo || 'text-embedding-004',
       })
+      fetchRagDocumentos()
       fetchTemplates()
       fetchCanais()
       fetchTodosSetores()
@@ -1164,6 +1191,9 @@ const saveConfig = async () => {
   is_receptor: configForm.is_receptor,
   transmissao_ativa: configForm.transmissao_ativa,
   setor_receptor_id: configForm.setor_receptor_id || null,
+  rag_ativo: configForm.rag_ativo,
+  google_ai_api_key: configForm.google_ai_api_key || null,
+  google_ai_modelo: configForm.google_ai_modelo || 'text-embedding-004',
   })
         .eq('id', setorId)
 
@@ -1175,6 +1205,102 @@ const saveConfig = async () => {
       toast.error('Erro ao salvar configurações')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // ===== RAG / Base de Conhecimento =====
+  const fetchRagDocumentos = async () => {
+    if (!setorId) return
+    setLoadingRagDocs(true)
+    try {
+      const res = await fetch(`/api/setor/${setorId}/base-conhecimento`)
+      if (res.ok) {
+        const json = await res.json()
+        setRagDocumentos(json.documentos || [])
+      }
+    } catch (e) {
+      console.error('[RAG] fetch docs', e)
+    } finally {
+      setLoadingRagDocs(false)
+    }
+  }
+
+  const handleRagUpload = async () => {
+    if (!ragUploadFile) {
+      toast.error('Selecione um arquivo')
+      return
+    }
+    if (!configForm.google_ai_api_key) {
+      toast.error('Configure a Google AI API Key e salve antes de enviar documentos')
+      return
+    }
+    setRagUploading(true)
+    setRagUploadProgresso('Processando arquivo e gerando embeddings...')
+    try {
+      const fd = new FormData()
+      fd.append('file', ragUploadFile)
+      if (ragUploadTitulo) fd.append('titulo', ragUploadTitulo)
+      const res = await fetch(`/api/setor/${setorId}/base-conhecimento`, {
+        method: 'POST',
+        body: fd,
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        toast.error(json.error || 'Erro ao enviar documento')
+      } else {
+        toast.success(
+          `Documento processado: ${json.chunks_criados} chunks criados` +
+            (json.chunks_duplicados ? `, ${json.chunks_duplicados} duplicados` : ''),
+        )
+        setRagUploadOpen(false)
+        setRagUploadFile(null)
+        setRagUploadTitulo('')
+        fetchRagDocumentos()
+      }
+    } catch (e) {
+      toast.error('Erro ao enviar documento: ' + (e as Error).message)
+    } finally {
+      setRagUploading(false)
+      setRagUploadProgresso(null)
+    }
+  }
+
+  const toggleRagDoc = async (doc: { chave: string; ativo: boolean }) => {
+    try {
+      const res = await fetch(
+        `/api/setor/${setorId}/base-conhecimento/${encodeURIComponent(doc.chave)}?scope=arquivo`,
+        {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ativo: !doc.ativo }),
+        },
+      )
+      if (res.ok) {
+        toast.success(doc.ativo ? 'Documento desativado' : 'Documento ativado')
+        fetchRagDocumentos()
+      } else {
+        toast.error('Erro ao alterar estado')
+      }
+    } catch {
+      toast.error('Erro ao alterar estado')
+    }
+  }
+
+  const deleteRagDoc = async (doc: { chave: string; titulo: string }) => {
+    if (!confirm(`Remover "${doc.titulo}" da base de conhecimento?`)) return
+    try {
+      const res = await fetch(
+        `/api/setor/${setorId}/base-conhecimento/${encodeURIComponent(doc.chave)}?scope=arquivo`,
+        { method: 'DELETE' },
+      )
+      if (res.ok) {
+        toast.success('Documento removido')
+        fetchRagDocumentos()
+      } else {
+        toast.error('Erro ao remover')
+      }
+    } catch {
+      toast.error('Erro ao remover')
     }
   }
 
@@ -3521,6 +3647,215 @@ const saveConfig = async () => {
             )}
           </CardContent>
         </Card>
+      </div>
+    )}
+
+    {/* RAG Section */}
+    {activeSection === 'rag' && (
+      <div className="space-y-4">
+        {/* Header com botão salvar */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold">Agente de Retaguarda (RAG)</h2>
+            <p className="text-sm text-muted-foreground">
+              Prompt e base de conhecimento usados pelo agente n8n
+            </p>
+          </div>
+          <Button onClick={saveConfig} disabled={saving || !hasUnsavedConfig}>
+            {saving ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>
+            ) : (
+              'Salvar'
+            )}
+          </Button>
+        </div>
+
+        <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+          <div className="p-5 space-y-5">
+            {/* Switch RAG ativo */}
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950">
+                  <Power className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">RAG Ativo</p>
+                  <p className="text-xs text-muted-foreground">
+                    Quando ligado, o n8n consulta a base de conhecimento antes de responder.
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={configForm.rag_ativo}
+                onCheckedChange={(checked) =>
+                  setConfigForm((prev) => ({ ...prev, rag_ativo: checked }))
+                }
+              />
+            </div>
+
+            {/* Google AI API Key */}
+            <div className="space-y-2">
+              <Label>Google AI API Key</Label>
+              <div className="relative">
+                <Input
+                  type={showGoogleAiKey ? 'text' : 'password'}
+                  value={configForm.google_ai_api_key}
+                  onChange={(e) =>
+                    setConfigForm((prev) => ({ ...prev, google_ai_api_key: e.target.value }))
+                  }
+                  placeholder="AIza..."
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleAiKey((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showGoogleAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Chave da API Google Generative Language. Usada apenas server-side.
+              </p>
+            </div>
+
+            {/* Modelo de embedding */}
+            <div className="space-y-2">
+              <Label>Modelo de Embedding</Label>
+              <Select
+                value={configForm.google_ai_modelo}
+                onValueChange={(v) =>
+                  setConfigForm((prev) => ({ ...prev, google_ai_modelo: v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text-embedding-004">text-embedding-004 (768d)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Trocar o modelo exige migrar a dimensão da coluna vector no banco.
+              </p>
+            </div>
+
+          </div>
+        </Card>
+
+        {/* Base de conhecimento */}
+        <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+          <div className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-semibold">Base de Conhecimento</p>
+                <p className="text-xs text-muted-foreground">
+                  Documentos (.txt, .md, .pdf, .docx) indexados para busca semântica.
+                </p>
+              </div>
+              <Button size="sm" onClick={() => setRagUploadOpen(true)}>
+                <Upload className="h-4 w-4 mr-2" /> Adicionar
+              </Button>
+            </div>
+
+            {loadingRagDocs ? (
+              <div className="text-center py-6 text-muted-foreground text-sm">
+                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+                Carregando...
+              </div>
+            ) : ragDocumentos.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Brain className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">Nenhum documento na base ainda</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {ragDocumentos.map((doc) => (
+                  <div
+                    key={doc.chave}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20"
+                  >
+                    <FileCheck2
+                      className={cn(
+                        'h-4 w-4 shrink-0',
+                        doc.ativo ? 'text-emerald-400' : 'text-muted-foreground/50',
+                      )}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{doc.titulo}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.tipo.toUpperCase()} · {doc.total_chunks} chunk
+                        {doc.total_chunks > 1 ? 's' : ''}
+                        {doc.arquivo_nome && doc.arquivo_nome !== doc.titulo
+                          ? ` · ${doc.arquivo_nome}`
+                          : ''}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={doc.ativo}
+                      onCheckedChange={() => toggleRagDoc(doc)}
+                    />
+                    <Button size="icon" variant="ghost" onClick={() => deleteRagDoc(doc)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Dialog de upload de documento RAG */}
+        <Dialog open={ragUploadOpen} onOpenChange={setRagUploadOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Documento à Base</DialogTitle>
+              <DialogDescription>
+                O arquivo será dividido em chunks e cada chunk gera um embedding via Gemini.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Arquivo (.txt, .md, .pdf, .docx)</Label>
+                <Input
+                  type="file"
+                  accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={(e) => setRagUploadFile(e.target.files?.[0] || null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Título (opcional)</Label>
+                <Input
+                  value={ragUploadTitulo}
+                  onChange={(e) => setRagUploadTitulo(e.target.value)}
+                  placeholder="Se vazio, usa o nome do arquivo"
+                />
+              </div>
+              {ragUploadProgresso && (
+                <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {ragUploadProgresso}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setRagUploadOpen(false)}
+                disabled={ragUploading}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleRagUpload} disabled={ragUploading || !ragUploadFile}>
+                {ragUploading ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processando</>
+                ) : (
+                  <><Upload className="h-4 w-4 mr-2" /> Enviar</>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     )}
 
