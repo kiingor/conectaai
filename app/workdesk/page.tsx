@@ -2595,7 +2595,7 @@ const tempId = `temp-${Date.now()}`
 
   return (
     <TooltipProvider delayDuration={200}>
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       {/* Mobile top bar — only shows on small screens */}
       <div className="flex items-center justify-between border-b border-foreground/6 bg-page-bg/90 backdrop-blur-xl px-3 py-2 md:hidden">
         <span className="text-sm font-semibold text-foreground/70">Tickets</span>
@@ -2728,7 +2728,7 @@ const tempId = `temp-${Date.now()}`
           {selectedTicket ? (
             <>
               {/* Chat Header — compact */}
-              <div className="flex items-center justify-between border-b border-foreground/5 bg-page-bg/80 backdrop-blur-xl px-4 py-2.5 gap-3">
+              <div className="shrink-0 flex items-center justify-between border-b border-foreground/5 bg-page-bg/80 backdrop-blur-xl px-4 py-2.5 gap-3">
                 {/* Left: back button (mobile) + client info */}
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   {/* Mobile back button */}
@@ -2856,9 +2856,9 @@ const tempId = `temp-${Date.now()}`
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-hidden">
-                <div ref={messagesContainerRef} className="h-full overflow-y-auto">
-                  <div className="p-4">
+              <div className="flex-1 overflow-hidden min-w-0">
+                <div ref={messagesContainerRef} className="h-full overflow-y-auto overflow-x-hidden">
+                  <div className="p-4 min-w-0">
                   {loadingMensagens ? (
                     <div className="flex h-full items-center justify-center">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -3024,7 +3024,7 @@ const tempId = `temp-${Date.now()}`
               </div>
 
   {/* Input Area */}
-  <div className="border-t border-foreground/6 glass-header p-3">
+  <div className="shrink-0 border-t border-foreground/6 glass-header p-3">
   {/* Disparo locked warning */}
   {selectedTicket?.is_disparo && isDisparoLocked(selectedTicket) && (
   <div className="mb-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">

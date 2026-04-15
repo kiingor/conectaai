@@ -304,7 +304,7 @@ export default function WorkdeskLayout({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-svh bg-page-bg ambient-glow">
+      <div className="h-svh bg-page-bg ambient-glow overflow-hidden flex flex-col">
 
         {/* ===== Desktop: Slim vertical icon bar (hidden on mobile) ===== */}
         <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex w-[60px] flex-col items-center py-4 bg-page-bg/80 backdrop-blur-xl border-r border-foreground/[0.06]">
@@ -498,9 +498,9 @@ export default function WorkdeskLayout({
         </Dialog>
 
         {/* Page content area -- offset by vertical bar width on desktop */}
-        <div className="relative z-10 lg:ml-[60px]">
+        <div className="relative z-10 lg:ml-[60px] flex flex-col flex-1 min-h-0">
           {/* Desktop header bar */}
-          <header className="sticky top-0 z-40 hidden lg:flex h-14 items-center justify-between px-6 bg-page-bg/80 backdrop-blur-xl border-b border-foreground/[0.06]">
+          <header className="shrink-0 z-40 hidden lg:flex h-14 items-center justify-between px-6 bg-page-bg/80 backdrop-blur-xl border-b border-foreground/[0.06]">
             <div className="flex items-center gap-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg brand-gradient">
                 <Zap className="h-3.5 w-3.5 text-white" />
@@ -523,7 +523,7 @@ export default function WorkdeskLayout({
               />
             </div>
           </header>
-          <main>{children}</main>
+          <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
         </div>
       </div>
     </TooltipProvider>

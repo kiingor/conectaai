@@ -685,6 +685,9 @@ export default function SetorPage() {
         .update({
           is_online: novoStatus === 'online',
           pausa_atual_id: null,
+          // Ao ativar via retaguarda, renova o heartbeat para liberar distribuição.
+          // Se o atendente não abrir o WorkDesk, expira em 5 min e sai da fila naturalmente.
+          ...(novoStatus === 'online' ? { last_heartbeat: new Date().toISOString() } : {}),
         })
         .eq('id', colaboradorId)
       if (error) throw error

@@ -150,6 +150,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    console.warn('[Setor Lookup] 404 — identificador não encontrado', {
+      identifier,
+      orgId: orgId || null,
+      userAgent: request.headers.get('user-agent') || null,
+      referer: request.headers.get('referer') || null,
+      canalError: canalError?.message || null,
+    })
+
     return NextResponse.json(
       { error: 'Nenhum setor encontrado para o identificador informado', identifier },
       { status: 404 },
