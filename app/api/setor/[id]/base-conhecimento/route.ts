@@ -86,10 +86,10 @@ export async function POST(request: NextRequest, { params }: Params) {
     const orgIdHeader = request.headers.get(ORG_ID_HEADER)
     const supabase = createServiceClient()
 
-    // Busca o setor (api_key, modelo e organizacao_id)
+    // Busca o setor (apenas organizacao_id)
     const { data: setor, error: setorErr } = await supabase
       .from('setores')
-      .select('id, organizacao_id, google_ai_api_key, google_ai_modelo')
+      .select('id, organizacao_id')
       .eq('id', setorId)
       .maybeSingle()
 
@@ -102,14 +102,22 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Organização não identificada' }, { status: 400 })
     }
 
-    if (!setor.google_ai_api_key) {
+    // Chave de IA agora é por organização
+    const { data: org } = await supabase
+      .from('organizacoes')
+      .select('google_ai_api_key, google_ai_modelo')
+      .eq('id', organizacaoId)
+      .maybeSingle()
+
+    if (!org?.google_ai_api_key) {
       return NextResponse.json(
-        { error: 'google_ai_api_key não configurada no setor' },
+        { error: 'google_ai_api_key não configurada na organização (Dashboard → Configurações de IA)' },
         { status: 400 },
       )
     }
 
-    const modelo = setor.google_ai_modelo || 'text-embedding-004'
+    const googleApiKey = org.google_ai_api_key
+    const modelo = org.google_ai_modelo || 'text-embedding-004'
 
     // Lê multipart
     const form = await request.formData()
@@ -146,7 +154,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       const hash = sha256(conteudo)
 
       try {
-        const embedding = await gerarEmbedding(conteudo, setor.google_ai_api_key, modelo)
+        const embedding = await gerarEmbedding(conteudo, googleApiKey, modelo)
 
         const { error: insertErr } = await supabase.from('base_conhecimento').insert({
           setor_id: setorId,

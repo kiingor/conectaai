@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         id, setor_id, organizacao_id, nome, tipo, ativo, instancia, max_disparos_dia, criado_em,
         phone_number_id, whatsapp_token, template_id, template_language,
         evolution_base_url, evolution_api_key,
-        setores(id, nome, organizacao_id, agente_prompt, rag_ativo, google_ai_modelo, organizacoes(id, nome, slug))
+        setores(id, nome, organizacao_id, agente_prompt, rag_ativo, organizacoes(id, nome, slug, google_ai_modelo))
       `)
       .or(`evolution_api_key.eq.${identifier},instancia.eq.${identifier},phone_number_id.eq.${identifier}`)
     if (orgId) canalQ = canalQ.eq('organizacao_id', orgId)
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
             organizacao_slug: org?.slug || null,
             agente_prompt: setor?.agente_prompt || null,
             rag_ativo: !!setor?.rag_ativo,
-            google_ai_modelo: setor?.google_ai_modelo || null,
+            google_ai_modelo: org?.google_ai_modelo || null,
             canal: {
               ...canalBase,
               ...canalEspecifico,
@@ -131,20 +131,20 @@ export async function GET(request: NextRequest) {
     // Priority 2: Fallback to setores table — return ALL matches
     let setorMatchQ = supabase
       .from('setores')
-      .select('id, nome, canal, agente_prompt, rag_ativo, google_ai_modelo')
+      .select('id, nome, canal, agente_prompt, rag_ativo, organizacoes(google_ai_modelo)')
       .or(`evolution_api_key.eq.${identifier},phone_number_id.eq.${identifier}`)
     if (orgId) setorMatchQ = setorMatchQ.eq('organizacao_id', orgId)
     const { data: setorMatches } = await setorMatchQ
 
     if (setorMatches && setorMatches.length > 0) {
       return NextResponse.json(
-        setorMatches.map((s) => ({
+        setorMatches.map((s: any) => ({
           source: 'setores',
           setor_id: s.id,
           setor_nome: s.nome,
           agente_prompt: s.agente_prompt || null,
           rag_ativo: !!s.rag_ativo,
-          google_ai_modelo: s.google_ai_modelo || null,
+          google_ai_modelo: s.organizacoes?.google_ai_modelo || null,
           canal: null,
         })),
       )

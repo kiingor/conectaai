@@ -14,6 +14,7 @@ import {
   Loader2,
   Activity,
   Zap,
+  Brain,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -23,6 +24,7 @@ import { useColaborador } from '@/lib/hooks/use-data'
 const baseNavigation = [
   { name: 'Monitoramento', href: '/dashboard/monitoramento', icon: Activity },
   { name: 'Dashboard Geral', href: '/dashboard/metricas', icon: BarChart3 },
+  { name: 'Configuracoes de IA', href: '/dashboard/ia-config', icon: Brain },
 ]
 
 const masterNavigationEnd = [

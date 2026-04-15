@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const { data: setor, error: setorErr } = await supabase
       .from('setores')
-      .select('id, organizacao_id, google_ai_api_key, google_ai_modelo, agente_prompt, rag_ativo')
+      .select('id, organizacao_id, agente_prompt, rag_ativo')
       .eq('id', setorId)
       .maybeSingle()
 
@@ -53,16 +53,22 @@ export async function POST(request: NextRequest, { params }: Params) {
       })
     }
 
-    if (!setor.google_ai_api_key) {
+    const { data: org } = await supabase
+      .from('organizacoes')
+      .select('google_ai_api_key, google_ai_modelo')
+      .eq('id', setor.organizacao_id)
+      .maybeSingle()
+
+    if (!org?.google_ai_api_key) {
       return NextResponse.json(
-        { error: 'google_ai_api_key não configurada no setor' },
+        { error: 'google_ai_api_key não configurada na organização (Dashboard → Configurações de IA)' },
         { status: 400 },
       )
     }
 
-    const modelo = setor.google_ai_modelo || 'text-embedding-004'
+    const modelo = org.google_ai_modelo || 'text-embedding-004'
 
-    const embedding = await gerarEmbedding(body.pergunta, setor.google_ai_api_key, modelo)
+    const embedding = await gerarEmbedding(body.pergunta, org.google_ai_api_key, modelo)
 
     const { data, error } = await supabase.rpc('buscar_base_conhecimento', {
       p_setor_id: setorId,

@@ -514,12 +514,9 @@ export default function SetorPage() {
   transmissao_ativa: false,
   setor_receptor_id: '' as string,
   rag_ativo: false,
-  google_ai_api_key: '',
-  google_ai_modelo: 'text-embedding-004',
   })
 
   // RAG state
-  const [showGoogleAiKey, setShowGoogleAiKey] = useState(false)
   const [ragDocumentos, setRagDocumentos] = useState<Array<{
     chave: string
     titulo: string
@@ -842,8 +839,6 @@ export default function SetorPage() {
         transmissao_ativa: setor.transmissao_ativa || false,
         setor_receptor_id: setor.setor_receptor_id || '',
         rag_ativo: setor.rag_ativo || false,
-        google_ai_api_key: setor.google_ai_api_key || '',
-        google_ai_modelo: setor.google_ai_modelo || 'text-embedding-004',
       })
       fetchRagDocumentos()
       fetchTemplates()
@@ -1195,8 +1190,6 @@ const saveConfig = async () => {
   transmissao_ativa: configForm.transmissao_ativa,
   setor_receptor_id: configForm.setor_receptor_id || null,
   rag_ativo: configForm.rag_ativo,
-  google_ai_api_key: configForm.google_ai_api_key || null,
-  google_ai_modelo: configForm.google_ai_modelo || 'text-embedding-004',
   })
         .eq('id', setorId)
 
@@ -1231,10 +1224,6 @@ const saveConfig = async () => {
   const handleRagUpload = async () => {
     if (!ragUploadFile) {
       toast.error('Selecione um arquivo')
-      return
-    }
-    if (!configForm.google_ai_api_key) {
-      toast.error('Configure a Google AI API Key e salve antes de enviar documentos')
       return
     }
     setRagUploading(true)
@@ -3696,51 +3685,11 @@ const saveConfig = async () => {
               />
             </div>
 
-            {/* Google AI API Key */}
-            <div className="space-y-2">
-              <Label>Google AI API Key</Label>
-              <div className="relative">
-                <Input
-                  type={showGoogleAiKey ? 'text' : 'password'}
-                  value={configForm.google_ai_api_key}
-                  onChange={(e) =>
-                    setConfigForm((prev) => ({ ...prev, google_ai_api_key: e.target.value }))
-                  }
-                  placeholder="AIza..."
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleAiKey((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showGoogleAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Chave da API Google Generative Language. Usada apenas server-side.
-              </p>
-            </div>
-
-            {/* Modelo de embedding */}
-            <div className="space-y-2">
-              <Label>Modelo de Embedding</Label>
-              <Select
-                value={configForm.google_ai_modelo}
-                onValueChange={(v) =>
-                  setConfigForm((prev) => ({ ...prev, google_ai_modelo: v }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="text-embedding-004">text-embedding-004 (768d)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Trocar o modelo exige migrar a dimensão da coluna vector no banco.
-              </p>
+            {/* Aviso: chave movida para nivel de organizacao */}
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 text-xs text-blue-300">
+              A API Key do Google AI e o modelo de embedding agora sao configurados no
+              <span className="mx-1 font-semibold">Dashboard → Configuracoes de IA</span>
+              e compartilhados por todos os setores da organizacao.
             </div>
 
           </div>
