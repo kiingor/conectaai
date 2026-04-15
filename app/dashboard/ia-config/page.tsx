@@ -11,20 +11,17 @@ import { Brain, Eye, EyeOff, Loader2, Save, Sparkles } from 'lucide-react'
 
 interface IaConfig {
   openai_api_key: string
-  google_ai_api_key: string
   embedding_modelo: string
 }
 
 export default function IaConfigPage() {
   const [config, setConfig] = useState<IaConfig>({
     openai_api_key: '',
-    google_ai_api_key: '',
     embedding_modelo: 'text-embedding-3-small',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showOpenAiKey, setShowOpenAiKey] = useState(false)
-  const [showGoogleKey, setShowGoogleKey] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -34,7 +31,6 @@ export default function IaConfigPage() {
       const data = await res.json()
       setConfig({
         openai_api_key: data.openai_api_key || '',
-        google_ai_api_key: data.google_ai_api_key || '',
         embedding_modelo: data.google_ai_modelo || 'text-embedding-3-small',
       })
     } catch (err: any) {
@@ -56,7 +52,6 @@ export default function IaConfigPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           openai_api_key: config.openai_api_key,
-          google_ai_api_key: config.google_ai_api_key,
           google_ai_modelo: config.embedding_modelo,
         }),
       })
@@ -88,45 +83,9 @@ export default function IaConfigPage() {
           Configuracoes de IA
         </h1>
         <p className="text-sm text-muted-foreground/80 mt-1">
-          Chaves de API usadas pela organizacao para embeddings (RAG) e geracao de resposta.
+          Chave de API usada pela organizacao para embeddings (RAG) e geracao de resposta.
         </p>
       </div>
-
-      {/* Google AI */}
-      <Card className="glass-panel border-foreground/8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-emerald-400" />
-            Google AI (Gemini)
-          </CardTitle>
-          <CardDescription>
-            Chave opcional para chamadas a modelos Gemini pelos agentes.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1.5">
-            <Label htmlFor="google-key" className="text-xs text-foreground/60">API Key</Label>
-            <div className="relative">
-              <Input
-                id="google-key"
-                type={showGoogleKey ? 'text' : 'password'}
-                value={config.google_ai_api_key}
-                onChange={(e) => setConfig((c) => ({ ...c, google_ai_api_key: e.target.value }))}
-                placeholder="AIza..."
-                className="glass-input pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowGoogleKey((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
-                tabIndex={-1}
-              >
-                {showGoogleKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* OpenAI */}
       <Card className="glass-panel border-foreground/8">
