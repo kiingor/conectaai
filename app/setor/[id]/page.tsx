@@ -3687,9 +3687,9 @@ const saveConfig = async () => {
 
             {/* Aviso: chave movida para nivel de organizacao */}
             <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 text-xs text-blue-300">
-              A API Key do Google AI e o modelo de embedding agora sao configurados no
+              A API Key da OpenAI (usada para embeddings do RAG e pelos agentes) agora e configurada no
               <span className="mx-1 font-semibold">Dashboard → Configuracoes de IA</span>
-              e compartilhados por todos os setores da organizacao.
+              e compartilhada por todos os setores da organizacao.
             </div>
 
           </div>

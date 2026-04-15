@@ -10,21 +10,21 @@ import { toast } from 'sonner'
 import { Brain, Eye, EyeOff, Loader2, Save, Sparkles } from 'lucide-react'
 
 interface IaConfig {
-  google_ai_api_key: string
-  google_ai_modelo: string
   openai_api_key: string
+  google_ai_api_key: string
+  embedding_modelo: string
 }
 
 export default function IaConfigPage() {
   const [config, setConfig] = useState<IaConfig>({
-    google_ai_api_key: '',
-    google_ai_modelo: 'text-embedding-004',
     openai_api_key: '',
+    google_ai_api_key: '',
+    embedding_modelo: 'text-embedding-3-small',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [showGoogleKey, setShowGoogleKey] = useState(false)
   const [showOpenAiKey, setShowOpenAiKey] = useState(false)
+  const [showGoogleKey, setShowGoogleKey] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -33,9 +33,9 @@ export default function IaConfigPage() {
       if (!res.ok) throw new Error('Falha ao carregar')
       const data = await res.json()
       setConfig({
-        google_ai_api_key: data.google_ai_api_key || '',
-        google_ai_modelo: data.google_ai_modelo || 'text-embedding-004',
         openai_api_key: data.openai_api_key || '',
+        google_ai_api_key: data.google_ai_api_key || '',
+        embedding_modelo: data.google_ai_modelo || 'text-embedding-3-small',
       })
     } catch (err: any) {
       toast.error(err.message || 'Erro ao carregar configuracao')
@@ -54,7 +54,11 @@ export default function IaConfigPage() {
       const res = await fetch('/api/organizacao/ia-config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify({
+          openai_api_key: config.openai_api_key,
+          google_ai_api_key: config.google_ai_api_key,
+          google_ai_modelo: config.embedding_modelo,
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -96,10 +100,10 @@ export default function IaConfigPage() {
             Google AI (Gemini)
           </CardTitle>
           <CardDescription>
-            Usada para gerar embeddings da base de conhecimento (RAG) dos setores desta organizacao.
+            Chave opcional para chamadas a modelos Gemini pelos agentes.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="space-y-1.5">
             <Label htmlFor="google-key" className="text-xs text-foreground/60">API Key</Label>
             <div className="relative">
@@ -121,21 +125,6 @@ export default function IaConfigPage() {
               </button>
             </div>
           </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="google-modelo" className="text-xs text-foreground/60">Modelo de embedding</Label>
-            <Select
-              value={config.google_ai_modelo}
-              onValueChange={(v) => setConfig((c) => ({ ...c, google_ai_modelo: v }))}
-            >
-              <SelectTrigger id="google-modelo" className="glass-input">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="text-embedding-004">text-embedding-004 (768 dim)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </CardContent>
       </Card>
 
@@ -147,10 +136,10 @@ export default function IaConfigPage() {
             OpenAI
           </CardTitle>
           <CardDescription>
-            Chave usada pelos agentes (n8n / retaguarda) para chamadas a modelos OpenAI.
+            Chave usada pelos agentes (n8n / retaguarda) e para gerar embeddings da base de conhecimento (RAG).
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="openai-key" className="text-xs text-foreground/60">API Key</Label>
             <div className="relative">
@@ -171,6 +160,21 @@ export default function IaConfigPage() {
                 {showOpenAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="embedding-modelo" className="text-xs text-foreground/60">Modelo de embedding (RAG)</Label>
+            <Select
+              value={config.embedding_modelo}
+              onValueChange={(v) => setConfig((c) => ({ ...c, embedding_modelo: v }))}
+            >
+              <SelectTrigger id="embedding-modelo" className="glass-input">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text-embedding-3-small">text-embedding-3-small (1536 dim, recomendado)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { gerarEmbedding, toPgVector } from '@/lib/gemini-embedding'
+import { gerarEmbedding, toPgVector } from '@/lib/embedding'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -55,20 +55,20 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const { data: org } = await supabase
       .from('organizacoes')
-      .select('google_ai_api_key, google_ai_modelo')
+      .select('openai_api_key, google_ai_modelo')
       .eq('id', setor.organizacao_id)
       .maybeSingle()
 
-    if (!org?.google_ai_api_key) {
+    if (!org?.openai_api_key) {
       return NextResponse.json(
-        { error: 'google_ai_api_key não configurada na organização (Dashboard → Configurações de IA)' },
+        { error: 'openai_api_key não configurada na organização (Dashboard → Configurações de IA)' },
         { status: 400 },
       )
     }
 
-    const modelo = org.google_ai_modelo || 'text-embedding-004'
+    const modelo = org.google_ai_modelo || 'text-embedding-3-small'
 
-    const embedding = await gerarEmbedding(body.pergunta, org.google_ai_api_key, modelo)
+    const embedding = await gerarEmbedding(body.pergunta, org.openai_api_key, modelo)
 
     const { data, error } = await supabase.rpc('buscar_base_conhecimento', {
       p_setor_id: setorId,

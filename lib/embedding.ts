@@ -1,43 +1,40 @@
 import { createHash } from 'crypto'
 
 /**
- * Gera embedding via Google Generative Language API (Gemini).
+ * Gera embedding via OpenAI Embeddings API.
  *
- * Modelo padrão: text-embedding-004 (768 dimensões).
- * Documentação: https://ai.google.dev/gemini-api/docs/embeddings
+ * Modelo padrão: text-embedding-3-small (1536 dimensões).
+ * Documentação: https://platform.openai.com/docs/api-reference/embeddings
  */
 export async function gerarEmbedding(
   texto: string,
   apiKey: string,
-  modelo = 'text-embedding-004',
+  modelo = 'text-embedding-3-small',
 ): Promise<number[]> {
-  if (!apiKey) throw new Error('google_ai_api_key não configurada no setor')
+  if (!apiKey) throw new Error('openai_api_key não configurada na organização')
   if (!texto || !texto.trim()) throw new Error('Texto vazio para embedding')
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:embedContent?key=${encodeURIComponent(apiKey)}`
-
-  const body = {
-    model: `models/${modelo}`,
-    content: {
-      parts: [{ text: texto }],
-    },
-  }
-
-  const res = await fetch(url, {
+  const res = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: modelo,
+      input: texto,
+    }),
   })
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '')
-    throw new Error(`Gemini embedding API ${res.status}: ${errText.slice(0, 300)}`)
+    throw new Error(`OpenAI embedding API ${res.status}: ${errText.slice(0, 300)}`)
   }
 
-  const json = (await res.json()) as { embedding?: { values?: number[] } }
-  const values = json.embedding?.values
+  const json = (await res.json()) as { data?: Array<{ embedding?: number[] }> }
+  const values = json.data?.[0]?.embedding
   if (!values || !Array.isArray(values) || values.length === 0) {
-    throw new Error('Resposta da Gemini API sem embedding.values')
+    throw new Error('Resposta da OpenAI sem data[0].embedding')
   }
   return values
 }
@@ -60,7 +57,6 @@ export function chunkText(texto: string, maxChars = 1500, overlap = 200): string
     let fim = Math.min(i + maxChars, clean.length)
 
     if (fim < clean.length) {
-      // tenta cortar em quebra de parágrafo, depois em ponto final, depois em espaço
       const slice = clean.slice(i, fim)
       const breakPara = slice.lastIndexOf('\n\n')
       const breakDot = slice.lastIndexOf('. ')
@@ -86,9 +82,6 @@ export function chunkText(texto: string, maxChars = 1500, overlap = 200): string
 
 /**
  * Formato pgvector aceito pelo Postgres: string `[0.1,0.2,...]`.
- * O Supabase client aceita array de numbers diretamente para colunas vector,
- * mas algumas chamadas RPC precisam do formato string. Use isto quando passar
- * para RPC.
  */
 export function toPgVector(values: number[]): string {
   return `[${values.join(',')}]`
