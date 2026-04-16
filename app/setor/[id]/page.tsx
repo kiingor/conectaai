@@ -537,13 +537,34 @@ export default function SetorPage() {
   const [melhorandoPrompt, setMelhorandoPrompt] = useState(false)
 
   const PROMPT_DEFAULT = `Você é o assistente virtual da {empresa}, setor {setor}.
+{descricao}
 
-Regras:
+## Regras gerais
 - Responda sempre em português, de forma breve, educada e profissional.
-- Use APENAS informações da base de conhecimento para responder. Se não encontrar a resposta, diga que vai encaminhar para um atendente humano.
 - Nunca invente informações, preços, prazos ou políticas.
 - Cumprimente o cliente pelo nome quando disponível.
-- Se o cliente pedir para falar com um humano, encaminhe imediatamente.`
+
+## Ferramentas disponíveis
+
+### Base de conhecimento (Supabase Vector Store)
+- SEMPRE consulte a base de conhecimento antes de responder qualquer dúvida do cliente.
+- Use APENAS informações retornadas pela base para responder. Se não encontrar a resposta, informe que vai transferir para um atendente humano e chame create_ticket.
+- Não parafraseie demais: mantenha fidelidade às informações da base.
+
+### Criar ticket (create_ticket)
+Chame create_ticket nos seguintes casos:
+- O cliente quer falar com um atendente humano.
+- A base de conhecimento não tem a resposta para a pergunta.
+- O assunto exige análise humana (reclamação, cancelamento, negociação, problema técnico complexo).
+- O cliente demonstra insatisfação ou frustração.
+
+Ao criar o ticket, preencha o resumo com o contexto da conversa para que o atendente humano já saiba do que se trata.
+
+## Fluxo de atendimento
+1. Cumprimente o cliente.
+2. Consulte a base de conhecimento para responder.
+3. Se encontrou a resposta → responda de forma clara e objetiva.
+4. Se NÃO encontrou ou o cliente pede atendimento humano → avise que vai transferir e chame create_ticket.`
 
   const substituirVariaveis = (texto: string) => {
     return texto
@@ -583,15 +604,19 @@ Regras:
           authorization: `Bearer ${orgId}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-4.1-mini',
           messages: [
             {
               role: 'system',
               content:
                 'Você é um especialista em criar system prompts para agentes de atendimento ao cliente via WhatsApp.\n\n' +
                 'Contexto da empresa/setor:\n' + contexto + '\n\n' +
+                'O agente tem duas ferramentas (tools) disponíveis:\n' +
+                '1. **Base de conhecimento (Supabase Vector Store)** — consulta documentos indexados para responder dúvidas.\n' +
+                '2. **create_ticket** — cria um ticket de atendimento humano quando necessário (cliente pede humano, resposta não encontrada, reclamação, problema complexo).\n\n' +
                 'O usuário vai enviar um rascunho de prompt e você deve devolvê-lo melhorado: mais claro, mais estruturado, ' +
-                'com diretrizes explícitas de tom, limites de escopo e instruções para usar a base de conhecimento (RAG). ' +
+                'com diretrizes explícitas de tom, limites de escopo, instruções para usar a base de conhecimento (RAG) ' +
+                'e regras claras de quando chamar create_ticket. ' +
                 'Use o nome real da empresa e do setor (não use {empresa} ou {setor}, substitua pelos nomes reais). ' +
                 'Mantenha o idioma original (português). Devolva APENAS o prompt melhorado, sem explicações extras.',
             },
