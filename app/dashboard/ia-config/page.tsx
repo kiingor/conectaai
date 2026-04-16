@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Brain, Eye, EyeOff, Loader2, Save, Sparkles } from 'lucide-react'
+import { useColaborador } from '@/lib/hooks/use-data'
 
 interface IaConfig {
   openai_api_key: string
@@ -15,6 +16,7 @@ interface IaConfig {
 }
 
 export default function IaConfigPage() {
+  const { data: colaborador } = useColaborador()
   const [config, setConfig] = useState<IaConfig>({
     openai_api_key: '',
     embedding_modelo: 'text-embedding-3-small',
@@ -23,10 +25,15 @@ export default function IaConfigPage() {
   const [saving, setSaving] = useState(false)
   const [showOpenAiKey, setShowOpenAiKey] = useState(false)
 
+  const orgId = colaborador?.organizacao_id
+
   const load = async () => {
+    if (!orgId) return
     setLoading(true)
     try {
-      const res = await fetch('/api/organizacao/ia-config')
+      const res = await fetch('/api/organizacao/ia-config', {
+        headers: { 'x-org-id': orgId },
+      })
       if (!res.ok) throw new Error('Falha ao carregar')
       const data = await res.json()
       setConfig({
@@ -41,15 +48,16 @@ export default function IaConfigPage() {
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    if (orgId) load()
+  }, [orgId])
 
   const save = async () => {
+    if (!orgId) return
     setSaving(true)
     try {
       const res = await fetch('/api/organizacao/ia-config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-org-id': orgId },
         body: JSON.stringify({
           openai_api_key: config.openai_api_key,
           google_ai_modelo: config.embedding_modelo,
