@@ -33,7 +33,16 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const body = await request.text()
+  // Força dimensions=768 pra alinhar com a base de conhecimento (vector(768))
+  const raw = await request.text()
+  let body: string
+  try {
+    const parsed = JSON.parse(raw)
+    parsed.dimensions = 768
+    body = JSON.stringify(parsed)
+  } catch {
+    body = raw
+  }
 
   let upstream: Response
   try {
