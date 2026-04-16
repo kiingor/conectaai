@@ -536,6 +536,27 @@ export default function SetorPage() {
   const [ragUploadProgresso, setRagUploadProgresso] = useState<string | null>(null)
   const [melhorandoPrompt, setMelhorandoPrompt] = useState(false)
 
+  const PROMPT_DEFAULT = `Você é o assistente virtual da {empresa}, setor {setor}.
+
+Regras:
+- Responda sempre em português, de forma breve, educada e profissional.
+- Use APENAS informações da base de conhecimento para responder. Se não encontrar a resposta, diga que vai encaminhar para um atendente humano.
+- Nunca invente informações, preços, prazos ou políticas.
+- Cumprimente o cliente pelo nome quando disponível.
+- Se o cliente pedir para falar com um humano, encaminhe imediatamente.`
+
+  const substituirVariaveis = (texto: string) => {
+    return texto
+      .replace(/\{empresa\}/gi, nomeOrg || configForm.nome || 'Empresa')
+      .replace(/\{setor\}/gi, configForm.nome || 'Atendimento')
+      .replace(/\{descricao\}/gi, configForm.descricao || '')
+  }
+
+  const inserirPromptDefault = () => {
+    const prompt = substituirVariaveis(PROMPT_DEFAULT)
+    setConfigForm((prev) => ({ ...prev, agente_prompt: prompt }))
+  }
+
   const melhorarPromptComIA = async () => {
     const promptAtual = configForm.agente_prompt?.trim()
     if (!promptAtual) {
@@ -549,6 +570,12 @@ export default function SetorPage() {
     }
     setMelhorandoPrompt(true)
     try {
+      const contexto = [
+        nomeOrg ? `Empresa: ${nomeOrg}` : '',
+        configForm.nome ? `Setor: ${configForm.nome}` : '',
+        configForm.descricao ? `Descrição do setor: ${configForm.descricao}` : '',
+      ].filter(Boolean).join('\n')
+
       const res = await fetch('/api/llm/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -561,9 +588,11 @@ export default function SetorPage() {
             {
               role: 'system',
               content:
-                'Você é um especialista em criar system prompts para agentes de atendimento ao cliente via WhatsApp. ' +
+                'Você é um especialista em criar system prompts para agentes de atendimento ao cliente via WhatsApp.\n\n' +
+                'Contexto da empresa/setor:\n' + contexto + '\n\n' +
                 'O usuário vai enviar um rascunho de prompt e você deve devolvê-lo melhorado: mais claro, mais estruturado, ' +
                 'com diretrizes explícitas de tom, limites de escopo e instruções para usar a base de conhecimento (RAG). ' +
+                'Use o nome real da empresa e do setor (não use {empresa} ou {setor}, substitua pelos nomes reais). ' +
                 'Mantenha o idioma original (português). Devolva APENAS o prompt melhorado, sem explicações extras.',
             },
             { role: 'user', content: promptAtual },
@@ -619,6 +648,7 @@ export default function SetorPage() {
   }
   const [canais, setCanais] = useState<Canal[]>([])
   const [todosSetores, setTodosSetores] = useState<{ id: string; nome: string }[]>([])
+  const [nomeOrg, setNomeOrg] = useState('')
   const [tiposAtendimentoSetor, setTiposAtendimentoSetor] = useState<Record<string, string | null>>({
     suporte: null,
     ouvidoria: null,
@@ -898,6 +928,11 @@ export default function SetorPage() {
         rag_ativo: setor.rag_ativo || false,
         agente_prompt: setor.agente_prompt || '',
       })
+      // Busca nome da organização para variáveis do prompt
+      if (setor.organizacao_id) {
+        supabase.from('organizacoes').select('nome').eq('id', setor.organizacao_id).maybeSingle()
+          .then(({ data }) => { if (data?.nome) setNomeOrg(data.nome) })
+      }
       fetchRagDocumentos()
       fetchTemplates()
       fetchCanais()
@@ -3745,21 +3780,35 @@ const saveConfig = async () => {
                 <Label htmlFor="agente-prompt" className="text-sm font-medium">
                   Prompt do agente
                 </Label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={melhorarPromptComIA}
-                  disabled={melhorandoPrompt || !configForm.agente_prompt?.trim()}
-                  className="gap-1.5 text-xs"
-                >
-                  {melhorandoPrompt ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-3.5 w-3.5" />
+                <div className="flex gap-2">
+                  {!configForm.agente_prompt?.trim() && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={inserirPromptDefault}
+                      className="gap-1.5 text-xs"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Usar template
+                    </Button>
                   )}
-                  Melhorar com IA
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={melhorarPromptComIA}
+                    disabled={melhorandoPrompt || !configForm.agente_prompt?.trim()}
+                    className="gap-1.5 text-xs"
+                  >
+                    {melhorandoPrompt ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3.5 w-3.5" />
+                    )}
+                    Melhorar com IA
+                  </Button>
+                </div>
               </div>
               <Textarea
                 id="agente-prompt"
@@ -3768,12 +3817,17 @@ const saveConfig = async () => {
                 onChange={(e) =>
                   setConfigForm((prev) => ({ ...prev, agente_prompt: e.target.value }))
                 }
-                placeholder="Ex: Você é um atendente da empresa X. Responda sempre em português, de forma breve e educada. Use apenas informações da base de conhecimento..."
+                placeholder="Escreva o prompt do agente ou clique em 'Usar template' para começar com um modelo pronto..."
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                O n8n recebe este prompt junto com os trechos mais relevantes da Base de Conhecimento.
-              </p>
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-xs text-muted-foreground">
+                  O n8n recebe este prompt junto com os trechos mais relevantes da Base de Conhecimento.
+                </p>
+                <p className="text-xs text-muted-foreground/60 shrink-0">
+                  Variáveis: <code className="text-[10px]">{'{empresa}'} {'{setor}'} {'{descricao}'}</code>
+                </p>
+              </div>
             </div>
 
             {/* Aviso: chave movida para nivel de organizacao */}
@@ -4397,7 +4451,7 @@ const saveConfig = async () => {
                           <SelectContent>
                             <SelectItem value="none">Nenhum</SelectItem>
                             {todosSetores
-                              .filter((s) => s.id !== setorId && s.is_receptor)
+                              .filter((s) => s.id !== setorId)
                               .map((s) => (
                                 <SelectItem key={s.id} value={s.id}>
                                   <div className="flex items-center gap-2">
@@ -4408,7 +4462,7 @@ const saveConfig = async () => {
                               ))}
                           </SelectContent>
                         </Select>
-                        {todosSetores.filter((s) => s.id !== setorId && s.is_receptor).length === 0 && (
+                        {todosSetores.filter((s) => s.id !== setorId).length === 0 && (
                           <p className="text-xs text-amber-400">
                             Nenhum setor esta configurado como receptor. Marque um setor como &quot;Setor Receptor&quot; primeiro.
                           </p>
