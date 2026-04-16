@@ -127,7 +127,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown, Brain, Upload, FileCheck2, Power } from 'lucide-react'
+import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown, Brain, Upload, FileCheck2, Power, Sparkles } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 const supabase = createClient()
@@ -514,6 +514,7 @@ export default function SetorPage() {
   transmissao_ativa: false,
   setor_receptor_id: '' as string,
   rag_ativo: false,
+  agente_prompt: '',
   })
 
   // RAG state
@@ -533,6 +534,62 @@ export default function SetorPage() {
   const [ragUploadTitulo, setRagUploadTitulo] = useState('')
   const [ragUploading, setRagUploading] = useState(false)
   const [ragUploadProgresso, setRagUploadProgresso] = useState<string | null>(null)
+  const [melhorandoPrompt, setMelhorandoPrompt] = useState(false)
+
+  const melhorarPromptComIA = async () => {
+    const promptAtual = configForm.agente_prompt?.trim()
+    if (!promptAtual) {
+      toast.error('Escreva um rascunho de prompt antes de melhorar com IA.')
+      return
+    }
+    const orgId = setor?.organizacao_id
+    if (!orgId) {
+      toast.error('Organização não identificada.')
+      return
+    }
+    setMelhorandoPrompt(true)
+    try {
+      const res = await fetch('/api/llm/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${orgId}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Você é um especialista em criar system prompts para agentes de atendimento ao cliente via WhatsApp. ' +
+                'O usuário vai enviar um rascunho de prompt e você deve devolvê-lo melhorado: mais claro, mais estruturado, ' +
+                'com diretrizes explícitas de tom, limites de escopo e instruções para usar a base de conhecimento (RAG). ' +
+                'Mantenha o idioma original (português). Devolva APENAS o prompt melhorado, sem explicações extras.',
+            },
+            { role: 'user', content: promptAtual },
+          ],
+          temperature: 0.7,
+          max_tokens: 2048,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error?.message || 'Falha ao chamar a IA')
+      }
+      const data = await res.json()
+      const melhorado = data.choices?.[0]?.message?.content?.trim()
+      if (melhorado) {
+        setConfigForm((prev) => ({ ...prev, agente_prompt: melhorado }))
+        toast.success('Prompt melhorado com sucesso!')
+      } else {
+        toast.error('Resposta vazia da IA.')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao melhorar prompt')
+    } finally {
+      setMelhorandoPrompt(false)
+    }
+  }
 
 // Templates state
   const [templates, setTemplates] = useState<any[]>([])
@@ -839,6 +896,7 @@ export default function SetorPage() {
         transmissao_ativa: setor.transmissao_ativa || false,
         setor_receptor_id: setor.setor_receptor_id || '',
         rag_ativo: setor.rag_ativo || false,
+        agente_prompt: setor.agente_prompt || '',
       })
       fetchRagDocumentos()
       fetchTemplates()
@@ -1190,6 +1248,7 @@ const saveConfig = async () => {
   transmissao_ativa: configForm.transmissao_ativa,
   setor_receptor_id: configForm.setor_receptor_id || null,
   rag_ativo: configForm.rag_ativo,
+  agente_prompt: configForm.agente_prompt || null,
   })
         .eq('id', setorId)
 
@@ -3683,6 +3742,43 @@ const saveConfig = async () => {
                   setConfigForm((prev) => ({ ...prev, rag_ativo: checked }))
                 }
               />
+            </div>
+
+            {/* Prompt do agente (system prompt enviado para o n8n) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="agente-prompt" className="text-sm font-medium">
+                  Prompt do agente
+                </Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={melhorarPromptComIA}
+                  disabled={melhorandoPrompt || !configForm.agente_prompt?.trim()}
+                  className="gap-1.5 text-xs"
+                >
+                  {melhorandoPrompt ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5" />
+                  )}
+                  Melhorar com IA
+                </Button>
+              </div>
+              <Textarea
+                id="agente-prompt"
+                rows={10}
+                value={configForm.agente_prompt}
+                onChange={(e) =>
+                  setConfigForm((prev) => ({ ...prev, agente_prompt: e.target.value }))
+                }
+                placeholder="Ex: Você é um atendente da empresa X. Responda sempre em português, de forma breve e educada. Use apenas informações da base de conhecimento..."
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                O n8n recebe este prompt junto com os trechos mais relevantes da Base de Conhecimento.
+              </p>
             </div>
 
             {/* Aviso: chave movida para nivel de organizacao */}
