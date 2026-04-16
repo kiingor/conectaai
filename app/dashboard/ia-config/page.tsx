@@ -139,7 +139,7 @@ export default function IaConfigPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="text-embedding-3-small">text-embedding-3-small (1536 dim, recomendado)</SelectItem>
+                <SelectItem value="text-embedding-3-small">text-embedding-3-small (768 dim, recomendado)</SelectItem>
               </SelectContent>
             </Select>
           </div>
