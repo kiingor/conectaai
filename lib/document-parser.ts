@@ -10,7 +10,9 @@ export function parseTextOrMd(buffer: Buffer): string {
 }
 
 export async function parsePdf(buffer: Buffer): Promise<string> {
-  const pdfParse = (await import('pdf-parse')).default
+  // Importa direto o módulo interno pra evitar o auto-test do pdf-parse
+  // que tenta abrir ./test/data/05-versions-space.pdf (não existe em serverless)
+  const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default
   const result = await pdfParse(buffer)
   return result.text || ''
 }
