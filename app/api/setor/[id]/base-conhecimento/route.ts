@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { ORG_ID_HEADER } from '@/lib/tenant'
-import { gerarEmbedding, sha256, chunkText } from '@/lib/embedding'
+import { gerarEmbedding, sha256, chunkText, toPgVector } from '@/lib/embedding'
 import { parseArquivo } from '@/lib/document-parser'
 
 export const runtime = 'nodejs'
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           titulo,
           conteudo,
           conteudo_hash: hash,
-          embedding,
+          embedding: toPgVector(embedding),
           tipo: tipoCustom || tipoDetectado,
           arquivo_nome: nomeArquivo,
           chunk_index: i,
