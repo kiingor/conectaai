@@ -10,14 +10,9 @@ export function parseTextOrMd(buffer: Buffer): string {
 }
 
 export async function parsePdf(buffer: Buffer): Promise<string> {
-  const { PDFParse } = await import('pdf-parse')
-  const parser = new PDFParse({ data: new Uint8Array(buffer) })
-  try {
-    const result = await parser.getText()
-    return result.text || ''
-  } finally {
-    await parser.destroy().catch(() => {})
-  }
+  const pdfParse = (await import('pdf-parse')).default
+  const result = await pdfParse(buffer)
+  return result.text || ''
 }
 
 export async function parseDocx(buffer: Buffer): Promise<string> {
