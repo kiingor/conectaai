@@ -618,7 +618,7 @@ export default function SetorPage() {
     criado_em: string
   }
   const [canais, setCanais] = useState<Canal[]>([])
-  const [todosSetores, setTodosSetores] = useState<{ id: string; nome: string; is_receptor?: boolean }[]>([])
+  const [todosSetores, setTodosSetores] = useState<{ id: string; nome: string }[]>([])
   const [tiposAtendimentoSetor, setTiposAtendimentoSetor] = useState<Record<string, string | null>>({
     suporte: null,
     ouvidoria: null,
@@ -904,7 +904,6 @@ export default function SetorPage() {
       fetchTodosSetores()
       fetchTiposAtendimento()
       fetchDistributionConfig()
-      fetchSetoresDestino()
       fetchTagsList()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -915,14 +914,14 @@ export default function SetorPage() {
     try {
       const { data } = await supabase
         .from('ticket_distribution_config')
-        .select('max_tickets_per_agent, auto_assign_enabled')
+        .select('auto_assign_enabled')
         .eq('setor_id', setorId)
         .maybeSingle()
       if (data) {
-        setDistributionConfig({
-          max_tickets_per_agent: data.max_tickets_per_agent ?? 10,
+        setDistributionConfig((prev) => ({
+          ...prev,
           auto_assign_enabled: data.auto_assign_enabled ?? true,
-        })
+        }))
       }
     } catch {
       // Tabela pode não existir em ambientes mais antigos, ignora silenciosamente
@@ -937,7 +936,6 @@ export default function SetorPage() {
         .from('ticket_distribution_config')
         .upsert({
           setor_id: setorId,
-          max_tickets_per_agent: distributionConfig.max_tickets_per_agent,
           auto_assign_enabled: distributionConfig.auto_assign_enabled,
         }, { onConflict: 'setor_id' })
       if (error) throw error
@@ -953,7 +951,7 @@ export default function SetorPage() {
   const fetchTodosSetores = async () => {
     const { data } = await supabase
       .from('setores')
-      .select('id, nome, is_receptor')
+      .select('id, nome')
       .order('nome')
     if (data) setTodosSetores(data)
   }
@@ -1244,9 +1242,6 @@ const saveConfig = async () => {
   webhook_eventos: configForm.webhook_eventos.length > 0 ? configForm.webhook_eventos : null,
   tempo_espera_minutos: configForm.tempo_espera_minutos || 10,
   tag_id: configForm.tag_id || null,
-  is_receptor: configForm.is_receptor,
-  transmissao_ativa: configForm.transmissao_ativa,
-  setor_receptor_id: configForm.setor_receptor_id || null,
   rag_ativo: configForm.rag_ativo,
   agente_prompt: configForm.agente_prompt || null,
   })
