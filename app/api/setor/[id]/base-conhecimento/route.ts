@@ -156,17 +156,17 @@ export async function POST(request: NextRequest, { params }: Params) {
       try {
         const embedding = await gerarEmbedding(conteudo, openaiApiKey, modelo)
 
-        // Usa RPC com cast explícito para contornar cache de schema do PostgREST
-        const { error: insertErr } = await supabase.rpc('inserir_base_conhecimento', {
-          p_setor_id: setorId,
-          p_organizacao_id: organizacaoId,
-          p_titulo: titulo,
-          p_conteudo: conteudo,
-          p_conteudo_hash: hash,
-          p_embedding: toPgVector(embedding),
-          p_tipo: tipoCustom || tipoDetectado,
-          p_arquivo_nome: nomeArquivo,
-          p_chunk_index: i,
+        const { error: insertErr } = await supabase.from('base_conhecimento').insert({
+          setor_id: setorId,
+          organizacao_id: organizacaoId,
+          titulo,
+          conteudo,
+          conteudo_hash: hash,
+          embedding: toPgVector(embedding),
+          tipo: tipoCustom || tipoDetectado,
+          arquivo_nome: nomeArquivo,
+          chunk_index: i,
+          ativo: true,
         })
 
         if (insertErr) {

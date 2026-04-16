@@ -23,6 +23,7 @@ export async function gerarEmbedding(
     body: JSON.stringify({
       model: modelo,
       input: texto,
+      dimensions: 768,
     }),
   })
 
