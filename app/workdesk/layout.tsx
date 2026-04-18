@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { User, LogOut, MessageCircle, KeyRound, Ticket, Menu, Zap } from 'lucide-react'
+import { User, LogOut, MessageCircle, KeyRound, Menu, Zap } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -323,26 +323,8 @@ export default function WorkdeskLayout({
             </Tooltip>
           </Link>
 
-          {/* Navigation icons in the middle */}
-          <nav className="flex flex-col items-center gap-2 flex-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/workdesk"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
-                    pathname === '/workdesk'
-                      ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
-                      : 'text-muted-foreground/60 hover:text-foreground/60 hover:bg-foreground/5'
-                  }`}
-                >
-                  <Ticket className="h-5 w-5" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="glass-dropdown border-foreground/8 text-foreground/80">
-                Meus Tickets
-              </TooltipContent>
-            </Tooltip>
-          </nav>
+          {/* Spacer to push user avatar to bottom */}
+          <div className="flex-1" />
 
           {/* Bottom section: user avatar */}
           <div className="flex flex-col items-center gap-1.5">

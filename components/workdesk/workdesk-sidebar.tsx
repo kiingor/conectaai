@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import {
-  Ticket,
   LogOut,
   MessageCircle,
   X,
@@ -13,12 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import { motion } from 'framer-motion'
 import { DisponibilidadePanel } from '@/components/workdesk/disponibilidade-panel'
-
-const navigation = [
-  { name: 'Meus Tickets', href: '/workdesk', icon: Ticket },
-]
 
 interface WorkdeskSidebarProps {
   open: boolean
@@ -51,7 +45,6 @@ function MobileDrawerContent({
   onStatusChange: (status: boolean) => void
   setorIds?: string[]
 }) {
-  const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
@@ -104,39 +97,8 @@ function MobileDrawerContent({
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-1">
-        <p className="px-3 pb-1.5 text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Menu</p>
-        {navigation.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={onClose}
-              className={cn(
-                'group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all',
-                isActive
-                  ? 'glass-nav-active text-emerald-400'
-                  : 'text-muted-foreground/80 hover:text-foreground/60 hover:bg-foreground/[0.03]'
-              )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeNavWorkdeskMobile"
-                  className="absolute inset-0 rounded-xl glass-nav-active"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <item.icon className={cn(
-                'relative z-10 h-4.5 w-4.5 transition-colors',
-                isActive ? 'text-emerald-400' : 'text-muted-foreground/60'
-              )} />
-              <span className="relative z-10">{item.name}</span>
-            </Link>
-          )
-        })}
-      </nav>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Bottom section: status + logout */}
       <div className="p-4 space-y-3">
