@@ -4116,7 +4116,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Workdesk</p>
-                  <p className="text-xs text-muted-foreground/80">Flags do painel do atendente deste setor</p>
+                  <p className="text-xs text-muted-foreground/80">Ajustes da tela do atendente para este setor</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
@@ -4125,9 +4125,9 @@ const saveConfig = async () => {
               <div className="border-t border-foreground/6 p-5 space-y-4">
                 <div className="flex items-start justify-between gap-4 rounded-lg border border-foreground/8 bg-foreground/[0.02] p-3">
                   <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Habilitar "Novo Disparo"</Label>
+                    <Label className="text-sm font-medium">Permitir iniciar atendimento (Novo Disparo)</Label>
                     <p className="text-xs text-muted-foreground/80">
-                      Quando ativo, o botao aparece no workdesk para atendentes deste setor e o fluxo inicia pela busca por telefone do cliente. Se o telefone estiver vinculado, traz os dados do cliente automaticamente.
+                      Quando ativado, os atendentes deste setor veem o botao &quot;Novo Disparo&quot; e podem abrir um atendimento digitando o telefone do cliente. Se o cliente ja existir, os dados dele sao preenchidos automaticamente.
                     </p>
                   </div>
                   <Switch
@@ -4150,7 +4150,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Canais de Atendimento (WhatsApp)</p>
-                  <p className="text-xs text-muted-foreground/80">Numeros conectados via Evolution API</p>
+                  <p className="text-xs text-muted-foreground/80">WhatsApps conectados que enviam e recebem mensagens deste setor</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -4228,7 +4228,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Distribuicao de Tickets</p>
-                  <p className="text-xs text-muted-foreground/80">Configure a atribuicao automatica de tickets</p>
+                  <p className="text-xs text-muted-foreground/80">Como os tickets chegam para os atendentes automaticamente</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
@@ -4271,7 +4271,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Mensagens</p>
-                  <p className="text-xs text-muted-foreground/80">Mensagem de finalizacao e webhooks</p>
+                  <p className="text-xs text-muted-foreground/80">Mensagem enviada ao cliente ao encerrar o atendimento e integracoes com sistemas externos</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
@@ -4329,7 +4329,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Transferencia</p>
-                  <p className="text-xs text-muted-foreground/80">Setores disponiveis como destino de transferencia</p>
+                  <p className="text-xs text-muted-foreground/80">Para quais setores este setor pode transferir um atendimento</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
@@ -4426,7 +4426,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Receptor / Transmissor</p>
-                  <p className="text-xs text-muted-foreground/80">Encaminhamento automatico quando nao ha atendentes</p>
+                  <p className="text-xs text-muted-foreground/80">O que acontece com o ticket quando nao ha atendentes online neste setor</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
@@ -4541,7 +4541,7 @@ const saveConfig = async () => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Zona de Perigo</p>
-                  <p className="text-xs text-muted-foreground/80">Acoes irreversiveis para este setor</p>
+                  <p className="text-xs text-muted-foreground/80">Acoes que nao podem ser desfeitas, como apagar o setor</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />

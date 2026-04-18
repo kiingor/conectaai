@@ -91,7 +91,7 @@ export default function IaConfigPage() {
           Configuracoes de IA
         </h1>
         <p className="text-sm text-muted-foreground/80 mt-1">
-          Chave de API usada pela organizacao para embeddings (RAG) e geracao de resposta.
+          Chave do OpenAI usada pelo agente de IA para responder mensagens e consultar a base de conhecimento.
         </p>
       </div>
 
@@ -103,12 +103,12 @@ export default function IaConfigPage() {
             OpenAI
           </CardTitle>
           <CardDescription>
-            Chave usada pelos agentes (n8n / retaguarda) e para gerar embeddings da base de conhecimento (RAG).
+            Obrigatoria para o agente responder automaticamente no WhatsApp e para treinar a base de conhecimento dos setores. A chave comeca com &quot;sk-&quot;.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="openai-key" className="text-xs text-foreground/60">API Key</Label>
+            <Label htmlFor="openai-key" className="text-xs text-foreground/60">Chave do OpenAI</Label>
             <div className="relative">
               <Input
                 id="openai-key"
@@ -130,7 +130,7 @@ export default function IaConfigPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="embedding-modelo" className="text-xs text-foreground/60">Modelo de embedding (RAG)</Label>
+            <Label htmlFor="embedding-modelo" className="text-xs text-foreground/60">Modelo usado na base de conhecimento</Label>
             <Select
               value={config.embedding_modelo}
               onValueChange={(v) => setConfig((c) => ({ ...c, embedding_modelo: v }))}
