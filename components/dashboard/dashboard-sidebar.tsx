@@ -28,7 +28,7 @@ const baseNavigation = [
 ]
 
 const masterNavigationEnd = [
-  { name: 'Usuarios Master', href: '/dashboard/usuarios', icon: UserCog },
+  { name: 'Usuarios', href: '/dashboard/usuarios', icon: UserCog },
 ]
 
 interface DashboardSidebarProps {

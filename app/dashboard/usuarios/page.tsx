@@ -109,6 +109,7 @@ export default function UsuariosPage() {
     email: '',
     senha: '',
     is_master: false,
+    is_atendente: false,
     permissao_id: '',
     setores_selecionados: [] as string[],
   })
@@ -158,6 +159,7 @@ export default function UsuariosPage() {
       email: '',
       senha: '',
       is_master: false,
+      is_atendente: false,
       permissao_id: '',
       setores_selecionados: [],
     })
@@ -165,16 +167,38 @@ export default function UsuariosPage() {
   }
 
   function openEditModal(user: Colaborador) {
+    const currentPermissao = permissoes.find((p: any) => p.id === user.permissao_id)
+    const isAtendenteUser = !user.is_master && !!currentPermissao && currentPermissao.nome.toLowerCase() === 'atendente'
     setEditingUser(user)
     setFormData({
       nome: user.nome,
       email: user.email,
       senha: '',
       is_master: user.is_master,
+      is_atendente: isAtendenteUser,
       permissao_id: user.permissao_id || '',
       setores_selecionados: getSetoresDoColaborador(user.id),
     })
     setIsModalOpen(true)
+  }
+
+  async function ensureAtendentePermissao(): Promise<string | null> {
+    if (!colaborador?.organizacao_id) return null
+    const existing = permissoes.find((p: any) => p.nome.toLowerCase() === 'atendente')
+    if (existing) return existing.id
+    const { data, error } = await supabase
+      .from('permissoes')
+      .insert({
+        nome: 'Atendente',
+        can_view_dashboard: false,
+        can_manage_users: false,
+        can_view_all_tickets: false,
+        organizacao_id: colaborador.organizacao_id,
+      })
+      .select()
+      .single()
+    if (error || !data) return null
+    return data.id
   }
 
   async function handleSave() {
@@ -182,6 +206,16 @@ export default function UsuariosPage() {
 
     setSaving(true)
     try {
+      let resolvedPermissaoId: string | null = formData.permissao_id || null
+      if (formData.is_atendente && !formData.is_master) {
+        resolvedPermissaoId = await ensureAtendentePermissao()
+        if (!resolvedPermissaoId) {
+          toast.error('Nao foi possivel criar/localizar a permissao Atendente')
+          setSaving(false)
+          return
+        }
+      }
+
       if (editingUser) {
         // Update existing user
         await supabase
@@ -189,7 +223,7 @@ export default function UsuariosPage() {
           .update({
             nome: formData.nome,
             is_master: formData.is_master,
-            permissao_id: formData.permissao_id || null,
+            permissao_id: resolvedPermissaoId,
           })
           .eq('id', editingUser.id)
 
@@ -227,7 +261,7 @@ export default function UsuariosPage() {
             nome: formData.nome,
             email: formData.email,
             is_master: formData.is_master,
-            permissao_id: formData.permissao_id || null,
+            permissao_id: resolvedPermissaoId,
             ativo: true,
             is_online: false,
             organizacao_id: colaborador?.organizacao_id,
@@ -298,7 +332,7 @@ export default function UsuariosPage() {
             <UserCog className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Usuarios Master</h1>
+            <h1 className="text-2xl font-bold text-white">Usuarios</h1>
             <p className="text-sm text-muted-foreground/80">
               Gerencie usuarios e defina quais setores cada um pode acessar
             </p>
@@ -560,7 +594,7 @@ export default function UsuariosPage() {
                 </div>
               )}
 
-              {/* Permissão + Admin toggle */}
+              {/* Permissão + Admin/Atendente toggles */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="permissao">Permissão</Label>
@@ -569,9 +603,10 @@ export default function UsuariosPage() {
                     onValueChange={(value) =>
                       setFormData((prev) => ({ ...prev, permissao_id: value }))
                     }
+                    disabled={formData.is_atendente || formData.is_master}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma permissão" />
+                      <SelectValue placeholder={formData.is_atendente ? 'Atendente (automatico)' : 'Selecione uma permissão'} />
                     </SelectTrigger>
                     <SelectContent>
                       {permissoes.map((p) => (
@@ -583,17 +618,40 @@ export default function UsuariosPage() {
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3 h-fit mt-auto">
-                  <Switch
-                    id="is_master"
-                    checked={formData.is_master}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, is_master: checked }))
-                    }
-                  />
-                  <Label htmlFor="is_master" className="cursor-pointer text-sm leading-tight">
-                    Admin — acesso a todos os setores
-                  </Label>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+                    <Switch
+                      id="is_master"
+                      checked={formData.is_master}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          is_master: checked,
+                          is_atendente: checked ? false : prev.is_atendente,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="is_master" className="cursor-pointer text-sm leading-tight">
+                      Admin — acesso a todos os setores
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+                    <Switch
+                      id="is_atendente"
+                      checked={formData.is_atendente}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          is_atendente: checked,
+                          is_master: checked ? false : prev.is_master,
+                          permissao_id: checked ? '' : prev.permissao_id,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="is_atendente" className="cursor-pointer text-sm leading-tight">
+                      Atendente — apenas WorkDesk, sem Dashboard
+                    </Label>
+                  </div>
                 </div>
               </div>
 
