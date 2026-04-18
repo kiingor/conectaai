@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { ORG_ID_HEADER } from '@/lib/tenant'
+import { composeAgentPrompt } from '@/lib/agent-tools-prompt'
 
 export async function GET(request: NextRequest) {
   try {
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
             organizacao_id: canalMatch.organizacao_id || setor?.organizacao_id || null,
             organizacao_nome: org?.nome || null,
             organizacao_slug: org?.slug || null,
-            agente_prompt: setor?.agente_prompt || null,
+            agente_prompt: composeAgentPrompt(setor?.agente_prompt),
             rag_ativo: !!setor?.rag_ativo,
             google_ai_modelo: org?.google_ai_modelo || null,
             canal: {
@@ -142,7 +143,7 @@ export async function GET(request: NextRequest) {
           source: 'setores',
           setor_id: s.id,
           setor_nome: s.nome,
-          agente_prompt: s.agente_prompt || null,
+          agente_prompt: composeAgentPrompt(s.agente_prompt),
           rag_ativo: !!s.rag_ativo,
           google_ai_modelo: s.organizacoes?.google_ai_modelo || null,
           canal: null,
