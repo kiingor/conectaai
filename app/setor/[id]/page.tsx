@@ -60,7 +60,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  AlertTriangle,
   ArrowLeft,
   MessageCircle,
   Clock,
@@ -426,53 +425,8 @@ export default function SetorPage() {
     onConfirm: () => void
   }>({ open: false, title: '', description: '', onConfirm: () => {} })
 
-  // Delete setor state
-  const [deletingSetor, setDeletingSetor] = useState(false)
-  const [deleteSetorConfirmText, setDeleteSetorConfirmText] = useState('')
-
   const showConfirmDialog = (title: string, description: string, onConfirm: () => void) => {
     setConfirmDialog({ open: true, title, description, onConfirm })
-  }
-
-  // Delete setor function
-  const handleDeleteSetor = async () => {
-    if (deleteSetorConfirmText !== setor?.nome) {
-      toast.error('Digite o nome do setor corretamente para confirmar a exclusão')
-      return
-    }
-    
-    setDeletingSetor(true)
-    try {
-      // Remover instâncias Evolution antes de deletar os canais do banco
-      const evolutionCanais = canais.filter(c => c.tipo === 'evolution_api' && c.instancia)
-      for (const canal of evolutionCanais) {
-        try {
-          await fetch(`/api/evolution/instance/${canal.instancia}`, { method: 'DELETE' })
-        } catch (evoError) {
-          console.error(`Erro ao remover instância Evolution ${canal.instancia}:`, evoError)
-        }
-      }
-
-      // Delete all related data first
-      await supabase.from('colaboradores_setores').delete().eq('setor_id', setorId)
-      await supabase.from('subsetores').delete().eq('setor_id', setorId)
-      await supabase.from('pausas').delete().eq('setor_id', setorId)
-      await supabase.from('templates_mensagem').delete().eq('setor_id', setorId)
-      await supabase.from('setor_canais').delete().eq('setor_id', setorId)
-      await supabase.from('setor_tipos_atendimento').delete().eq('setor_id', setorId)
-      
-      // Finally delete the setor
-      const { error } = await supabase.from('setores').delete().eq('id', setorId)
-      if (error) throw error
-      
-      toast.success('Setor excluído com sucesso!')
-      router.push('/dashboard')
-    } catch (error: any) {
-      console.error('Error deleting setor:', error)
-      toast.error(error.message || 'Erro ao excluir setor')
-    } finally {
-      setDeletingSetor(false)
-    }
   }
 
 // Notification modal state
@@ -4531,99 +4485,6 @@ const saveConfig = async () => {
         </Collapsible>
         )}
 
-        {/* === Collapsible: Zona de Perigo === */}
-        <Collapsible>
-          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden border-destructive/30">
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-950/50">
-                  <AlertTriangle className="h-4 w-4 text-red-400" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Zona de Perigo</p>
-                  <p className="text-xs text-muted-foreground/80">Acoes que nao podem ser desfeitas, como apagar o setor</p>
-                </div>
-              </div>
-              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="border-t border-foreground/6 p-5">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-                    <div>
-                      <p className="font-medium">Excluir Setor</p>
-                      <p className="text-sm text-muted-foreground">
-                        Exclui permanentemente o setor, todos os atendentes vinculados, pausas, templates e configurações.
-                      </p>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir Setor
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-                            <AlertTriangle className="h-5 w-5" />
-                            Excluir Setor Permanentemente
-                          </AlertDialogTitle>
-                          <AlertDialogDescription className="space-y-3">
-                            <p>
-                              Esta ação é <strong>irreversível</strong>. Todos os dados abaixo serão excluídos permanentemente:
-                            </p>
-                            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                              <li>Todos os atendentes vinculados a este setor</li>
-                              <li>Todas as pausas configuradas</li>
-                              <li>Todos os templates de mensagem</li>
-                              <li>Todas as configurações de canais</li>
-                              <li>Configurações de roteamento de atendimento</li>
-                            </ul>
-                            <div className="pt-2">
-                              <Label htmlFor="confirm-delete" className="text-foreground">
-                                Digite <strong className="text-destructive">{setor?.nome}</strong> para confirmar:
-                              </Label>
-                              <Input
-                                id="confirm-delete"
-                                className="mt-2"
-                                placeholder="Digite o nome do setor"
-                                value={deleteSetorConfirmText}
-                                onChange={(e) => setDeleteSetorConfirmText(e.target.value)}
-                              />
-                            </div>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={() => setDeleteSetorConfirmText('')}>
-                            Cancelar
-                          </AlertDialogCancel>
-                          <Button
-                            variant="destructive"
-                            onClick={handleDeleteSetor}
-                            disabled={deletingSetor || deleteSetorConfirmText !== setor?.nome}
-                          >
-                            {deletingSetor ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Excluindo...
-                              </>
-                            ) : (
-                              <>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Excluir Setor Permanentemente
-                              </>
-                            )}
-                          </Button>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
       </div>
     )}
 

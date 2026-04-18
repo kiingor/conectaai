@@ -41,6 +41,8 @@ import {
   LayoutList,
   Wifi,
   Hash,
+  AlertTriangle,
+  MoreVertical,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -62,6 +64,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -177,6 +185,35 @@ export default function DashboardPage() {
     colaborador?.is_master,
     colaborador?.organizacao_id
   )
+
+  // Excluir setor (somente master)
+  const [deleteSetorTarget, setDeleteSetorTarget] = useState<Setor | null>(null)
+  const [deleteSetorConfirmText, setDeleteSetorConfirmText] = useState('')
+  const [deletingSetor, setDeletingSetor] = useState(false)
+
+  const handleDeleteSetor = useCallback(async () => {
+    if (!deleteSetorTarget) return
+    if (deleteSetorConfirmText !== deleteSetorTarget.nome) {
+      toast.error('Digite o nome do setor corretamente para confirmar')
+      return
+    }
+    setDeletingSetor(true)
+    try {
+      const res = await fetch(`/api/setor/${deleteSetorTarget.id}`, { method: 'DELETE' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.error || 'Erro ao excluir setor')
+      }
+      toast.success('Setor excluido com sucesso!')
+      setDeleteSetorTarget(null)
+      setDeleteSetorConfirmText('')
+      mutate()
+    } catch (err: any) {
+      toast.error(err?.message || 'Erro ao excluir setor')
+    } finally {
+      setDeletingSetor(false)
+    }
+  }, [deleteSetorTarget, deleteSetorConfirmText, mutate])
 
   const fetchTags = useCallback(async () => {
     if (!colaborador?.organizacao_id) return
@@ -455,6 +492,40 @@ export default function DashboardPage() {
                 <span className="text-[10px] text-muted-foreground/30 italic">Sem canal</span>
               )}
             </div>
+
+            {/* Actions menu — somente master */}
+            {colaborador?.is_master && (
+              <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`Acoes do setor ${setor.nome}`}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 transition-colors"
+                    >
+                      <MoreVertical className="h-3.5 w-3.5 text-muted-foreground/80" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenuItem
+                      className="text-red-400 focus:text-red-400"
+                      onSelect={() => {
+                        setDeleteSetorConfirmText('')
+                        setDeleteSetorTarget(setor)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir setor
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
 
             {/* Navigation chevron */}
             <div
@@ -1064,6 +1135,85 @@ export default function DashboardPage() {
               className="rounded-xl border-foreground/10 hover:bg-foreground/5 text-foreground/60"
             >
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Excluir Setor (somente master) */}
+      <Dialog
+        open={!!deleteSetorTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteSetorTarget(null)
+            setDeleteSetorConfirmText('')
+          }
+        }}
+      >
+        <DialogContent className="glass-card-elevated rounded-2xl max-w-md border-0">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-400">
+              <AlertTriangle className="h-5 w-5" />
+              Excluir setor permanentemente
+            </DialogTitle>
+            <DialogDescription>
+              Esta acao nao pode ser desfeita. Serao excluidos permanentemente:
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground/80 -mt-1">
+            <li>Todos os atendentes vinculados a este setor</li>
+            <li>Todas as pausas configuradas</li>
+            <li>Todos os templates de mensagem</li>
+            <li>Todos os canais conectados (incluindo WhatsApp)</li>
+            <li>Configuracoes de distribuicao e transferencia</li>
+          </ul>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirm-delete-setor">
+              Digite <strong className="text-red-400">{deleteSetorTarget?.nome}</strong> para confirmar:
+            </Label>
+            <Input
+              id="confirm-delete-setor"
+              placeholder="Nome do setor"
+              value={deleteSetorConfirmText}
+              onChange={(e) => setDeleteSetorConfirmText(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteSetorTarget(null)
+                setDeleteSetorConfirmText('')
+              }}
+              disabled={deletingSetor}
+              className="rounded-xl"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSetor}
+              disabled={
+                deletingSetor ||
+                deleteSetorConfirmText !== (deleteSetorTarget?.nome || '___')
+              }
+              className="rounded-xl gap-2"
+            >
+              {deletingSetor ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Excluir setor
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
