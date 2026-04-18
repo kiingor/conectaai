@@ -49,7 +49,7 @@ export function useSetores(colaboradorId?: string, isMaster?: boolean, organizac
       }
 
       const { data: assignments } = await supabase
-        .from('colaborador_setores')
+        .from('colaboradores_setores')
         .select('setor_id, setores(*, setor_canais(tipo, ativo), tags(id, nome, cor, ordem))')
         .eq('colaborador_id', colaboradorId)
 

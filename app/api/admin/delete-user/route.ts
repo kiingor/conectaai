@@ -34,7 +34,7 @@ export async function DELETE(request: Request) {
 
     // 1. Remover vínculos de setores
     await supabaseAdmin
-      .from('colaborador_setores')
+      .from('colaboradores_setores')
       .delete()
       .eq('colaborador_id', colaboradorId)
 

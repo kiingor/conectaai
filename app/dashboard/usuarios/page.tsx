@@ -84,7 +84,7 @@ async function fetchUsuariosData([, organizacaoId]: [string, string]) {
     supabase.from('colaboradores').select('*, permissoes:permissao_id(*)').eq('organizacao_id', organizacaoId).order('nome'),
     supabase.from('setores').select('*').eq('organizacao_id', organizacaoId).order('nome'),
     supabase.from('permissoes').select('*').eq('organizacao_id', organizacaoId).order('nome'),
-    supabase.from('colaborador_setores').select('*'),
+    supabase.from('colaboradores_setores').select('*'),
   ])
   return {
     colaboradores: colabsRes.data || [],
@@ -191,7 +191,7 @@ export default function UsuariosPage() {
         nome: 'Atendente',
         can_view_dashboard: false,
         can_manage_users: false,
-        can_view_all_tickets: false,
+        can_see_all_tickets: false,
         organizacao_id: colaborador.organizacao_id,
       })
       .select()
@@ -229,7 +229,7 @@ export default function UsuariosPage() {
         // Update setores relationships
         // First, remove all existing
         await supabase
-          .from('colaborador_setores')
+          .from('colaboradores_setores')
           .delete()
           .eq('colaborador_id', editingUser.id)
 
@@ -238,8 +238,9 @@ export default function UsuariosPage() {
           const newRelations = formData.setores_selecionados.map((setorId) => ({
             colaborador_id: editingUser.id,
             setor_id: setorId,
+            organizacao_id: colaborador?.organizacao_id,
           }))
-          await supabase.from('colaborador_setores').insert(newRelations)
+          await supabase.from('colaboradores_setores').insert(newRelations)
         }
       } else {
         // Create new user via Supabase Auth
@@ -275,8 +276,9 @@ export default function UsuariosPage() {
           const relations = formData.setores_selecionados.map((setorId) => ({
             colaborador_id: newColab.id,
             setor_id: setorId,
+            organizacao_id: colaborador?.organizacao_id,
           }))
-          await supabase.from('colaborador_setores').insert(relations)
+          await supabase.from('colaboradores_setores').insert(relations)
         }
       }
 
