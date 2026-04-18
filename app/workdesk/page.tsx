@@ -599,7 +599,7 @@ export default function WorkdeskPage() {
   const [disparoCliente, setDisparoCliente] = useState<any>(null)
   const [disparoLoading, setDisparoLoading] = useState(false)
   const [disparoSending, setDisparoSending] = useState(false)
-  const [disparoStep, setDisparoStep] = useState<'cnpj' | 'telefone' | 'telefone_lookup' | 'canal' | 'mensagem_evolution'>('cnpj')
+  const [disparoStep, setDisparoStep] = useState<'cnpj' | 'telefone' | 'telefone_lookup' | 'mensagem_evolution'>('cnpj')
   const [disparoLimitBlocked, setDisparoLimitBlocked] = useState(false)
   const [disparoLimitInfo, setDisparoLimitInfo] = useState('')
   const [disparoCanalChoice, setDisparoCanalChoice] = useState<'whatsapp' | 'evolution_api'>('whatsapp')
@@ -2053,36 +2053,20 @@ const handleEncerrarTicket = async () => {
     setDisparoTelefoneNaoEncontrado(false)
   }
 
-  // Determine next step after phone number is confirmed
+  // Determine next step after phone number is confirmed.
+  // Nao ha mais escolha manual de canal: priorizamos Evolution API se
+  // estiver ativo no setor (permite mensagem customizada); caso
+  // contrario, envia via WhatsApp oficial direto.
   const handleDisparoConfirmPhone = () => {
-    const temWhatsapp = setorCanaisAtivos.includes('whatsapp') || setorCanalConfig === 'whatsapp'
     const temEvolution = setorCanaisAtivos.includes('evolution_api')
 
-    if (temWhatsapp && temEvolution) {
-      // Both configured — let user choose
-      setDisparoStep('canal')
-    } else if (temEvolution) {
-      // Only Evolution — skip channel selection
+    if (temEvolution) {
       setDisparoCanalChoice('evolution_api')
-      // Pre-load first template as default message
       const defaultMsg = templates[0]?.conteudo || `Olá ${disparoCliente?.nome || ''}, como posso ajudar?`
       setDisparoMensagemEvolution(defaultMsg)
       setDisparoStep('mensagem_evolution')
     } else {
-      // Only WhatsApp (or fallback) — existing send flow
-      handleEnviarDisparo()
-    }
-  }
-
-  // Handle canal choice and advance step
-  const handleDisparoSelectCanal = (canal: 'whatsapp' | 'evolution_api') => {
-    setDisparoCanalChoice(canal)
-    if (canal === 'evolution_api') {
-      const defaultMsg = templates[0]?.conteudo || `Olá ${disparoCliente?.nome || ''}, como posso ajudar?`
-      setDisparoMensagemEvolution(defaultMsg)
-      setDisparoStep('mensagem_evolution')
-    } else {
-      // WhatsApp oficial — existing flow
+      setDisparoCanalChoice('whatsapp')
       handleEnviarDisparo()
     }
   }
@@ -3708,10 +3692,8 @@ const tempId = `temp-${Date.now()}`
               )}
             </DialogTitle>
             <DialogDescription>
-              {disparoStep === 'canal'
-                ? 'Escolha por qual canal deseja enviar o disparo.'
-                : disparoStep === 'mensagem_evolution'
-                ? 'Escreva a mensagem de abertura para o atendimento via WhatsApp não oficial.'
+              {disparoStep === 'mensagem_evolution'
+                ? 'Escreva a mensagem de abertura para iniciar o atendimento.'
                 : disparoStep === 'telefone_lookup'
                 ? 'Informe o telefone do cliente para iniciar um atendimento.'
                 : 'Informe o CNPJ do cliente para iniciar um atendimento.'}
@@ -3925,60 +3907,6 @@ const tempId = `temp-${Date.now()}`
               </>
             )}
 
-            {/* Step 3: Canal selection (when both WhatsApp + Evolution active) */}
-            {disparoStep === 'canal' && (
-              <div className="space-y-3">
-                {/* Client summary */}
-                <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-0.5">
-                  <p className="text-sm font-medium">{disparoCliente?.nome}</p>
-                  <p className="text-xs text-muted-foreground/80">{formatPhone(disparoTelefone)}</p>
-                </div>
-
-                <Label className="text-sm font-medium">Escolha o canal de envio</Label>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {/* WhatsApp Oficial */}
-                  <button
-                    onClick={() => handleDisparoSelectCanal('whatsapp')}
-                    disabled={disparoSending}
-                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-green-500/20 bg-green-500/5 p-4 hover:border-green-400/40 hover:bg-green-500/10 transition-all"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white text-lg font-bold">
-                      W
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-green-400">WhatsApp</p>
-                      <p className="text-[10px] text-muted-foreground/80">Oficial (template)</p>
-                    </div>
-                  </button>
-
-                  {/* Evolution (WhatsApp não oficial) */}
-                  <button
-                    onClick={() => handleDisparoSelectCanal('evolution_api')}
-                    disabled={disparoSending}
-                    className="flex flex-col items-center gap-2 rounded-xl border-2 border-blue-500/20 bg-blue-500/5 p-4 hover:border-blue-400/40 hover:bg-blue-500/10 transition-all"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white">
-                      <Zap className="h-5 w-5" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-blue-400">Não Oficial</p>
-                      <p className="text-[10px] text-muted-foreground/80">Evolution API</p>
-                    </div>
-                  </button>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-muted-foreground/80"
-                  onClick={() => setDisparoStep('telefone')}
-                >
-                  ← Voltar
-                </Button>
-              </div>
-            )}
-
             {/* Step 4: Evolution message editor */}
             {disparoStep === 'mensagem_evolution' && (
               <div className="space-y-3">
@@ -4010,7 +3938,7 @@ const tempId = `temp-${Date.now()}`
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => setDisparoStep(setorCanaisAtivos.includes('whatsapp') ? 'canal' : 'telefone')}
+                    onClick={() => setDisparoStep(novoDisparoEnabled ? 'telefone_lookup' : 'telefone')}
                   >
                     ← Voltar
                   </Button>
