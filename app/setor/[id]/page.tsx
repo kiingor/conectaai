@@ -190,7 +190,7 @@ const ALL_SIDEBAR_ITEMS = [
     { id: 'atendentes', name: 'Atendentes', icon: Users, description: 'Gerencie os atendentes da empresa' },
     { id: 'horarios', name: 'Horários de atendimento', icon: Clock, description: 'Defina dias e horários disponíveis' },
     { id: 'pausas', name: 'Pausas', icon: Coffee, description: 'Gerencie os tipos de pausas dos atendentes' },
-    { id: 'rag', name: 'Agente (RAG)', icon: Brain, description: 'Prompt e base de conhecimento do agente de retaguarda' },
+    { id: 'rag', name: 'Base de Conhecimento', icon: Brain, description: 'Prompt do agente e documentos consultados antes de responder' },
     { id: 'configuracoes', name: 'Configurações', icon: Settings, description: 'Configurações da empresa' },
   ]
 
@@ -955,12 +955,15 @@ export default function SetorPage() {
     }
   }
 
-  // Fetch all setores for tipos de atendimento selects
+  // Fetch all setores for tipos de atendimento selects (mesma organizacao)
   const fetchTodosSetores = async () => {
-    const { data } = await supabase
+    const orgId = setor?.organizacao_id
+    let query = supabase
       .from('setores')
       .select('id, nome')
       .order('nome')
+    if (orgId) query = query.eq('organizacao_id', orgId)
+    const { data } = await query
     if (data) setTodosSetores(data)
   }
 
@@ -3711,9 +3714,9 @@ const saveConfig = async () => {
         {/* Header com botão salvar */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Agente de Retaguarda (RAG)</h2>
+            <h2 className="text-2xl font-semibold">Base de Conhecimento</h2>
             <p className="text-sm text-muted-foreground">
-              Prompt e base de conhecimento usados pelo agente n8n
+              Prompt do agente e documentos que ele consulta antes de responder
             </p>
           </div>
           <Button onClick={saveConfig} disabled={saving || !hasUnsavedConfig}>
@@ -3734,9 +3737,9 @@ const saveConfig = async () => {
                   <Power className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">RAG Ativo</p>
+                  <p className="text-sm font-medium">Base de Conhecimento ativa</p>
                   <p className="text-xs text-muted-foreground">
-                    Quando ligado, o n8n consulta a base de conhecimento antes de responder.
+                    Quando ligado, o agente consulta os documentos deste setor antes de responder o cliente.
                   </p>
                 </div>
               </div>
@@ -3796,7 +3799,7 @@ const saveConfig = async () => {
               />
               <div className="flex items-start justify-between gap-4">
                 <p className="text-xs text-muted-foreground">
-                  O n8n recebe este prompt junto com os trechos mais relevantes da Base de Conhecimento.
+                  O agente usa este prompt junto com os trechos mais relevantes da Base de Conhecimento para responder.
                 </p>
                 <p className="text-xs text-muted-foreground/60 shrink-0">
                   Variáveis: <code className="text-[10px]">{'{empresa}'} {'{setor}'} {'{descricao}'}</code>
@@ -3806,9 +3809,9 @@ const saveConfig = async () => {
 
             {/* Aviso: chave movida para nivel de organizacao */}
             <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 text-xs text-blue-300">
-              A API Key da OpenAI (usada para embeddings do RAG e pelos agentes) agora e configurada no
+              A chave do OpenAI usada pelo agente e pela Base de Conhecimento e configurada em
               <span className="mx-1 font-semibold">Dashboard → Configuracoes de IA</span>
-              e compartilhada por todos os setores da organizacao.
+              e vale para todos os setores da organizacao.
             </div>
 
           </div>
@@ -3821,7 +3824,7 @@ const saveConfig = async () => {
               <div>
                 <p className="text-base font-semibold">Base de Conhecimento</p>
                 <p className="text-xs text-muted-foreground">
-                  Documentos (.txt, .md, .pdf, .docx) indexados para busca semântica.
+                  Arquivos (.txt, .md, .pdf, .docx) que o agente pode consultar para responder perguntas dos clientes.
                 </p>
               </div>
               <Button size="sm" onClick={() => setRagUploadOpen(true)}>
