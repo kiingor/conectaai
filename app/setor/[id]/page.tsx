@@ -515,6 +515,7 @@ export default function SetorPage() {
   setor_receptor_id: '' as string,
   rag_ativo: false,
   agente_prompt: '',
+  workdesk_novo_disparo_enabled: true,
   })
 
   // RAG state
@@ -944,6 +945,7 @@ export default function SetorPage() {
         setor_receptor_id: setor.setor_receptor_id || '',
         rag_ativo: setor.rag_ativo || false,
         agente_prompt: setor.agente_prompt || '',
+        workdesk_novo_disparo_enabled: setor.workdesk_novo_disparo_enabled ?? true,
       })
       // Busca nome da organização para variáveis do prompt
       if (setor.organizacao_id) {
@@ -1296,6 +1298,7 @@ const saveConfig = async () => {
   tag_id: configForm.tag_id || null,
   rag_ativo: configForm.rag_ativo,
   agente_prompt: configForm.agente_prompt || null,
+  workdesk_novo_disparo_enabled: configForm.workdesk_novo_disparo_enabled,
   })
         .eq('id', setorId)
 
@@ -4097,6 +4100,40 @@ const saveConfig = async () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* === Collapsible: Workdesk === */}
+        <Collapsible>
+          <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950/50">
+                  <Megaphone className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Workdesk</p>
+                  <p className="text-xs text-muted-foreground/80">Flags do painel do atendente deste setor</p>
+                </div>
+              </div>
+              <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t border-foreground/6 p-5 space-y-4">
+                <div className="flex items-start justify-between gap-4 rounded-lg border border-foreground/8 bg-foreground/[0.02] p-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Habilitar "Novo Disparo"</Label>
+                    <p className="text-xs text-muted-foreground/80">
+                      Quando ativo, o botao aparece no workdesk para atendentes deste setor e o fluxo inicia pela busca por telefone do cliente. Se o telefone estiver vinculado, traz os dados do cliente automaticamente.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={configForm.workdesk_novo_disparo_enabled}
+                    onCheckedChange={(v) => setConfigForm((prev) => ({ ...prev, workdesk_novo_disparo_enabled: v }))}
+                  />
                 </div>
               </div>
             </CollapsibleContent>

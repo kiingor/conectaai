@@ -41,7 +41,6 @@ import {
   ChevronRight,
   ChevronLeft,
   Zap,
-  Ticket,
   Hash,
   Download,
   Music,
@@ -600,19 +599,19 @@ export default function WorkdeskPage() {
   const [disparoCliente, setDisparoCliente] = useState<any>(null)
   const [disparoLoading, setDisparoLoading] = useState(false)
   const [disparoSending, setDisparoSending] = useState(false)
-  const [disparoStep, setDisparoStep] = useState<'cnpj' | 'telefone' | 'canal' | 'mensagem_evolution'>('cnpj')
+  const [disparoStep, setDisparoStep] = useState<'cnpj' | 'telefone' | 'telefone_lookup' | 'canal' | 'mensagem_evolution'>('cnpj')
   const [disparoLimitBlocked, setDisparoLimitBlocked] = useState(false)
   const [disparoLimitInfo, setDisparoLimitInfo] = useState('')
   const [disparoCanalChoice, setDisparoCanalChoice] = useState<'whatsapp' | 'evolution_api'>('whatsapp')
   const [disparoMensagemEvolution, setDisparoMensagemEvolution] = useState('')
+  const [disparoNomeManual, setDisparoNomeManual] = useState('')
+  const [disparoTelefoneNaoEncontrado, setDisparoTelefoneNaoEncontrado] = useState(false)
   const [setorCanalConfig, setSetorCanalConfig] = useState<'whatsapp' | 'evolution_api'>('whatsapp')
   const [setorCanaisAtivos, setSetorCanaisAtivos] = useState<string[]>([])
+  const [novoDisparoEnabled, setNovoDisparoEnabled] = useState(true)
   
   // Unread messages tracking
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map())
-
-  // Ticket iframe popup
-  const [ticketIframeTicket, setTicketIframeTicket] = useState<Ticket | null>(null)
 
   // Selecionar cliente dialog
   const [selecionarClienteDialogOpen, setSelecionarClienteDialogOpen] = useState(false)
@@ -623,7 +622,7 @@ export default function WorkdeskPage() {
 
   // Editar dados do cliente
   const [editarClienteDialogOpen, setEditarClienteDialogOpen] = useState(false)
-  const [editarClienteForm, setEditarClienteForm] = useState({ nome: '', telefone: '', CNPJ: '', Registro: '', PDV: '' })
+  const [editarClienteForm, setEditarClienteForm] = useState({ nome: '', telefone: '', CNPJ: '', Registro: '', email: '' })
   const [editarClienteLoading, setEditarClienteLoading] = useState(false)
 
   // Meus subsetores ativos (seleção do próprio atendente)
@@ -661,9 +660,21 @@ export default function WorkdeskPage() {
   try { localStorage.setItem('colaborador_info', JSON.stringify({ id: colab.id, nome: colab.nome })) } catch {}
   // Fetch setor canal config
   const sId = colab.setor_id || colab.setores_vinculados?.[0]?.setor_id
+  // Fetch workdesk config flags do setor (ex: Novo Disparo enabled)
+  try {
+    const cfgUrl = sId ? `/api/organizacao/workdesk-config?setorId=${sId}` : '/api/organizacao/workdesk-config'
+    const cfgRes = await fetch(cfgUrl)
+    if (cfgRes.ok) {
+      const cfg = await cfgRes.json()
+      setNovoDisparoEnabled(cfg.workdesk_novo_disparo_enabled ?? true)
+    }
+  } catch {}
   if (sId) {
-    const { data: setorInfo } = await supabase.from('setores').select('canal').eq('id', sId).single()
+    const { data: setorInfo } = await supabase.from('setores').select('canal, workdesk_novo_disparo_enabled').eq('id', sId).single()
     if (setorInfo?.canal) setSetorCanalConfig(setorInfo.canal)
+    if (setorInfo && typeof setorInfo.workdesk_novo_disparo_enabled === 'boolean') {
+      setNovoDisparoEnabled(setorInfo.workdesk_novo_disparo_enabled)
+    }
     // Fetch active channels for this setor (for disparo multi-canal)
     const { data: canaisAtivos } = await supabase
       .from('setor_canais')
@@ -1645,7 +1656,7 @@ const handleEncerrarTicket = async () => {
       telefone: c.telefone || '',
       CNPJ: c.CNPJ || '',
       Registro: c.Registro || '',
-      PDV: c.PDV || '',
+      email: c.email || '',
     })
     setEditarClienteDialogOpen(true)
   }
@@ -1661,7 +1672,7 @@ const handleEncerrarTicket = async () => {
         telefone: editarClienteForm.telefone || null,
         CNPJ: editarClienteForm.CNPJ?.replace(/\D/g, '') || null,
         Registro: editarClienteForm.Registro || null,
-        PDV: editarClienteForm.PDV || null,
+        email: editarClienteForm.email || null,
       }
 
       const { error } = await supabase
@@ -1905,6 +1916,66 @@ const handleEncerrarTicket = async () => {
     setDisparoLoading(false)
   }
 
+  // Disparo - Phone lookup (modo "por telefone")
+  const handlePhoneLookup = async () => {
+    const cleanPhone = disparoTelefone.replace(/\D/g, '')
+    if (cleanPhone.length < 10) {
+      toast.error('Informe um telefone valido (DDD + numero)')
+      return
+    }
+    if (!colaborador?.organizacao_id) {
+      toast.error('Organizacao nao identificada')
+      return
+    }
+    setDisparoLoading(true)
+    setDisparoCliente(null)
+    setDisparoTelefoneNaoEncontrado(false)
+    setDisparoNomeManual('')
+    try {
+      const { data, error } = await supabase.rpc('buscar_cliente_por_telefone', {
+        p_telefone: cleanPhone,
+        p_organizacao_id: colaborador.organizacao_id,
+      })
+      if (error) throw error
+      const cliente = Array.isArray(data) && data.length > 0 ? data[0] : null
+      if (cliente) {
+        setDisparoCliente({
+          id: cliente.id,
+          nome: cliente.nome,
+          cnpj: cliente.CNPJ,
+          telefone: cliente.telefone,
+          registro: cliente.Registro,
+          email: cliente.email,
+        })
+        toast.success(`Cliente encontrado: ${cliente.nome}`)
+      } else {
+        setDisparoTelefoneNaoEncontrado(true)
+        toast.info('Telefone nao vinculado. Informe o nome para continuar.')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Erro ao buscar cliente')
+    }
+    setDisparoLoading(false)
+  }
+
+  // Disparo - Confirma nome manual quando telefone nao achou cliente
+  const handleConfirmNomeManual = () => {
+    const nome = disparoNomeManual.trim()
+    if (!nome) {
+      toast.error('Informe o nome do cliente')
+      return
+    }
+    setDisparoCliente({
+      id: null,
+      nome,
+      cnpj: null,
+      telefone: disparoTelefone.replace(/\D/g, ''),
+      registro: null,
+      email: null,
+    })
+    setDisparoTelefoneNaoEncontrado(false)
+  }
+
   // Disparo - Format phone input
   const handleDisparoTelefoneChange = (value: string) => {
     const digits = value.replace(/\D/g, '')
@@ -1973,9 +2044,13 @@ const handleEncerrarTicket = async () => {
     setDisparoCnpj('')
     setDisparoTelefone('')
     setDisparoCliente(null)
-    setDisparoStep('cnpj')
+    // Quando fluxo por telefone: primeiro step e 'telefone_lookup'.
+    // Caso contrario, 'cnpj' (comportamento legado).
+    setDisparoStep(novoDisparoEnabled ? 'telefone_lookup' : 'cnpj')
     setDisparoCanalChoice('whatsapp')
     setDisparoMensagemEvolution('')
+    setDisparoNomeManual('')
+    setDisparoTelefoneNaoEncontrado(false)
   }
 
   // Determine next step after phone number is confirmed
@@ -2615,7 +2690,7 @@ const tempId = `temp-${Date.now()}`
           {/* Top section: Disparo + Search */}
           <div className="p-3 space-y-2 shrink-0 border-b border-foreground/5">
             {/* Disparo Button - for WhatsApp and/or EvolutionAPI */}
-            {(setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
+            {novoDisparoEnabled && (setorCanaisAtivos.includes('whatsapp') || setorCanaisAtivos.includes('evolution_api') ||
               setorCanalConfig !== 'evolution_api') && (
               <Button
                 onClick={async () => {
@@ -2712,8 +2787,6 @@ const tempId = `temp-${Date.now()}`
               setSearchTerm={setSearchTerm}
               unreadCounts={unreadCounts}
               setorCanal={setorCanalConfig}
-              colaboradorEmail={colaborador?.email || ''}
-              onOpenTicketIframe={(ticket) => setTicketIframeTicket(ticket)}
             />
           </div>
         </aside>
@@ -3270,10 +3343,15 @@ const tempId = `temp-${Date.now()}`
                     )}
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground/80 shrink-0 w-16">PDV</span>
+                    <span className="text-muted-foreground/80 shrink-0 w-16">Email</span>
                     <span className="font-medium text-foreground/80 flex-1 text-right truncate">
-                      {selectedTicket.clientes.PDV || '—'}
+                      {selectedTicket.clientes.email || '—'}
                     </span>
+                    {selectedTicket.clientes.email && (
+                      <button type="button" onClick={() => copyToClipboard(selectedTicket.clientes.email!, 'Email')} className="shrink-0 text-muted-foreground/60 hover:text-foreground/60 transition-colors">
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
                     <span className="text-muted-foreground/80 shrink-0 w-16">Telefone</span>
@@ -3376,10 +3454,10 @@ const tempId = `temp-${Date.now()}`
                     <span className="text-foreground/80 truncate">{selectedTicket.clientes.Registro}</span>
                   </div>
                 )}
-                {selectedTicket.clientes.PDV && (
+                {selectedTicket.clientes.email && (
                   <div className="flex items-center justify-between px-2.5 py-1.5 gap-2">
-                    <span className="text-muted-foreground/80 w-16">PDV</span>
-                    <span className="text-foreground/80 truncate">{selectedTicket.clientes.PDV}</span>
+                    <span className="text-muted-foreground/80 w-16">Email</span>
+                    <span className="text-foreground/80 truncate">{selectedTicket.clientes.email}</span>
                   </div>
                 )}
               </div>
@@ -3634,11 +3712,126 @@ const tempId = `temp-${Date.now()}`
                 ? 'Escolha por qual canal deseja enviar o disparo.'
                 : disparoStep === 'mensagem_evolution'
                 ? 'Escreva a mensagem de abertura para o atendimento via WhatsApp não oficial.'
+                : disparoStep === 'telefone_lookup'
+                ? 'Informe o telefone do cliente para iniciar um atendimento.'
                 : 'Informe o CNPJ do cliente para iniciar um atendimento.'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {/* MODO POR TELEFONE — step unico de busca */}
+            {disparoStep === 'telefone_lookup' && (
+              <>
+                <div className="space-y-2">
+                  <Label>Telefone do cliente (com DDD)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="(83) 9 9999-9999"
+                      value={disparoTelefone}
+                      onChange={(e) => {
+                        handleDisparoTelefoneChange(e.target.value)
+                        // Qualquer edicao reseta os resultados anteriores
+                        if (disparoCliente) setDisparoCliente(null)
+                        if (disparoTelefoneNaoEncontrado) setDisparoTelefoneNaoEncontrado(false)
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && !disparoCliente && handlePhoneLookup()}
+                      disabled={disparoLoading || !!disparoCliente}
+                    />
+                    <Button
+                      onClick={handlePhoneLookup}
+                      disabled={disparoTelefone.replace(/\D/g, '').length < 10 || disparoLoading || !!disparoCliente}
+                      size="sm"
+                      className="shrink-0"
+                    >
+                      {disparoLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Nome manual quando telefone nao vinculado */}
+                {disparoTelefoneNaoEncontrado && !disparoCliente && (
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-3 space-y-2">
+                    <p className="text-xs text-amber-400/90">
+                      Telefone nao vinculado a um cliente. Informe o nome para continuar.
+                    </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nome do cliente</Label>
+                      <Input
+                        placeholder="Nome do cliente"
+                        value={disparoNomeManual}
+                        onChange={(e) => setDisparoNomeManual(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleConfirmNomeManual()}
+                      />
+                    </div>
+                    <Button size="sm" className="w-full" onClick={handleConfirmNomeManual} disabled={!disparoNomeManual.trim()}>
+                      Continuar
+                    </Button>
+                  </div>
+                )}
+
+                {/* Cliente resolvido (encontrado ou via nome manual) */}
+                {disparoCliente && (
+                  <div className="rounded-lg border border-foreground/8 bg-foreground/[0.03] p-3 space-y-1.5">
+                    <p className="text-sm font-medium text-foreground/90">{disparoCliente.nome}</p>
+                    {disparoCliente.telefone && (
+                      <p className="text-xs text-muted-foreground/80">Telefone: {formatPhone(disparoCliente.telefone)}</p>
+                    )}
+                    {disparoCliente.cnpj && (
+                      <p className="text-xs text-muted-foreground/80">CNPJ: {formatCNPJ(disparoCliente.cnpj)}</p>
+                    )}
+                    {disparoCliente.registro && (
+                      <p className="text-xs text-muted-foreground/80">Registro: {disparoCliente.registro}</p>
+                    )}
+                    {disparoCliente.email && (
+                      <p className="text-xs text-muted-foreground/80">Email: {disparoCliente.email}</p>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => {
+                        setDisparoCliente(null)
+                        setDisparoTelefoneNaoEncontrado(false)
+                        setDisparoNomeManual('')
+                      }}
+                    >
+                      Trocar cliente
+                    </Button>
+                  </div>
+                )}
+
+                {/* Advance button */}
+                {disparoCliente && (
+                  <Button
+                    onClick={handleDisparoConfirmPhone}
+                    disabled={disparoSending}
+                    className="w-full gap-2"
+                  >
+                    {disparoSending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (setorCanaisAtivos.includes('whatsapp') && setorCanaisAtivos.includes('evolution_api')) ? (
+                      <>
+                        Próximo
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Enviar Disparo
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
+
             {/* Steps 1 & 2: CNPJ + Phone (hidden after choosing canal) */}
             {(disparoStep === 'cnpj' || disparoStep === 'telefone') && (
               <>
@@ -4019,11 +4212,12 @@ const tempId = `temp-${Date.now()}`
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">PDV</Label>
+                <Label className="text-xs">Email</Label>
                 <Input
-                  value={editarClienteForm.PDV}
-                  onChange={(e) => setEditarClienteForm((f) => ({ ...f, PDV: e.target.value }))}
-                  placeholder="PDV"
+                  type="email"
+                  value={editarClienteForm.email}
+                  onChange={(e) => setEditarClienteForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="email@exemplo.com"
                 />
               </div>
             </div>
@@ -4052,44 +4246,6 @@ const tempId = `temp-${Date.now()}`
         </DialogContent>
       </Dialog>
 
-      {/* Ticket Iframe Popup */}
-      {ticketIframeTicket && colaborador && (
-        <div
-          className="fixed inset-x-0 bottom-0 z-[200] flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 pb-4 pt-4"
-          style={{ top: 64 }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setTicketIframeTicket(null)
-          }}
-        >
-          <div className="relative w-full max-w-[96vw] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-page-bg flex flex-col" style={{ height: 'calc(100vh - 88px)' }}>
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-foreground/6 bg-page-bg/90 backdrop-blur-xl shrink-0">
-              <div className="flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs font-semibold">
-                  Ticket #{ticketIframeTicket.numero} — {ticketIframeTicket.clientes.nome}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setTicketIframeTicket(null)}
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-
-            {/* iFrame */}
-            <iframe
-              src={`https://ticket.softcom.solutions/?email=${encodeURIComponent(colaborador.email)}&open_ticket=${ticketIframeTicket.numero}`}
-              className="w-full flex-1 border-0"
-              title={`Ticket #${ticketIframeTicket.numero}`}
-              allow="clipboard-read; clipboard-write"
-            />
-          </div>
-        </div>
-      )}
     </div>
     </TooltipProvider>
   )
@@ -4111,8 +4267,6 @@ function TicketList({
   setSearchTerm,
   unreadCounts,
   setorCanal,
-  colaboradorEmail,
-  onOpenTicketIframe,
 }: {
   tickets: Ticket[]
   selectedTicket: Ticket | null
@@ -4128,8 +4282,6 @@ function TicketList({
   setSearchTerm: (v: string) => void
   unreadCounts: Map<string, number>
   setorCanal: 'whatsapp' | 'evolution_api'
-  colaboradorEmail: string
-  onOpenTicketIframe: (ticket: Ticket) => void
 }) {
   // Tick every 30s to re-evaluate wait times
   const [, setTick] = useState(0)
@@ -4342,17 +4494,6 @@ function TicketList({
                             {unreadCount > 99 ? '99+' : unreadCount}
                           </span>
                         )}
-                        <button
-                          type="button"
-                          title="Abrir detalhes do ticket"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onOpenTicketIframe(ticket)
-                          }}
-                          className="flex h-6 w-6 items-center justify-center rounded text-emerald-400 opacity-0 group-hover:opacity-100 hover:opacity-100 hover:bg-emerald-500/10 transition-all"
-                        >
-                          <Ticket className="h-3.5 w-3.5" />
-                        </button>
                       </div>
                     </div>
 
