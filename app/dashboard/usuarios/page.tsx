@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -594,10 +593,33 @@ export default function UsuariosPage() {
                 </div>
               )}
 
-              {/* Permissão + Admin/Atendente toggles */}
+              {/* Tipo de acesso + Permissão */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="permissao">Permissão</Label>
+                  <Label htmlFor="tipo_acesso">Tipo de acesso</Label>
+                  <Select
+                    value={formData.is_master ? 'admin' : formData.is_atendente ? 'atendente' : ''}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        is_master: value === 'admin',
+                        is_atendente: value === 'atendente',
+                        permissao_id: value === 'atendente' ? '' : prev.permissao_id,
+                      }))
+                    }
+                  >
+                    <SelectTrigger id="tipo_acesso">
+                      <SelectValue placeholder="Selecione o tipo de acesso" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin — acesso total ao Dashboard</SelectItem>
+                      <SelectItem value="atendente">Atendente — apenas WorkDesk</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="permissao">Permissão personalizada</Label>
                   <Select
                     value={formData.permissao_id}
                     onValueChange={(value) =>
@@ -606,7 +628,15 @@ export default function UsuariosPage() {
                     disabled={formData.is_atendente || formData.is_master}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={formData.is_atendente ? 'Atendente (automatico)' : 'Selecione uma permissão'} />
+                      <SelectValue
+                        placeholder={
+                          formData.is_atendente
+                            ? 'Atendente (automatico)'
+                            : formData.is_master
+                            ? 'Admin (sem permissao customizada)'
+                            : 'Opcional'
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {permissoes.map((p) => (
@@ -616,42 +646,6 @@ export default function UsuariosPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
-                    <Switch
-                      id="is_master"
-                      checked={formData.is_master}
-                      onCheckedChange={(checked) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          is_master: checked,
-                          is_atendente: checked ? false : prev.is_atendente,
-                        }))
-                      }
-                    />
-                    <Label htmlFor="is_master" className="cursor-pointer text-sm leading-tight">
-                      Admin — acesso a todos os setores
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
-                    <Switch
-                      id="is_atendente"
-                      checked={formData.is_atendente}
-                      onCheckedChange={(checked) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          is_atendente: checked,
-                          is_master: checked ? false : prev.is_master,
-                          permissao_id: checked ? '' : prev.permissao_id,
-                        }))
-                      }
-                    />
-                    <Label htmlFor="is_atendente" className="cursor-pointer text-sm leading-tight">
-                      Atendente — apenas WorkDesk, sem Dashboard
-                    </Label>
-                  </div>
                 </div>
               </div>
 
