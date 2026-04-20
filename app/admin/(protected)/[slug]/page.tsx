@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   Shield, ArrowLeft, Building2, Users, Ticket,
   Globe, CheckCircle2, XCircle, Loader2, Edit2,
-  Save, X, Clock, Wifi, WifiOff, Mail
+  Save, X, Clock, Wifi, WifiOff, Mail, Trash2, AlertTriangle
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -113,6 +113,43 @@ export default function AdminOrgDetailPage({ params }: { params: Promise<{ slug:
     }
   }
 
+  // ── Exclusao da organizacao ──
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('')
+  const [deleting, setDeleting] = useState(false)
+
+  const openDeleteDialog = () => {
+    setDeleteConfirmSlug('')
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!org) return
+    if (deleteConfirmSlug !== org.slug) {
+      toast.error('Digite o slug exatamente como aparece')
+      return
+    }
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/super-admin/organizacoes/${slug}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm_slug: deleteConfirmSlug }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || 'Erro ao excluir organizacao')
+        return
+      }
+      toast.success('Organizacao excluida permanentemente')
+      router.push('/admin')
+    } catch {
+      toast.error('Erro ao excluir organizacao')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
@@ -175,12 +212,20 @@ export default function AdminOrgDetailPage({ params }: { params: Promise<{ slug:
             onClick={toggleAtivo}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
               org.ativo
-                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
                 : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
             }`}
           >
             {org.ativo ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
             {org.ativo ? 'Suspender' : 'Ativar'}
+          </button>
+
+          <button
+            onClick={openDeleteDialog}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+          >
+            <Trash2 className="h-4 w-4" />
+            Excluir empresa
           </button>
         </div>
       </header>
@@ -450,6 +495,88 @@ export default function AdminOrgDetailPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       </div>
+
+      {/* Dialog de exclusao */}
+      {deleteDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => !deleting && setDeleteDialogOpen(false)}
+        >
+          <div
+            className="glass-card-elevated w-full max-w-md rounded-2xl p-6 space-y-5"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-red-400 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Excluir empresa permanentemente
+              </h2>
+              <button
+                onClick={() => !deleting && setDeleteDialogOpen(false)}
+                disabled={deleting}
+                className="text-white/40 hover:text-white/80"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 space-y-2">
+              <p className="text-sm text-white/80">
+                Esta acao e <strong className="text-red-400">irreversivel</strong>. Serao apagados:
+              </p>
+              <ul className="list-disc list-inside text-xs text-white/60 space-y-0.5">
+                <li>Todos os tickets e mensagens</li>
+                <li>Todos os colaboradores (incluindo usuarios de auth)</li>
+                <li>Todos os setores, canais e templates</li>
+                <li>Clientes e base de conhecimento</li>
+                <li>A propria organizacao</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-white/60">
+                Para confirmar, digite o slug: <span className="text-red-400 font-mono">{org.slug}</span>
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmSlug}
+                onChange={e => setDeleteConfirmSlug(e.target.value)}
+                placeholder={org.slug}
+                disabled={deleting}
+                className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none font-mono"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteDialogOpen(false)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-lg border border-white/10 text-sm text-white/70 hover:bg-white/5 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting || deleteConfirmSlug !== org.slug}
+                className="flex-1 py-2.5 rounded-lg bg-red-500/20 border border-red-500/40 text-sm text-red-300 hover:bg-red-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Excluindo...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Excluir permanentemente
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -40,7 +40,6 @@ export default function AdminPage() {
   const [copied, setCopied] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
-    slug: '',
     nome: '',
     plano: 'basic',
     admin_email: '',
@@ -105,7 +104,7 @@ export default function AdminPage() {
   // ── Dialog functions ──
 
   const openDialog = () => {
-    setForm({ slug: '', nome: '', plano: 'basic', admin_email: '', admin_nome: '', admin_senha: '' })
+    setForm({ nome: '', plano: 'basic', admin_email: '', admin_nome: '', admin_senha: '' })
     setFormResult(null)
     setCopied(false)
     setShowPassword(false)
@@ -115,17 +114,6 @@ export default function AdminPage() {
   const closeDialog = () => {
     if (formLoading) return
     setDialogOpen(false)
-  }
-
-  const generateSlug = (nome: string) => {
-    return nome
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,6 +166,13 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/admin/super-admins')}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white/90 hover:bg-white/5 transition-all"
+          >
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Super-admins</span>
+          </button>
           <button
             onClick={openDialog}
             className="btn-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
@@ -411,18 +406,10 @@ export default function AdminPage() {
                     <input
                       placeholder="Ex: Softcom Tecnologia"
                       value={form.nome}
-                      onChange={e => {
-                        const nome = e.target.value
-                        setForm(prev => ({ ...prev, nome, slug: generateSlug(nome) }))
-                      }}
+                      onChange={e => setForm(prev => ({ ...prev, nome: e.target.value }))}
                       required
                       className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
                     />
-                    {form.slug && (
-                      <p className="text-xs text-white/30 mt-1">
-                        Slug: <span className="text-emerald-400/80 font-mono">{form.slug}</span>
-                      </p>
-                    )}
                   </div>
 
                   {/* Plano */}

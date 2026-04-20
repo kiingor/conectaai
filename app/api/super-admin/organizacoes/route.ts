@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase/server'
+import { gerarSlugUnico, slugify } from '@/lib/slug'
 
 async function verifySuperAdmin() {
   const supabase = await createClient()
@@ -55,35 +56,42 @@ export async function GET() {
 /**
  * POST /api/super-admin/organizacoes
  * Cria nova organização + setor + usuário admin
- * Body: { slug, nome, plano?, admin_email, admin_nome, admin_senha }
+ * Body: { nome, slug?, plano?, admin_email, admin_nome, admin_senha }
+ *
+ * O slug e OPCIONAL: se nao vier (ou vier vazio), gera automaticamente a
+ * partir do nome usando lib/slug.ts. Se vier, valida o formato.
  */
 export async function POST(request: NextRequest) {
   const user = await verifySuperAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { slug, nome, plano = 'basic', admin_email, admin_nome, admin_senha } = body
+  const { slug: slugInput, nome, plano = 'basic', admin_email, admin_nome, admin_senha } = body
 
-  if (!slug || !nome || !admin_email || !admin_nome || !admin_senha) {
-    return NextResponse.json({ error: 'slug, nome, admin_email, admin_nome e admin_senha são obrigatórios' }, { status: 400 })
-  }
-
-  // Validar slug (apenas letras, números e hífens)
-  if (!/^[a-z0-9-]+$/.test(slug)) {
-    return NextResponse.json({ error: 'Slug deve conter apenas letras minúsculas, números e hífens' }, { status: 400 })
+  if (!nome || !admin_email || !admin_nome || !admin_senha) {
+    return NextResponse.json({ error: 'nome, admin_email, admin_nome e admin_senha são obrigatórios' }, { status: 400 })
   }
 
   const service = createServiceClient()
 
-  // Verificar se slug já existe
-  const { data: existing } = await service
-    .from('organizacoes')
-    .select('id')
-    .eq('slug', slug)
-    .maybeSingle()
-
-  if (existing) {
-    return NextResponse.json({ error: 'Este slug já está em uso' }, { status: 409 })
+  // Resolver slug: usa o fornecido (se valido e livre) ou gera automatico
+  let slug: string
+  if (slugInput && typeof slugInput === 'string' && slugInput.trim() !== '') {
+    const normalized = slugify(slugInput)
+    if (!/^[a-z0-9-]+$/.test(normalized) || normalized.length === 0) {
+      return NextResponse.json({ error: 'Slug inválido. Use apenas letras minúsculas, números e hífens.' }, { status: 400 })
+    }
+    const { data: existing } = await service
+      .from('organizacoes')
+      .select('id')
+      .eq('slug', normalized)
+      .maybeSingle()
+    if (existing) {
+      return NextResponse.json({ error: 'Este slug já está em uso' }, { status: 409 })
+    }
+    slug = normalized
+  } else {
+    slug = await gerarSlugUnico(nome, service)
   }
 
   // 1. Criar organização (trigger cria o setor automaticamente)

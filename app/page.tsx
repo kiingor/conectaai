@@ -13,7 +13,6 @@ import {
   Clock,
   Bot,
   ArrowRight,
-  Check,
   Menu,
   X,
 } from "lucide-react"
@@ -113,52 +112,6 @@ const steps = [
   },
 ]
 
-const plans = [
-  {
-    name: "Basic",
-    price: "97",
-    description: "Para pequenos negocios que estao comecando.",
-    features: [
-      "1 numero de WhatsApp",
-      "2 atendentes",
-      "500 mensagens IA/mes",
-      "Painel de metricas basico",
-      "Suporte por e-mail",
-    ],
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: "247",
-    description: "Para equipes em crescimento que precisam de mais.",
-    features: [
-      "3 numeros de WhatsApp",
-      "10 atendentes",
-      "5.000 mensagens IA/mes",
-      "Metricas avancadas",
-      "Setores ilimitados",
-      "Disparos em massa",
-      "Suporte prioritario",
-    ],
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: "497",
-    description: "Para operacoes de grande escala com suporte dedicado.",
-    features: [
-      "Numeros ilimitados",
-      "Atendentes ilimitados",
-      "Mensagens IA ilimitadas",
-      "API & Webhooks",
-      "Integracao customizada",
-      "SLA garantido",
-      "Gerente de conta dedicado",
-    ],
-    highlighted: false,
-  },
-]
-
 /* ──────────────────────────────────────────────
    Page Component
    ────────────────────────────────────────────── */
@@ -193,12 +146,6 @@ export default function HomePage() {
               className="text-sm text-white/60 transition-colors hover:text-white"
             >
               Como funciona
-            </a>
-            <a
-              href="#precos"
-              className="text-sm text-white/60 transition-colors hover:text-white"
-            >
-              Precos
             </a>
             <Link
               href="/login"
@@ -238,13 +185,6 @@ export default function HomePage() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Como funciona
-              </a>
-              <a
-                href="#precos"
-                className="text-sm text-white/60 transition-colors hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Precos
               </a>
               <Link
                 href="/login"
@@ -436,79 +376,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Pricing ────────────────────────────── */}
-      <section id="precos" className="relative z-10 px-4 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl">
-          <FadeIn>
-            <div className="text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Planos que{" "}
-                <span className="brand-gradient-text">cabem no seu bolso</span>
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-base text-white/50 sm:text-lg">
-                Escolha o plano ideal para o tamanho da sua operacao.
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {plans.map((plan, i) => (
-              <FadeIn key={plan.name} delay={i * 0.12}>
-                <div
-                  className={`relative rounded-2xl p-7 ${
-                    plan.highlighted
-                      ? "glass-card-elevated gradient-border"
-                      : "glass-card"
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <div className="brand-gradient absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold text-white">
-                      Mais popular
-                    </div>
-                  )}
-
-                  <h3 className="text-lg font-semibold">{plan.name}</h3>
-                  <p className="mt-1 text-sm text-white/40">
-                    {plan.description}
-                  </p>
-
-                  <div className="mt-6 flex items-baseline gap-1">
-                    <span className="text-sm text-white/50">R$</span>
-                    <span className="text-4xl font-extrabold tracking-tight">
-                      {plan.price}
-                    </span>
-                    <span className="text-sm text-white/40">/mes</span>
-                  </div>
-
-                  <ul className="mt-6 space-y-3">
-                    {plan.features.map((feat) => (
-                      <li
-                        key={feat}
-                        className="flex items-start gap-2 text-sm text-white/60"
-                      >
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href="/login"
-                    className={`mt-8 block w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
-                      plan.highlighted
-                        ? "btn-glow"
-                        : "border border-white/10 text-white/80 hover:border-white/20 hover:bg-white/5"
-                    }`}
-                  >
-                    Comece agora
-                  </Link>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Final CTA ──────────────────────────── */}
       <section className="relative z-10 px-4 py-24 sm:py-32">
         <FadeIn>
@@ -556,12 +423,6 @@ export default function HomePage() {
               className="transition-colors hover:text-white/70"
             >
               Como funciona
-            </a>
-            <a
-              href="#precos"
-              className="transition-colors hover:text-white/70"
-            >
-              Precos
             </a>
           </div>
 

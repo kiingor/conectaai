@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Shield, ArrowLeft, Loader2, Copy, CheckCircle2, Building2, User, Mail, Tag, CreditCard } from 'lucide-react'
+import { Shield, ArrowLeft, Loader2, Copy, CheckCircle2, Building2, User, Mail, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function NovaOrganizacaoPage() {
@@ -12,16 +12,11 @@ export default function NovaOrganizacaoPage() {
   const [copied, setCopied] = useState(false)
 
   const [form, setForm] = useState({
-    slug: '',
     nome: '',
     plano: 'basic',
     admin_email: '',
     admin_nome: '',
   })
-
-  const handleSlugChange = (v: string) => {
-    setForm(prev => ({ ...prev, slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-') }))
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -155,26 +150,6 @@ export default function NovaOrganizacaoPage() {
                   required
                   className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
                 />
-              </div>
-
-              {/* Slug */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-medium text-white/60">
-                  <Tag className="h-3.5 w-3.5" />
-                  Slug (subdomínio)
-                </label>
-                <input
-                  placeholder="softcom"
-                  value={form.slug}
-                  onChange={e => handleSlugChange(e.target.value)}
-                  required
-                  className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none font-mono"
-                />
-                {form.slug && (
-                  <p className="text-xs text-white/30">
-                    Acesso: <span className="text-emerald-400/80">{process.env.NEXT_PUBLIC_APP_URL || 'https://multihub-one.vercel.app'}/login?org={form.slug}</span>
-                  </p>
-                )}
               </div>
 
               {/* Plano */}
