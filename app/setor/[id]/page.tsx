@@ -127,6 +127,8 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Send, Hash, Check, Tag, Radio, Inbox, ChevronDown, Brain, Upload, FileCheck2, Power, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MessageBody } from '@/components/chat/special-message-content'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 const supabase = createClient()
@@ -470,6 +472,7 @@ export default function SetorPage() {
   rag_ativo: false,
   agente_prompt: '',
   workdesk_novo_disparo_enabled: true,
+  prepend_agente_nome: false,
   })
 
   // RAG state
@@ -863,20 +866,46 @@ export default function SetorPage() {
     setPausas(pausasData)
   }, [pausasLength]) // eslint-disable-line react-hooks/exhaustive-deps
 
-// Track unsaved changes in config form
+// Snapshot of the last saved/loaded values for unified dirty tracking
+  // (configForm, distributionConfig, setoresDestinoTransferencia).
+  //
+  // Usamos useState (não useRef) pra que updates após save disparem re-render —
+  // sem isso, useMemo dos dirty flags não recomputa e o SaveBar fica preso.
+  const [snapshotConfig, setSnapshotConfig] = useState<typeof configForm | null>(null)
+  const [snapshotDistribution, setSnapshotDistribution] = useState<typeof distributionConfig | null>(null)
+  const [snapshotSetoresDestino, setSnapshotSetoresDestino] = useState<string[] | null>(null)
+
+  const dirtyConfig = useMemo(() => {
+    if (!snapshotConfig) return false
+    return JSON.stringify(snapshotConfig) !== JSON.stringify(configForm)
+  }, [configForm, snapshotConfig])
+
+  const dirtyDistribution = useMemo(() => {
+    if (!snapshotDistribution) return false
+    return JSON.stringify(snapshotDistribution) !== JSON.stringify(distributionConfig)
+  }, [distributionConfig, snapshotDistribution])
+
+  const dirtySetoresDestino = useMemo(() => {
+    if (!snapshotSetoresDestino) return false
+    const a = [...snapshotSetoresDestino].sort().join(',')
+    const b = [...setoresDestinoTransferencia].sort().join(',')
+    return a !== b
+  }, [setoresDestinoTransferencia, snapshotSetoresDestino])
+
+  const anyDirty = dirtyConfig || dirtyDistribution || dirtySetoresDestino
+  const dirtyCount = (dirtyConfig ? 1 : 0) + (dirtyDistribution ? 1 : 0) + (dirtySetoresDestino ? 1 : 0)
+
+  // Keep the legacy hasUnsavedConfig in sync (still referenced elsewhere)
   useEffect(() => {
-    if (setor?.id) {
-      setHasUnsavedConfig(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [configForm])
+    setHasUnsavedConfig(dirtyConfig)
+  }, [dirtyConfig])
 
   // Initialize forms when data loads - use setor.id as stable dependency
   const setorId_stable = setor?.id
   useEffect(() => {
     if (setor && setorId_stable) {
       setHasUnsavedConfig(false)
-      setConfigForm({
+      const nextConfigForm = {
         nome: setor.nome || '',
         descricao: setor.descricao || '',
         icon_url: setor.icon_url || 'MessageCircle',
@@ -900,7 +929,11 @@ export default function SetorPage() {
         rag_ativo: setor.rag_ativo || false,
         agente_prompt: setor.agente_prompt || '',
         workdesk_novo_disparo_enabled: setor.workdesk_novo_disparo_enabled ?? true,
-      })
+        prepend_agente_nome: setor.prepend_agente_nome ?? false,
+      }
+      setConfigForm(nextConfigForm)
+      // Snapshot inicial pra dirty tracking unificado
+      setSnapshotConfig(nextConfigForm)
       // Busca nome da organização para variáveis do prompt
       if (setor.organizacao_id) {
         supabase.from('organizacoes').select('nome').eq('id', setor.organizacao_id).maybeSingle()
@@ -912,6 +945,7 @@ export default function SetorPage() {
       fetchTodosSetores()
       fetchTiposAtendimento()
       fetchDistributionConfig()
+      fetchSetoresDestino()
       fetchTagsList()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -925,19 +959,23 @@ export default function SetorPage() {
         .select('auto_assign_enabled')
         .eq('setor_id', setorId)
         .maybeSingle()
-      if (data) {
-        setDistributionConfig((prev) => ({
-          ...prev,
-          auto_assign_enabled: data.auto_assign_enabled ?? true,
-        }))
-      }
+      // Sempre captura o snapshot, mesmo sem dados (usuário ainda não configurou)
+      setDistributionConfig((prev) => {
+        const next = { ...prev, auto_assign_enabled: data?.auto_assign_enabled ?? prev.auto_assign_enabled ?? true }
+        setSnapshotDistribution(next)
+        return next
+      })
     } catch {
       // Tabela pode não existir em ambientes mais antigos, ignora silenciosamente
+      setDistributionConfig((prev) => {
+        setSnapshotDistribution(prev)
+        return prev
+      })
     }
   }
 
   // Save distribution config
-  const saveDistributionConfig = async () => {
+  const saveDistributionConfig = async (opts?: { silent?: boolean }) => {
     setSavingDistribution(true)
     try {
       const { error } = await supabase
@@ -947,9 +985,12 @@ export default function SetorPage() {
           auto_assign_enabled: distributionConfig.auto_assign_enabled,
         }, { onConflict: 'setor_id' })
       if (error) throw error
-      toast.success('Configurações de distribuição salvas!')
-    } catch {
-      toast.error('Erro ao salvar configurações de distribuição')
+      if (!opts?.silent) toast.success('Configurações de distribuição salvas!')
+      // Atualiza snapshot
+      setSnapshotDistribution({ ...distributionConfig })
+    } catch (err) {
+      if (!opts?.silent) toast.error('Erro ao salvar configurações de distribuição')
+      throw err
     } finally {
       setSavingDistribution(false)
     }
@@ -980,24 +1021,29 @@ export default function SetorPage() {
         .from('setor_destinos_transferencia')
         .select('setor_destino_id')
         .eq('setor_origem_id', setorId)
-      if (data) setSetoresDestinoTransferencia(data.map((r) => r.setor_destino_id))
+      const list = data ? data.map((r) => r.setor_destino_id) : []
+      setSetoresDestinoTransferencia(list)
+      setSnapshotSetoresDestino(list)
     } catch {
-      // Tabela pode não existir ainda
+      // Tabela pode não existir ainda — snapshot vazio
+      setSetoresDestinoTransferencia([])
+      setSnapshotSetoresDestino([])
     }
   }
 
   // Salvar setores destino de transferência
-  const saveSetoresDestino = async () => {
+  const saveSetoresDestino = async (opts?: { silent?: boolean }) => {
     setSavingSetoresDestino(true)
     try {
       // Remove todos os destinos atuais e reinsere os selecionados
-      await supabase
+      const { error: delError } = await supabase
         .from('setor_destinos_transferencia')
         .delete()
         .eq('setor_origem_id', setorId)
+      if (delError) throw delError
 
       if (setoresDestinoTransferencia.length > 0) {
-        await supabase
+        const { error: insError } = await supabase
           .from('setor_destinos_transferencia')
           .insert(
             setoresDestinoTransferencia.map((destId) => ({
@@ -1005,13 +1051,60 @@ export default function SetorPage() {
               setor_destino_id: destId,
             }))
           )
+        if (insError) throw insError
       }
-      toast.success('Destinos de transferência salvos!')
-    } catch {
-      toast.error('Erro ao salvar destinos de transferência')
+      if (!opts?.silent) toast.success('Destinos de transferência salvos!')
+      // Atualiza snapshot
+      setSnapshotSetoresDestino([...setoresDestinoTransferencia])
+    } catch (err) {
+      if (!opts?.silent) toast.error('Erro ao salvar destinos de transferência')
+      throw err
     } finally {
       setSavingSetoresDestino(false)
     }
+  }
+
+  // ===== Save All — handler unificado da aba Configurações =====
+  // Roda em paralelo apenas as seções dirty, mostra um único toast.
+  const [savingAll, setSavingAll] = useState(false)
+  const saveAll = async () => {
+    if (!anyDirty || savingAll) return
+    setSavingAll(true)
+    const jobs: Promise<unknown>[] = []
+    const labels: string[] = []
+    if (dirtyConfig) { jobs.push(saveConfig({ silent: true })); labels.push('Configurações') }
+    if (dirtyDistribution) { jobs.push(saveDistributionConfig({ silent: true })); labels.push('Distribuição') }
+    if (dirtySetoresDestino) { jobs.push(saveSetoresDestino({ silent: true })); labels.push('Transferência') }
+
+    const results = await Promise.allSettled(jobs)
+    setSavingAll(false)
+
+    const failed = results
+      .map((r, i) => ({ r, label: labels[i] }))
+      .filter(({ r }) => r.status === 'rejected')
+
+    if (failed.length === 0) {
+      // Único toast de sucesso (todos os save internos rodam em silent mode)
+      toast.success(
+        labels.length === 1
+          ? `${labels[0]} salvas com sucesso`
+          : `${labels.length} seções salvas com sucesso`
+      )
+    } else {
+      const succeeded = labels.length - failed.length
+      if (succeeded > 0) {
+        toast.warning(`${succeeded} salvas, falha em: ${failed.map((f) => f.label).join(', ')}`)
+      } else {
+        toast.error(`Falha ao salvar: ${failed.map((f) => f.label).join(', ')}`)
+      }
+    }
+  }
+
+  // Descarta alterações: restaura tudo do snapshot
+  const discardAll = () => {
+    if (snapshotConfig) setConfigForm(snapshotConfig)
+    if (snapshotDistribution) setDistributionConfig(snapshotDistribution)
+    if (snapshotSetoresDestino) setSetoresDestinoTransferencia([...snapshotSetoresDestino])
   }
 
   // Toggle setor destino
@@ -1230,7 +1323,7 @@ const handleLogout = async () => {
   }
 
   // Save configuration
-const saveConfig = async () => {
+const saveConfig = async (opts?: { silent?: boolean }) => {
     setSaving(true)
     try {
       const { error } = await supabase
@@ -1256,15 +1349,19 @@ const saveConfig = async () => {
   rag_ativo: configForm.rag_ativo,
   agente_prompt: configForm.agente_prompt || null,
   workdesk_novo_disparo_enabled: configForm.workdesk_novo_disparo_enabled,
+  prepend_agente_nome: configForm.prepend_agente_nome,
   })
         .eq('id', setorId)
 
       if (error) throw error
-      toast.success('Configurações salvas com sucesso!')
+      if (!opts?.silent) toast.success('Configurações salvas com sucesso!')
       setHasUnsavedConfig(false)
+      // Atualiza snapshot pra zerar dirty
+      setSnapshotConfig({ ...configForm })
       mutate()
     } catch (error) {
-      toast.error('Erro ao salvar configurações')
+      if (!opts?.silent) toast.error('Erro ao salvar configurações')
+      throw error
     } finally {
       setSaving(false)
     }
@@ -3719,7 +3816,7 @@ const saveConfig = async () => {
               Prompt do agente e documentos que ele consulta antes de responder
             </p>
           </div>
-          <Button onClick={saveConfig} disabled={saving || !hasUnsavedConfig}>
+          <Button onClick={() => saveConfig()} disabled={saving || !hasUnsavedConfig}>
             {saving ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>
             ) : (
@@ -3935,26 +4032,16 @@ const saveConfig = async () => {
 
     {/* Configuracoes Section */}
     {activeSection === 'configuracoes' && (
-      <div className="space-y-4">
-        {/* Header with save button */}
+      <div className="space-y-4 pb-24">
+        {/* Header sem botão salvar — substituído pela SaveBar flutuante */}
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-white">Configuracoes</h1>
-          <div className="flex items-center gap-3">
-            {hasUnsavedConfig && !saving && (
-              <span className="flex items-center gap-1.5 text-xs text-amber-400">
-                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                Alteracoes nao salvas
-              </span>
-            )}
-            <Button onClick={saveConfig} disabled={saving} className={cn(hasUnsavedConfig && !saving && "ring-2 ring-amber-500/40")}>
-              {saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : 'Salvar Configuracoes'}
-            </Button>
-          </div>
+          {anyDirty && !savingAll && (
+            <span className="flex items-center gap-1.5 text-xs text-amber-400">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              {dirtyCount === 1 ? '1 alteração pendente' : `${dirtyCount} alterações pendentes`}
+            </span>
+          )}
         </div>
 
         {/* === Collapsible: Informacoes Basicas === */}
@@ -4092,6 +4179,21 @@ const saveConfig = async () => {
                     onCheckedChange={(v) => setConfigForm((prev) => ({ ...prev, workdesk_novo_disparo_enabled: v }))}
                   />
                 </div>
+
+                <div className="flex items-start justify-between gap-4 rounded-lg border border-foreground/8 bg-foreground/[0.02] p-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Assinar mensagens com o nome do atendente</Label>
+                    <p className="text-xs text-muted-foreground/80">
+                      Quando ativado, toda mensagem enviada pelo atendente no chat vai prefixada com{' '}
+                      <span className="font-mono text-foreground/90">*Nome do Atendente*:</span>
+                      {' '}seguido da mensagem. Útil quando varios atendentes usam o mesmo numero e o cliente precisa saber com quem esta falando.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={configForm.prepend_agente_nome}
+                    onCheckedChange={(v) => setConfigForm((prev) => ({ ...prev, prepend_agente_nome: v }))}
+                  />
+                </div>
               </div>
             </CollapsibleContent>
           </Card>
@@ -4208,9 +4310,6 @@ const saveConfig = async () => {
                     <Input id="max_tickets" type="number" min={1} max={100} value={distributionConfig.max_tickets_per_agent} onChange={(e) => setDistributionConfig((prev) => ({ ...prev, max_tickets_per_agent: parseInt(e.target.value) || 10 }))} />
                     <p className="text-xs text-muted-foreground">Maximo de tickets ativos simultaneos por atendente.</p>
                   </div>
-                  <Button size="sm" onClick={saveDistributionConfig} disabled={savingDistribution}>
-                    {savingDistribution ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>) : 'Salvar Distribuicao'}
-                  </Button>
                 </div>
               </div>
             </CollapsibleContent>
@@ -4294,12 +4393,7 @@ const saveConfig = async () => {
             <CollapsibleContent>
               <div className="border-t border-foreground/6 p-5">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">Selecione quais setores estarao disponiveis como destino ao transferir um ticket deste setor.</p>
-                    <Button size="sm" onClick={saveSetoresDestino} disabled={savingSetoresDestino}>
-                      {savingSetoresDestino ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>) : 'Salvar'}
-                    </Button>
-                  </div>
+                  <p className="text-sm text-muted-foreground">Selecione quais setores estarao disponiveis como destino ao transferir um ticket deste setor.</p>
                   {/* Busca */}
                   <div className="relative shrink-0">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
@@ -4487,6 +4581,62 @@ const saveConfig = async () => {
           </Card>
         </Collapsible>
         )}
+
+        {/* === SaveBar flutuante — salvamento unificado da aba Configurações === */}
+        <AnimatePresence>
+          {anyDirty && (
+            <motion.div
+              key="save-bar"
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+              className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 w-[min(640px,calc(100vw-2rem))]"
+            >
+              <div className="glass-card-elevated rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/10 px-4 py-3 flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {dirtyCount === 1 ? '1 alteração não salva' : `${dirtyCount} alterações não salvas`}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 truncate">
+                    {[dirtyConfig && 'Configurações', dirtyDistribution && 'Distribuição', dirtySetoresDestino && 'Transferência']
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={discardAll}
+                  disabled={savingAll}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Descartar
+                </Button>
+                <Button
+                  onClick={saveAll}
+                  disabled={savingAll}
+                  className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20"
+                >
+                  {savingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Salvar tudo
+                    </>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     )}
@@ -5253,14 +5403,14 @@ const saveConfig = async () => {
                                 : "bg-primary text-primary-foreground"
                             )}
                           >
-                            <p>{msg.conteudo}</p>
+                            <MessageBody conteudo={msg.conteudo} isOutgoing={msg.remetente !== 'cliente'} className="text-sm whitespace-pre-wrap break-words" />
                             <p className={cn(
                               "text-[10px] mt-1",
                               msg.remetente === 'cliente' ? "text-muted-foreground" : "opacity-70"
                             )}>
-                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
+                              {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', {
+                                hour: '2-digit',
+                                minute: '2-digit'
                               })}
                             </p>
                           </div>

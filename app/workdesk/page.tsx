@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { parseMessageContent } from '@/lib/whatsapp-message-parser'
+import { SpecialMessageContent } from '@/components/chat/special-message-content'
 import {
   MessageCircle,
   Clock,
@@ -2316,7 +2318,7 @@ const insertEmoji = (emoji: string) => {
     const capturedColaborador = colaborador
     
 const tempId = `temp-${Date.now()}`
-    const messageContent = messageInput.trim()
+    let messageContent = messageInput.trim()
     const fileToUpload = selectedFile
     const hasFile = !!fileToUpload
   const isImage = fileToUpload?.type.startsWith('image/')
@@ -2428,6 +2430,24 @@ const tempId = `temp-${Date.now()}`
         if (!fileUrl) {
           setPendingMessages((prev) => new Map(prev).set(tempId, 'error'))
           return
+        }
+      }
+
+      // Prefixo "*Nome do Atendente*:" quando habilitado no setor.
+      // Aplica somente se houver texto pra evitar caption vazia em mídia pura.
+      if (messageContent && capturedTicket.setor_id) {
+        try {
+          const { data: setorFlag } = await supabase
+            .from('setores')
+            .select('prepend_agente_nome')
+            .eq('id', capturedTicket.setor_id)
+            .maybeSingle()
+          if (setorFlag?.prepend_agente_nome && capturedColaborador.nome) {
+            messageContent = `*${capturedColaborador.nome}*:\n\n${messageContent}`
+          }
+        } catch (e) {
+          // Coluna pode nao existir em ambientes ainda nao migrados — segue sem prefixo
+          console.warn('[workdesk] prepend_agente_nome lookup failed (ignorado):', e)
         }
       }
 
@@ -3047,9 +3067,24 @@ const tempId = `temp-${Date.now()}`
                             <span className="capitalize">{msg.tipo}</span>
                           </div>
                         )}
-                        {msg.media_type === 'contact' && msg.conteudo ? (
-                          <ContactCard conteudo={msg.conteudo} isOutgoing={isOutgoingMessage(msg.remetente)} />
-                        ) : msg.conteudo && msg.tipo !== 'documento' && msg.tipo !== 'audio' && msg.tipo !== 'video' && !msg.url_imagem?.toLowerCase().endsWith('.pdf') && <p className="text-sm whitespace-pre-wrap">{renderTextWithLinks(msg.conteudo, isOutgoingMessage(msg.remetente))}</p>}
+                        {(() => {
+                          const out = isOutgoingMessage(msg.remetente)
+                          // 1) Tenta interpretar payload Baileys/Evolution (reação, contato, localização, enquete, etc.)
+                          const parsed = parseMessageContent(msg.conteudo)
+                          if (parsed.kind !== 'text' && parsed.kind !== 'protocol') {
+                            return <SpecialMessageContent conteudo={msg.conteudo} isOutgoing={out} />
+                          }
+                          // 2) Legacy: backend já marcou media_type=contact
+                          if (msg.media_type === 'contact' && msg.conteudo) {
+                            return <ContactCard conteudo={msg.conteudo} isOutgoing={out} />
+                          }
+                          // 3) Texto puro
+                          const isMedia = msg.tipo === 'documento' || msg.tipo === 'audio' || msg.tipo === 'video' || msg.url_imagem?.toLowerCase().endsWith('.pdf')
+                          if (msg.conteudo && !isMedia) {
+                            return <p className="text-sm whitespace-pre-wrap">{renderTextWithLinks(msg.conteudo, out)}</p>
+                          }
+                          return null
+                        })()}
                                     <div className="mt-1 flex items-center justify-end gap-1 text-[10px] opacity-60">
                                       <span>
                                         {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', {

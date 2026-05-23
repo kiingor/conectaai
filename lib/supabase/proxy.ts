@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { SUPABASE_AUTH_COOKIE } from './shared'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -7,7 +8,8 @@ export async function updateSession(request: NextRequest) {
   })
 
   // Check if Supabase env vars are configured
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // Server-side prefere SUPABASE_URL_REMOTE (URL direta, sem proxy) pra evitar loop-back
+  const supabaseUrl = process.env.SUPABASE_URL_REMOTE || process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -19,6 +21,7 @@ export async function updateSession(request: NextRequest) {
     supabaseUrl,
     supabaseAnonKey,
     {
+      auth: { storageKey: SUPABASE_AUTH_COOKIE },
       cookies: {
         getAll() {
           return request.cookies.getAll()

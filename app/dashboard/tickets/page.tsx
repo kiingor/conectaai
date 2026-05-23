@@ -33,6 +33,8 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { parseMessageContent } from '@/lib/whatsapp-message-parser'
+import { SpecialMessageContent } from '@/components/chat/special-message-content'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -1142,7 +1144,15 @@ export default function TicketsPage() {
                                 />
                               </div>
                             )}
-                            {msg.conteudo && <p className="text-sm">{msg.conteudo}</p>}
+                            {(() => {
+                              if (!msg.conteudo) return null
+                              const isOutgoing = msg.remetente !== 'cliente'
+                              const parsed = parseMessageContent(msg.conteudo)
+                              if (parsed.kind !== 'text' && parsed.kind !== 'protocol') {
+                                return <SpecialMessageContent conteudo={msg.conteudo} isOutgoing={isOutgoing} />
+                              }
+                              return <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
+                            })()}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {format(new Date(msg.created_at), 'dd/MM HH:mm', { locale: ptBR })}
                             </p>

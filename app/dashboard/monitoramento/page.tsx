@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { MessageBody } from '@/components/chat/special-message-content'
 import {
   Select,
   SelectContent,
@@ -1461,7 +1462,7 @@ export default function MonitoramentoPage() {
                               {msg.url_imagem && (msg.tipo === 'imagem' || msg.media_type?.startsWith('image/')) && (
                                 <img src={msg.url_imagem} alt="" className="max-w-full rounded mb-1" />
                               )}
-                              <p className="break-words">{msg.conteudo}</p>
+                              <MessageBody conteudo={msg.conteudo} isOutgoing={msg.remetente !== 'cliente'} className="break-words" />
                               <p className="text-[10px] mt-1 opacity-50">
                                 {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                               </p>
@@ -1559,7 +1560,7 @@ export default function MonitoramentoPage() {
                                             : "bg-emerald-600/20 text-emerald-200"
                                         )}
                                       >
-                                        <p className="break-words">{msg.conteudo}</p>
+                                        <MessageBody conteudo={msg.conteudo} isOutgoing={msg.remetente !== 'cliente'} className="break-words" />
                                         <p className="text-[9px] mt-0.5 opacity-50">
                                           {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                         </p>
@@ -1716,7 +1717,7 @@ export default function MonitoramentoPage() {
                             {msg.url_imagem && (msg.tipo === 'imagem' || msg.media_type?.startsWith('image/')) && (
                               <img src={msg.url_imagem} alt="" className="max-w-full rounded mb-1" />
                             )}
-                            <p className="break-words">{msg.conteudo}</p>
+                            <MessageBody conteudo={msg.conteudo} isOutgoing={msg.remetente !== 'cliente'} className="break-words" />
                             <p className="text-[10px] mt-1 opacity-50">
                               {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </p>
@@ -1814,7 +1815,7 @@ export default function MonitoramentoPage() {
                                           : "bg-emerald-600/20 text-emerald-200"
                                       )}
                                     >
-                                      <p className="break-words">{msg.conteudo}</p>
+                                      <MessageBody conteudo={msg.conteudo} isOutgoing={msg.remetente !== 'cliente'} className="break-words" />
                                       <p className="text-[9px] mt-0.5 opacity-50">
                                         {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                       </p>
