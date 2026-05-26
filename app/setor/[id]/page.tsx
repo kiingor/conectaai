@@ -4393,29 +4393,22 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                           <label
                             key={s.id}
                             className={cn(
-                              'group flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-colors',
+                              'flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-colors',
                               isSelected
-                                ? 'border-emerald-400/40 bg-emerald-500/10'
+                                ? 'border-primary/40 bg-primary/8'
                                 : 'border-border/60 bg-muted/20 hover:bg-muted/40'
                             )}
                           >
                             <input
                               type="checkbox"
-                              className="peer sr-only"
+                              className="h-4 w-4 rounded border-border accent-primary"
                               checked={isSelected}
                               onChange={() => toggleSetorDestino(s.id)}
                             />
-                            <span
-                              aria-hidden="true"
-                              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#101827] shadow-inner shadow-black/30 transition-all duration-300 before:absolute before:inset-[-1px] before:rounded-[9px] before:bg-gradient-to-br before:from-emerald-400/0 before:via-cyan-400/0 before:to-emerald-400/0 before:opacity-0 before:transition-opacity peer-checked:border-emerald-300/60 peer-checked:bg-emerald-500/15 peer-checked:shadow-emerald-500/20 peer-checked:before:from-emerald-400 peer-checked:before:via-cyan-300 peer-checked:before:to-emerald-500 peer-checked:before:opacity-100 group-hover:border-emerald-300/40"
-                            >
-                              <span className="relative z-10 h-[18px] w-[18px] rounded-md bg-[#071015] transition-all duration-300 peer-checked:bg-[#04130e]" />
-                              <Check className="absolute z-20 h-4 w-4 scale-50 text-emerald-200 opacity-0 transition-all duration-300 peer-checked:scale-100 peer-checked:opacity-100" />
-                            </span>
                             <ArrowRightLeft className="h-4 w-4 shrink-0 text-sky-400" />
                             <span className="min-w-0 truncate text-sm font-medium">{s.nome}</span>
                             {isSelected && (
-                              <Badge variant="secondary" className="ml-auto border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-300">
+                              <Badge variant="secondary" className="ml-auto text-xs">
                                 Ativo
                               </Badge>
                             )}

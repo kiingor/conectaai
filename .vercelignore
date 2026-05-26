@@ -1,0 +1,5 @@
+.codex/
+.env.rar
+.env*
+node_modules/
+.next/
