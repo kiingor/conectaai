@@ -333,7 +333,7 @@ export default function UsuariosPage() {
             <UserCog className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Usuarios</h1>
+            <h1 className="text-2xl font-bold text-foreground">Usuarios</h1>
             <p className="text-sm text-muted-foreground/80">
               Gerencie usuarios e defina quais setores cada um pode acessar
             </p>

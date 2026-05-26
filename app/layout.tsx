@@ -28,6 +28,16 @@ export const metadata: Metadata = {
   },
 }
 
+const themeScript = `
+(() => {
+  try {
+    const theme = localStorage.getItem('theme') || 'system';
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && systemDark));
+  } catch (_) {}
+})();
+`
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,6 +46,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`} suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <ErrorBoundary tela="Global">
           {children}
         </ErrorBoundary>

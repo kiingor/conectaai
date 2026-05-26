@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Menu, LogOut, User as UserIcon, ChevronDown, Bell, KeyRound } from 'lucide-react'
 import { useColaborador } from '@/lib/hooks/use-data'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface DashboardHeaderProps {
   user: User
@@ -128,6 +129,8 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-1.5">
+        <ThemeToggle />
+
         {/* Notifications */}
         <Button
           variant="ghost"

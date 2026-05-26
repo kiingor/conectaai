@@ -75,7 +75,7 @@ function SidebarContent({ onClose, collapsed }: { onClose?: () => void; collapse
           'group/item relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer select-none active:scale-[0.97]',
           collapsed && 'justify-center px-0',
           isActive
-            ? 'text-white'
+            ? 'text-foreground'
             : 'text-muted-foreground glass-nav-hover hover:text-foreground/80',
           isLoading && 'opacity-70'
         )}
