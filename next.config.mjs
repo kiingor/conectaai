@@ -10,7 +10,7 @@ const nextConfig = {
     return [
       {
         source: '/supabase-proxy/:path*',
-        destination: 'http://82.25.64.199:8000/:path*',
+        destination: 'https://supabase.conectaai.net/:path*',
       },
     ]
   },

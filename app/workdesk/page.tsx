@@ -1740,17 +1740,10 @@ const handleEncerrarTicket = async () => {
     try {
       const currentSetorId = selectedTicket?.setor_id
       if (currentSetorId) {
-        const { data: destinosData } = await supabase
-          .from('setor_destinos_transferencia')
-          .select('setor_destino_id, setores:setor_destino_id(id, nome)')
-          .eq('setor_origem_id', currentSetorId)
-
-        if (destinosData && destinosData.length > 0) {
-          const setoresDestino = destinosData
-            .map((d: any) => d.setores)
-            .filter(Boolean)
-            .sort((a: any, b: any) => a.nome.localeCompare(b.nome))
-          setSetores(setoresDestino)
+        const res = await fetch(`/api/setor/${currentSetorId}/transferencia-destinos`)
+        if (res.ok) {
+          const data = await res.json()
+          setSetores(data.destinos || [])
         }
       }
 

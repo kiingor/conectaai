@@ -635,15 +635,11 @@ export default function SetorPage() {
 
   // Distribuição de tickets state
   const [distributionConfig, setDistributionConfig] = useState({
-    max_tickets_per_agent: 10,
     auto_assign_enabled: true,
   })
   const [savingDistribution, setSavingDistribution] = useState(false)
-
-  // Setores destino de transferência
   const [setoresDestinoTransferencia, setSetoresDestinoTransferencia] = useState<string[]>([])
-  const [savingSetoresDestino, setSavingSetoresDestino] = useState(false)
-  const [searchSetorDestino, setSearchSetorDestino] = useState('')
+
   const [isCanalModalOpen, setIsCanalModalOpen] = useState(false)
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null)
   const [canalForm, setCanalForm] = useState({
@@ -982,6 +978,7 @@ export default function SetorPage() {
         .from('ticket_distribution_config')
         .upsert({
           setor_id: setorId,
+          organizacao_id: setor?.organizacao_id,
           auto_assign_enabled: distributionConfig.auto_assign_enabled,
         }, { onConflict: 'setor_id' })
       if (error) throw error
@@ -1014,54 +1011,46 @@ export default function SetorPage() {
     if (data) setTagsList(data)
   }
 
-  // Fetch setores destino de transferência configurados
   const fetchSetoresDestino = async () => {
     try {
-      const { data } = await supabase
-        .from('setor_destinos_transferencia')
-        .select('setor_destino_id')
-        .eq('setor_origem_id', setorId)
-      const list = data ? data.map((r) => r.setor_destino_id) : []
+      const res = await fetch(`/api/setor/${setorId}/transferencia-destinos`)
+      if (!res.ok) throw new Error('Erro ao carregar destinos')
+      const data = await res.json()
+      const list = Array.isArray(data.destino_ids) ? data.destino_ids : []
       setSetoresDestinoTransferencia(list)
       setSnapshotSetoresDestino(list)
     } catch {
-      // Tabela pode não existir ainda — snapshot vazio
       setSetoresDestinoTransferencia([])
       setSnapshotSetoresDestino([])
     }
   }
 
-  // Salvar setores destino de transferência
   const saveSetoresDestino = async (opts?: { silent?: boolean }) => {
-    setSavingSetoresDestino(true)
     try {
-      // Remove todos os destinos atuais e reinsere os selecionados
-      const { error: delError } = await supabase
-        .from('setor_destinos_transferencia')
-        .delete()
-        .eq('setor_origem_id', setorId)
-      if (delError) throw delError
-
-      if (setoresDestinoTransferencia.length > 0) {
-        const { error: insError } = await supabase
-          .from('setor_destinos_transferencia')
-          .insert(
-            setoresDestinoTransferencia.map((destId) => ({
-              setor_origem_id: setorId,
-              setor_destino_id: destId,
-            }))
-          )
-        if (insError) throw insError
+      const res = await fetch(`/api/setor/${setorId}/transferencia-destinos`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destino_ids: setoresDestinoTransferencia }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Erro ao salvar destinos')
       }
-      if (!opts?.silent) toast.success('Destinos de transferência salvos!')
-      // Atualiza snapshot
+
+      if (!opts?.silent) toast.success('Destinos de transferencia salvos!')
       setSnapshotSetoresDestino([...setoresDestinoTransferencia])
     } catch (err) {
-      if (!opts?.silent) toast.error('Erro ao salvar destinos de transferência')
+      if (!opts?.silent) toast.error('Erro ao salvar destinos de transferencia')
       throw err
-    } finally {
-      setSavingSetoresDestino(false)
     }
+  }
+
+  const toggleSetorDestino = (setorDestinoId: string) => {
+    setSetoresDestinoTransferencia((prev) =>
+      prev.includes(setorDestinoId)
+        ? prev.filter((id) => id !== setorDestinoId)
+        : [...prev, setorDestinoId]
+    )
   }
 
   // ===== Save All — handler unificado da aba Configurações =====
@@ -1105,15 +1094,6 @@ export default function SetorPage() {
     if (snapshotConfig) setConfigForm(snapshotConfig)
     if (snapshotDistribution) setDistributionConfig(snapshotDistribution)
     if (snapshotSetoresDestino) setSetoresDestinoTransferencia([...snapshotSetoresDestino])
-  }
-
-  // Toggle setor destino
-  const toggleSetorDestino = (setorDestinoId: string) => {
-    setSetoresDestinoTransferencia((prev) =>
-      prev.includes(setorDestinoId)
-        ? prev.filter((id) => id !== setorDestinoId)
-        : [...prev, setorDestinoId]
-    )
   }
 
   // Cleanup evolution polling on unmount
@@ -4305,11 +4285,6 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       onCheckedChange={(checked) => setDistributionConfig((prev) => ({ ...prev, auto_assign_enabled: checked }))}
                     />
                   </div>
-                  <div className="space-y-2 max-w-xs">
-                    <Label htmlFor="max_tickets">Limite de tickets por atendente</Label>
-                    <Input id="max_tickets" type="number" min={1} max={100} value={distributionConfig.max_tickets_per_agent} onChange={(e) => setDistributionConfig((prev) => ({ ...prev, max_tickets_per_agent: parseInt(e.target.value) || 10 }))} />
-                    <p className="text-xs text-muted-foreground">Maximo de tickets ativos simultaneos por atendente.</p>
-                  </div>
                 </div>
               </div>
             </CollapsibleContent>
@@ -4385,81 +4360,70 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Transferencia</p>
-                  <p className="text-xs text-muted-foreground/80">Para quais setores este setor pode transferir um atendimento</p>
+                  <p className="text-xs text-muted-foreground/80">Escolha quais setores podem receber transferencias</p>
                 </div>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground/80 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <div className="border-t border-foreground/6 p-5">
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">Selecione quais setores estarao disponiveis como destino ao transferir um ticket deste setor.</p>
-                  {/* Busca */}
-                  <div className="relative shrink-0">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
-                    <Input
-                      placeholder="Buscar setor..."
-                      value={searchSetorDestino}
-                      onChange={(e) => setSearchSetorDestino(e.target.value)}
-                      className="pl-9 h-9 text-sm"
-                    />
-                  </div>
-
-                  {/* Lista */}
-                  {(() => {
-                    const lista = todosSetores.filter(
-                      (s) =>
-                        s.id !== setorId &&
-                        s.nome.toLowerCase().includes(searchSetorDestino.toLowerCase())
-                    )
-                    if (todosSetores.filter((s) => s.id !== setorId).length === 0) {
-                      return (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                          <p className="text-sm">Nenhum outro setor cadastrado</p>
-                        </div>
-                      )
-                    }
-                    if (lista.length === 0) {
-                      return (
-                        <div className="text-center py-6 text-muted-foreground">
-                          <p className="text-sm">Nenhum setor encontrado</p>
-                        </div>
-                      )
-                    }
-                    return (
-                      <div className="overflow-y-auto flex-1 space-y-2 pr-1">
-                        {lista.map((s) => {
-                          const isSelected = setoresDestinoTransferencia.includes(s.id)
-                          return (
-                            <label
-                              key={s.id}
-                              className={cn(
-                                'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors',
-                                isSelected
-                                  ? 'bg-primary/8 border-primary/40'
-                                  : 'hover:bg-muted/50 border-border/60'
-                              )}
-                            >
-                              <input
-                                type="checkbox"
-                                className="h-4 w-4 rounded border-border accent-primary"
-                                checked={isSelected}
-                                onChange={() => toggleSetorDestino(s.id)}
-                              />
-                              <span className="text-sm font-medium">{s.nome}</span>
-                              {isSelected && (
-                                <Badge variant="secondary" className="ml-auto text-xs">
-                                  Habilitado
-                                </Badge>
-                              )}
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )
-                  })()}
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Apenas os setores selecionados aparecem como destino ao transferir um atendimento.
+                  </p>
+                  <Button asChild size="sm" variant="outline" className="gap-2">
+                    <Link href="/dashboard">
+                      <Plus className="h-4 w-4" />
+                      Ativar novo setor
+                    </Link>
+                  </Button>
                 </div>
+                {todosSetores.filter((s) => s.id !== setorId).length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                    <p className="text-sm">Nenhum outro setor cadastrado</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {todosSetores
+                      .filter((s) => s.id !== setorId)
+                      .map((s) => {
+                        const isSelected = setoresDestinoTransferencia.includes(s.id)
+                        return (
+                          <label
+                            key={s.id}
+                            className={cn(
+                              'group flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-colors',
+                              isSelected
+                                ? 'border-emerald-400/40 bg-emerald-500/10'
+                                : 'border-border/60 bg-muted/20 hover:bg-muted/40'
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              className="peer sr-only"
+                              checked={isSelected}
+                              onChange={() => toggleSetorDestino(s.id)}
+                            />
+                            <span
+                              aria-hidden="true"
+                              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#101827] shadow-inner shadow-black/30 transition-all duration-300 before:absolute before:inset-[-1px] before:rounded-[9px] before:bg-gradient-to-br before:from-emerald-400/0 before:via-cyan-400/0 before:to-emerald-400/0 before:opacity-0 before:transition-opacity peer-checked:border-emerald-300/60 peer-checked:bg-emerald-500/15 peer-checked:shadow-emerald-500/20 peer-checked:before:from-emerald-400 peer-checked:before:via-cyan-300 peer-checked:before:to-emerald-500 peer-checked:before:opacity-100 group-hover:border-emerald-300/40"
+                            >
+                              <span className="relative z-10 h-[18px] w-[18px] rounded-md bg-[#071015] transition-all duration-300 peer-checked:bg-[#04130e]" />
+                              <Check className="absolute z-20 h-4 w-4 scale-50 text-emerald-200 opacity-0 transition-all duration-300 peer-checked:scale-100 peer-checked:opacity-100" />
+                            </span>
+                            <ArrowRightLeft className="h-4 w-4 shrink-0 text-sky-400" />
+                            <span className="min-w-0 truncate text-sm font-medium">{s.nome}</span>
+                            {isSelected && (
+                              <Badge variant="secondary" className="ml-auto border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-300">
+                                Ativo
+                              </Badge>
+                            )}
+                          </label>
+                        )
+                      })}
+                  </div>
+                )}
               </div>
             </CollapsibleContent>
           </Card>

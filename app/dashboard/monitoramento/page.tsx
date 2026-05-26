@@ -628,15 +628,10 @@ export default function MonitoramentoPage() {
     const currentSetorId = selectedTicket?.setor_id
     if (!currentSetorId) return
 
-    // Fetch destination setores configured for this setor
-    const { data: destinosData } = await supabase
-      .from('setor_destinos_transferencia')
-      .select('setor_destino_id, setores:setor_destino_id(id, nome)')
-      .eq('setor_origem_id', currentSetorId)
-
-    if (destinosData && destinosData.length > 0) {
-      const destinos = destinosData.map((d: any) => d.setores).filter(Boolean).sort((a: any, b: any) => a.nome.localeCompare(b.nome))
-      setSetoresTransfer(destinos)
+    const res = await fetch(`/api/setor/${currentSetorId}/transferencia-destinos`)
+    if (res.ok) {
+      const data = await res.json()
+      setSetoresTransfer(data.destinos || [])
     }
 
     // Fetch atendentes from same setor
