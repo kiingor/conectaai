@@ -2503,7 +2503,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                   <Skeleton className="h-5 w-32" />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <h1 className="font-semibold text-white truncate">{setor?.nome || 'Setor'}</h1>
+                    <h1 className="font-semibold text-foreground truncate">{setor?.nome || 'Setor'}</h1>
                     <span
                       className="h-2 w-2 shrink-0 rounded-full"
                       style={{ backgroundColor: setor?.cor || '#3B82F6' }}
@@ -2581,7 +2581,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
               {/* Header row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold text-white">Monitoramento</h1>
+                  <h1 className="text-xl font-bold text-foreground">Monitoramento</h1>
                   <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1">
                     <span className="relative flex h-2 w-2">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -2751,7 +2751,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                         placeholder="Buscar pelo No do ticket"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-52 pl-9 h-9 glass-input text-white placeholder:text-muted-foreground/50 border-foreground/10 rounded-lg"
+                        className="w-52 pl-9 h-9 glass-input text-foreground placeholder:text-muted-foreground/50 border-foreground/10 rounded-lg"
                       />
                     </div>
                   </div>
@@ -3149,7 +3149,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-white">Relatorios de Atendimento</h1>
+                <h1 className="text-xl font-bold text-foreground">Relatorios de Atendimento</h1>
               </div>
               <DatePeriodFilter
                 dateFilter={dateFilter}
@@ -3171,8 +3171,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       <p className="text-xs text-muted-foreground">Tempo médio 1a resposta</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.tempoMedioPrimeiraResposta}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-blue-950/30 flex items-center justify-center">
-                      <Timer className="h-5 w-5 text-blue-400" />
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 flex items-center justify-center">
+                      <Timer className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3186,8 +3186,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       <p className="text-xs text-muted-foreground">Tempo médio resolução</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.tempoMedioResolucao}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-green-950/30 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    <div className="h-9 w-9 rounded-lg bg-green-500/10 dark:bg-green-500/15 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3201,8 +3201,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       <p className="text-xs text-muted-foreground">Tickets recebidos</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.totalRecebidos}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-amber-950/30 flex items-center justify-center">
-                      <TrendingUp className="h-5 w-5 text-amber-400" />
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3216,8 +3216,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       <p className="text-xs text-muted-foreground">Tickets resolvidos</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.totalResolvidos}</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-purple-950/30 flex items-center justify-center">
-                      <UserCheck className="h-5 w-5 text-purple-400" />
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/10 dark:bg-purple-500/15 flex items-center justify-center">
+                      <UserCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3231,8 +3231,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       <p className="text-xs text-muted-foreground">Taxa de resolução</p>
                       <p className="text-xl lg:text-2xl font-semibold tracking-tight">{relatorioStats.taxaResolucao}%</p>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-emerald-950/30 flex items-center justify-center">
-                      <Activity className="h-5 w-5 text-emerald-400" />
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -3359,7 +3359,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-white">Atendentes</h1>
+            <h1 className="text-xl font-bold text-foreground">Atendentes</h1>
             <Button onClick={openCreateAtendenteModal} className="gap-2">
               <Plus className="h-4 w-4" />
               Novo Atendente
@@ -3632,7 +3632,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white">Horários de Atendimento</h1>
+              <h1 className="text-xl font-bold text-foreground">Horários de Atendimento</h1>
               <button type="button" className="text-muted-foreground/60 hover:text-foreground/60 transition-colors" title="Configure os dias e horários em que sua equipe está disponível para atendimento.">
                 <Info className="h-4 w-4" />
               </button>
@@ -3704,7 +3704,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white">Pausas</h1>
+              <h1 className="text-xl font-bold text-foreground">Pausas</h1>
               <button type="button" className="text-muted-foreground/60 hover:text-foreground/60 transition-colors" title="Configure os tipos de pausa que os atendentes podem utilizar durante o expediente.">
                 <Info className="h-4 w-4" />
               </button>
@@ -3810,8 +3810,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
             {/* Switch RAG ativo */}
             <div className="flex items-center justify-between rounded-lg border border-border p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950">
-                  <Power className="h-4 w-4 text-emerald-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15">
+                  <Power className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium">Base de Conhecimento ativa</p>
@@ -4015,7 +4015,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
       <div className="space-y-4 pb-24">
         {/* Header sem botão salvar — substituído pela SaveBar flutuante */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white">Configuracoes</h1>
+          <h1 className="text-xl font-bold text-foreground">Configuracoes</h1>
           {anyDirty && !savingAll && (
             <span className="flex items-center gap-1.5 text-xs text-amber-400">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
@@ -4029,11 +4029,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
-                  <Info className="h-4 w-4 text-blue-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <Info className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Informacoes Basicas</p>
+                  <p className="font-semibold text-foreground">Informacoes Basicas</p>
                   <p className="text-xs text-muted-foreground/80">Nome, descricao, aparencia e tag do setor</p>
                 </div>
               </div>
@@ -4135,11 +4135,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950/50">
-                  <Megaphone className="h-4 w-4 text-emerald-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <Megaphone className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Workdesk</p>
+                  <p className="font-semibold text-foreground">Workdesk</p>
                   <p className="text-xs text-muted-foreground/80">Ajustes da tela do atendente para este setor</p>
                 </div>
               </div>
@@ -4184,11 +4184,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950/50">
-                  <Smartphone className="h-4 w-4 text-emerald-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <Smartphone className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Canais de Atendimento (WhatsApp)</p>
+                  <p className="font-semibold text-foreground">Canais de Atendimento (WhatsApp)</p>
                   <p className="text-xs text-muted-foreground/80">WhatsApps conectados que enviam e recebem mensagens deste setor</p>
                 </div>
               </div>
@@ -4262,11 +4262,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950/50">
-                  <Settings className="h-4 w-4 text-blue-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <Settings className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Distribuicao de Tickets</p>
+                  <p className="font-semibold text-foreground">Distribuicao de Tickets</p>
                   <p className="text-xs text-muted-foreground/80">Como os tickets chegam para os atendentes automaticamente</p>
                 </div>
               </div>
@@ -4297,11 +4297,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-950/50">
-                  <MessageCircle className="h-4 w-4 text-purple-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <MessageCircle className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Mensagens</p>
+                  <p className="font-semibold text-foreground">Mensagens</p>
                   <p className="text-xs text-muted-foreground/80">Mensagem enviada ao cliente ao encerrar o atendimento e integracoes com sistemas externos</p>
                 </div>
               </div>
@@ -4355,11 +4355,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-950/50">
-                  <ArrowRightLeft className="h-4 w-4 text-sky-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <ArrowRightLeft className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Transferencia</p>
+                  <p className="font-semibold text-foreground">Transferencia</p>
                   <p className="text-xs text-muted-foreground/80">Escolha quais setores podem receber transferencias</p>
                 </div>
               </div>
@@ -4429,11 +4429,11 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
           <Card className="glass-card-elevated rounded-2xl border-0 overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between p-5 text-left hover:bg-foreground/[0.02] transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-950/50">
-                  <Radio className="h-4 w-4 text-indigo-400" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                  <Radio className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Receptor / Transmissor</p>
+                  <p className="font-semibold text-foreground">Receptor / Transmissor</p>
                   <p className="text-xs text-muted-foreground/80">O que acontece com o ticket quando nao ha atendentes online neste setor</p>
                 </div>
               </div>
@@ -4445,8 +4445,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                   {/* Switch: Setor Receptor */}
                   <div className="flex items-center justify-between rounded-lg border border-border p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-950">
-                        <Inbox className="h-4 w-4 text-blue-400" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                        <Inbox className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-medium">Setor Receptor</p>
@@ -4474,8 +4474,8 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                   )}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-950">
-                          <Radio className="h-4 w-4 text-amber-400" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 bg-primary/10">
+                          <Radio className="h-4 w-4 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm font-medium">Transmissao Ativa</p>
@@ -4555,7 +4555,7 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-sm font-semibold text-foreground truncate">
                     {dirtyCount === 1 ? '1 alteração não salva' : `${dirtyCount} alterações não salvas`}
                   </p>
                   <p className="text-[11px] text-muted-foreground/80 truncate">
