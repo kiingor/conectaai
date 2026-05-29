@@ -715,7 +715,7 @@ export default function MonitoramentoPage() {
       fetch('/api/tickets/auto-assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ setorId: result.setor_id || selectedTicket.setor_id }),
       }).catch(() => {})
     }
 

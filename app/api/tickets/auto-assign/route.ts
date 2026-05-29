@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server'
  * to assign them to available collaborators (online, fresh heartbeat,
  * not on break, fewest active tickets).
  *
- * Body: { setorId?: string, organizacaoId?: string }
+ * Body: { setorId?: string, organizacaoId?: string, colaboradorId?: string }
  *
  * If setorId is omitted, processes ALL unassigned tickets across all setores
  * in the given organizacaoId.
@@ -17,14 +17,55 @@ export async function POST(request: Request) {
   try {
     const supabase = createServiceClient()
 
-    let body: { setorId?: string; organizacaoId?: string } = {}
+    let body: { setorId?: string; organizacaoId?: string; colaboradorId?: string } = {}
     try {
       body = await request.json()
     } catch {
       // empty body is fine
     }
 
-    const { setorId, organizacaoId } = body
+    const { setorId, colaboradorId } = body
+    let { organizacaoId } = body
+    let allowedSetorIds: string[] | null = null
+
+    if (colaboradorId) {
+      const { data: colaborador, error: colaboradorError } = await supabase
+        .from('colaboradores')
+        .select('id, organizacao_id')
+        .eq('id', colaboradorId)
+        .maybeSingle()
+
+      if (colaboradorError || !colaborador) {
+        return NextResponse.json({ error: 'Colaborador não encontrado' }, { status: 404 })
+      }
+
+      organizacaoId = organizacaoId || colaborador.organizacao_id || undefined
+
+      const { data: vinculos, error: vinculosError } = await supabase
+        .from('colaboradores_setores')
+        .select('setor_id')
+        .eq('colaborador_id', colaboradorId)
+
+      if (vinculosError) {
+        console.error('[auto-assign] Error fetching collaborator setores:', vinculosError)
+        return NextResponse.json({ error: vinculosError.message }, { status: 500 })
+      }
+
+      allowedSetorIds = [...new Set((vinculos || []).map((v: any) => v.setor_id).filter(Boolean))]
+      if (setorId && !allowedSetorIds.includes(setorId)) {
+        return NextResponse.json({ assigned: 0, message: 'Colaborador não pertence ao setor informado' })
+      }
+      if (!setorId && allowedSetorIds.length === 0) {
+        return NextResponse.json({ assigned: 0, message: 'Colaborador sem setores vinculados' })
+      }
+    }
+
+    if (!setorId && !organizacaoId && !colaboradorId) {
+      return NextResponse.json(
+        { error: 'Informe setorId, organizacaoId ou colaboradorId para processar a fila' },
+        { status: 400 },
+      )
+    }
 
     const HEARTBEAT_STALE_MS = 5 * 60 * 1000
     const now = Date.now()
@@ -37,6 +78,7 @@ export async function POST(request: Request) {
       .is('colaborador_id', null)
 
     if (setorId) ticketQuery = ticketQuery.eq('setor_id', setorId)
+    else if (allowedSetorIds?.length) ticketQuery = ticketQuery.in('setor_id', allowedSetorIds)
     if (organizacaoId) ticketQuery = ticketQuery.eq('organizacao_id', organizacaoId)
 
     const { data: pendingTickets, error: ticketsError } = await ticketQuery
@@ -62,6 +104,25 @@ export async function POST(request: Request) {
     let totalAssigned = 0
 
     for (const [sId, tickets] of Object.entries(bySetor)) {
+      const orgId = organizacaoId || tickets[0]?.organizacao_id || null
+      const configQuery = supabase
+        .from('ticket_distribution_config')
+        .select('auto_assign_enabled')
+        .eq('setor_id', sId)
+        .limit(1)
+      if (orgId) configQuery.eq('organizacao_id', orgId)
+
+      const { data: configRows, error: configError } = await configQuery
+      if (configError) {
+        console.error('[auto-assign] Error fetching distribution config:', configError)
+      }
+
+      const autoAssignEnabled = configRows?.[0]?.auto_assign_enabled ?? true
+      if (!autoAssignEnabled) {
+        console.log(`[auto-assign] Setor ${sId}: distribuição automática desativada`)
+        continue
+      }
+
       // ── 3. Get collaborators in this setor ───────────────────────────
       const { data: rawData } = await supabase
         .from('colaboradores_setores')

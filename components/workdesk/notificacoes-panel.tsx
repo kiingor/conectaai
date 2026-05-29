@@ -125,7 +125,7 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
 
             const notifComRemetente = {
               ...newNotif,
-              remetente: remetenteData,
+              remetente: remetenteData || undefined,
               lida: false,
             }
 
@@ -181,20 +181,20 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
                 <Bell className="h-4 w-4 text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white/90">
+                <p className="text-sm font-medium text-foreground/90">
                   {newNotificationData.titulo || 'Nova notificacao'}
                 </p>
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted-foreground/70">
                   De: {newNotificationData.remetente?.nome || 'Desconhecido'}
                 </p>
-                <p className="text-xs text-white/60 mt-1 line-clamp-2">
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                   {newNotificationData.mensagem}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 shrink-0 text-white/30 hover:text-white/60 hover:bg-white/5"
+                className="h-6 w-6 shrink-0 text-muted-foreground/60 hover:text-foreground/70 hover:bg-foreground/5"
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowNewNotification(false)
@@ -211,7 +211,7 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="icon" className={cn(
-            "relative h-8 w-8 rounded-lg hover:bg-white/5 transition-all",
+            "relative h-8 w-8 rounded-lg hover:bg-foreground/5 transition-all",
             unreadCount > 0 && "text-emerald-400"
           )}>
             <Bell className="h-4 w-4" />
@@ -226,8 +226,8 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0 glass-dropdown rounded-2xl border-0" align="end">
-          <div className="flex items-center justify-between border-b border-white/6 p-3">
-            <h3 className="font-semibold text-sm text-white/80">Notificacoes</h3>
+          <div className="flex items-center justify-between border-b border-foreground/6 p-3">
+            <h3 className="font-semibold text-sm text-foreground/80">Notificacoes</h3>
             {unreadCount > 0 && (
               <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                 {unreadCount} nao lida{unreadCount > 1 ? 's' : ''}
@@ -237,17 +237,17 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
 
           <ScrollArea className="h-[300px]">
             {notificacoes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-white/30">
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground/50">
                 <Bell className="h-8 w-8 mb-2 opacity-50" />
                 <p className="text-sm">Nenhuma notificacao</p>
               </div>
             ) : (
-              <div className="divide-y divide-white/6">
+              <div className="divide-y divide-foreground/6">
                 {notificacoes.map((notif) => (
                   <div
                     key={notif.id}
                     className={cn(
-                      'p-3 cursor-pointer hover:bg-white/3 transition-colors',
+                      'p-3 cursor-pointer hover:bg-foreground/[0.03] transition-colors',
                       !notif.lida && 'bg-emerald-500/5'
                     )}
                     onClick={() => markAsRead(notif.id)}
@@ -261,18 +261,18 @@ export function NotificacoesPanel({ colaboradorId, setorIds }: NotificacoesPanel
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-medium text-white/80 truncate">
+                          <p className="text-xs font-medium text-foreground/80 truncate">
                             {notif.titulo || 'Sem titulo'}
                           </p>
-                          <span className="text-[10px] text-white/30 shrink-0">
+                          <span className="text-[10px] text-muted-foreground/60 shrink-0">
                             {formatTime(notif.criado_em)}
                           </span>
                         </div>
-                        <p className="text-[10px] text-white/30">
+                        <p className="text-[10px] text-muted-foreground/60">
                           De: {notif.remetente?.nome || 'Desconhecido'}
                           {notif.setor && ` -- ${notif.setor.nome}`}
                         </p>
-                        <p className="text-xs text-white/50 mt-1 line-clamp-2">
+                        <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">
                           {notif.mensagem}
                         </p>
                       </div>

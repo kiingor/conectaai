@@ -487,7 +487,7 @@ export default function TicketsPage() {
         fetch('/api/tickets/auto-assign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ setorId: transferSetorId }),
         }).catch(() => {})
       }
 

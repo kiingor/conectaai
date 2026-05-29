@@ -4285,6 +4285,16 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
                       onCheckedChange={(checked) => setDistributionConfig((prev) => ({ ...prev, auto_assign_enabled: checked }))}
                     />
                   </div>
+                  {distributionConfig.auto_assign_enabled && atendentes.length === 0 && (
+                    <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                      Nenhum atendente esta vinculado a este setor. Os tickets ficam na fila ate adicionar um atendente em Atendentes.
+                    </div>
+                  )}
+                  {distributionConfig.auto_assign_enabled && atendentes.length > 0 && atendentesStats.online === 0 && (
+                    <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                      Nao ha atendentes online agora. A distribuicao acontece quando um atendente vinculado fica online e sem pausa.
+                    </div>
+                  )}
                 </div>
               </div>
             </CollapsibleContent>

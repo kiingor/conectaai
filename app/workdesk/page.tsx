@@ -1861,7 +1861,10 @@ const handleEncerrarTicket = async () => {
         fetch('/api/tickets/auto-assign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            setorId: result.setor_id || selectedSetorTransfer,
+            organizacaoId: colaborador?.organizacao_id,
+          }),
         }).catch(() => {})
       }
     } catch (err: any) {

@@ -20,22 +20,93 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [sessionReady, setSessionReady] = useState(false)
   const router = useRouter()
+  const recoveryStorageKey = 'workdesk-password-recovery-ready'
 
-  // Supabase sends the recovery token via hash fragment (#access_token=...).
-  // The browser client automatically exchanges it for a session when we call
-  // onAuthStateChange and receives the PASSWORD_RECOVERY event.
   useEffect(() => {
     const supabase = createClient()
+    let cancelled = false
+
+    const markReady = () => {
+      if (!cancelled) {
+        window.sessionStorage.setItem(recoveryStorageKey, 'true')
+        setSessionReady(true)
+        setStatus('idle')
+        setError(null)
+      }
+    }
+
+    const markInvalid = (message?: string) => {
+      if (!cancelled) {
+        window.sessionStorage.removeItem(recoveryStorageKey)
+        setSessionReady(false)
+        setStatus('invalid')
+        setError(message || null)
+      }
+    }
+
+    const paramsFromHash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const paramsFromQuery = new URLSearchParams(window.location.search)
+    const authError =
+      paramsFromHash.get('error_description') ||
+      paramsFromQuery.get('error_description') ||
+      paramsFromHash.get('error') ||
+      paramsFromQuery.get('error')
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        setSessionReady(true)
+        markReady()
       }
     })
-    // Also check if already in a valid session (e.g. page refresh after exchange)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setSessionReady(true)
-    })
-    return () => subscription.unsubscribe()
+
+    const prepareRecoverySession = async () => {
+      if (authError) {
+        markInvalid(authError)
+        return
+      }
+
+      const code = paramsFromQuery.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          markInvalid(error.message)
+          return
+        }
+        window.history.replaceState(null, '', window.location.pathname)
+        markReady()
+        return
+      }
+
+      const accessToken = paramsFromHash.get('access_token')
+      const refreshToken = paramsFromHash.get('refresh_token')
+      const type = paramsFromHash.get('type')
+      if (accessToken && refreshToken && (!type || type === 'recovery')) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+        if (error) {
+          markInvalid(error.message)
+          return
+        }
+        window.history.replaceState(null, '', window.location.pathname)
+        markReady()
+        return
+      }
+
+      const { data } = await supabase.auth.getSession()
+      if (data.session && window.sessionStorage.getItem(recoveryStorageKey) === 'true') {
+        markReady()
+      } else {
+        markInvalid()
+      }
+    }
+
+    prepareRecoverySession()
+
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
   const handleReset = async (e: React.FormEvent) => {
@@ -63,6 +134,7 @@ export default function ResetPasswordPage() {
     }
 
     setStatus('success')
+    window.sessionStorage.removeItem(recoveryStorageKey)
     // Redirect after short delay so the user can read the success message
     setTimeout(() => router.push('/workdesk/login'), 3000)
   }
@@ -76,7 +148,7 @@ export default function ResetPasswordPage() {
   })()
 
   return (
-    <div className="flex min-h-svh items-center justify-center ambient-glow p-4" style={{ backgroundColor: '#06080f' }}>
+    <div className="flex min-h-svh items-center justify-center ambient-glow bg-page-bg p-4">
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -111,7 +183,7 @@ export default function ResetPasswordPage() {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-sm text-white/40 mt-1"
+            className="text-sm text-muted-foreground/80 mt-1"
           >
             Area do Atendente
           </motion.span>
@@ -135,14 +207,14 @@ export default function ResetPasswordPage() {
                 />
               </div>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">Senha redefinida!</h2>
-            <p className="mt-3 text-sm text-white/50">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Senha redefinida!</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
               Sua senha foi atualizada com sucesso.
               <br />
               Redirecionando para o login...
             </p>
             <div className="mt-6 flex justify-center">
-              <div className="h-1 w-48 overflow-hidden rounded-full bg-white/5">
+              <div className="h-1 w-48 overflow-hidden rounded-full bg-foreground/5">
                 <motion.div
                   className="h-full brand-gradient"
                   initial={{ width: 0 }}
@@ -164,9 +236,9 @@ export default function ResetPasswordPage() {
                 <AlertTriangle className="h-10 w-10 text-red-400" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">Link invalido</h2>
-            <p className="mt-3 text-sm text-white/50">
-              Este link de recuperacao e invalido ou expirou.
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Link invalido</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {error || 'Este link de recuperacao e invalido ou expirou.'}
               <br />
               Solicite um novo link de redefinicao.
             </p>
@@ -188,17 +260,17 @@ export default function ResetPasswordPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
                 <ShieldCheck className="h-6 w-6 text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-white">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
                 Redefinir senha
               </h2>
-              <p className="mt-1 text-sm text-white/40">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Escolha uma nova senha para sua conta.
               </p>
             </div>
 
             <form onSubmit={handleReset} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-sm font-medium text-white/70">
+                <Label htmlFor="new-password" className="text-sm font-medium text-foreground/70">
                   Nova senha
                 </Label>
                 <div className="relative">
@@ -209,12 +281,12 @@ export default function ResetPasswordPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 glass-input rounded-xl text-white placeholder:text-white/30 pr-12 focus-visible:ring-0"
+                    className="h-12 glass-input rounded-xl text-foreground placeholder:text-muted-foreground/50 pr-12 focus-visible:ring-0"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground/70 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -227,7 +299,7 @@ export default function ResetPasswordPage() {
                     animate={{ opacity: 1 }}
                     className="space-y-1"
                   >
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/5">
                       <motion.div
                         className={`h-full rounded-full ${passwordStrength.color}`}
                         initial={{ width: 0 }}
@@ -246,7 +318,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-sm font-medium text-white/70">
+                <Label htmlFor="confirm-password" className="text-sm font-medium text-foreground/70">
                   Confirmar nova senha
                 </Label>
                 <div className="relative">
@@ -257,12 +329,12 @@ export default function ResetPasswordPage() {
                     required
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    className="h-12 glass-input rounded-xl text-white placeholder:text-white/30 pr-12 focus-visible:ring-0"
+                    className="h-12 glass-input rounded-xl text-foreground placeholder:text-muted-foreground/50 pr-12 focus-visible:ring-0"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground/70 transition-colors"
                   >
                     {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -313,9 +385,9 @@ export default function ResetPasswordPage() {
           transition={{ delay: 0.5 }}
           className="mt-8 flex items-center justify-center gap-2"
         >
-          <div className="h-px flex-1 bg-white/5" />
+          <div className="h-px flex-1 bg-foreground/5" />
           <span className="text-xs font-medium brand-gradient-text">ConectaAI</span>
-          <div className="h-px flex-1 bg-white/5" />
+          <div className="h-px flex-1 bg-foreground/5" />
         </motion.div>
       </motion.div>
     </div>
