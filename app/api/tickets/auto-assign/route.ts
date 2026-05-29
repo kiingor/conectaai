@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     let ticketQuery = supabase
       .from('tickets')
       .select('id, setor_id, organizacao_id')
-      .eq('status', 'aberto')
+      .in('status', ['aberto', 'em_atendimento'])
       .is('colaborador_id', null)
 
     if (setorId) ticketQuery = ticketQuery.eq('setor_id', setorId)
@@ -183,12 +183,20 @@ export async function POST(request: Request) {
         const best = sorted[0]
         if (!best) continue
 
-        const { error: updateError } = await supabase
+        const { data: updatedTicket, error: updateError } = await supabase
           .from('tickets')
-          .update({ colaborador_id: best.id, status: 'em_atendimento' })
+          .update({
+            colaborador_id: best.id,
+            status: 'em_atendimento',
+            atribuido_em: new Date().toISOString(),
+          })
           .eq('id', ticket.id)
+          .is('colaborador_id', null)
+          .in('status', ['aberto', 'em_atendimento'])
+          .select('id')
+          .maybeSingle()
 
-        if (!updateError) {
+        if (!updateError && updatedTicket) {
           countMap[best.id] = (countMap[best.id] || 0) + 1
           totalAssigned++
           console.log(`[auto-assign] Ticket ${ticket.id} → ${best.nome} (${best.count} ativos)`)
