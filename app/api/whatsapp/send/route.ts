@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
 const body = await request.json()
-    const { ticketId, message, recipientPhone, phoneNumberId, imageUrl, fileUrl, fileType, messageId } = body
+    const { ticketId, message, recipientPhone, phoneNumberId, imageUrl, fileUrl, fileType, fileName, messageId } = body
 
     // Support both imageUrl (legacy) and fileUrl (new)
     const mediaUrl = fileUrl || imageUrl
@@ -95,10 +95,11 @@ const body = await request.json()
 
     if (mediaUrl) {
       const isImage = mediaType?.startsWith('image/')
-      const isPdf = mediaType === 'application/pdf'
+      const isVideo = mediaType?.startsWith('video/')
+      const isAudio = mediaType?.startsWith('audio/')
 
       if (isImage) {
-        // Send image message
+        // Imagem
         messagePayload = {
           messaging_product: 'whatsapp',
           recipient_type: 'individual',
@@ -109,21 +110,33 @@ const body = await request.json()
             caption: message || undefined,
           },
         }
-      } else if (isPdf) {
-        // Send document message (PDF)
+      } else if (isVideo) {
+        // Vídeo nativo
         messagePayload = {
           messaging_product: 'whatsapp',
           recipient_type: 'individual',
           to: formattedPhone,
-          type: 'document',
-          document: {
+          type: 'video',
+          video: {
             link: mediaUrl,
             caption: message || undefined,
-            filename: message || 'documento.pdf',
+          },
+        }
+      } else if (isAudio) {
+        // Áudio nativo (WhatsApp Cloud não aceita caption em audio)
+        messagePayload = {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: formattedPhone,
+          type: 'audio',
+          audio: {
+            link: mediaUrl,
           },
         }
       } else {
-        // Unknown media type - try as document
+        // Documento (PDF, Excel, Word, PPT, CSV, TXT, etc.)
+        // O `filename` COM extensão é obrigatório p/ o WhatsApp identificar
+        // o tipo e exibir o nome correto. Sem ele, a Meta pode rejeitar.
         messagePayload = {
           messaging_product: 'whatsapp',
           recipient_type: 'individual',
@@ -132,6 +145,7 @@ const body = await request.json()
           document: {
             link: mediaUrl,
             caption: message || undefined,
+            filename: fileName || 'arquivo',
           },
         }
       }
@@ -211,7 +225,10 @@ const body = await request.json()
     } else {
       // Save new message to database (fallback for old behavior)
       console.log('[WhatsApp Send] Creating new message in database')
-      const messageType = mediaType?.startsWith('image/') ? 'imagem' : mediaType === 'application/pdf' ? 'documento' : 'texto'
+      const messageType = mediaType?.startsWith('image/') ? 'imagem'
+        : mediaType?.startsWith('video/') ? 'video'
+        : mediaType?.startsWith('audio/') ? 'audio'
+        : mediaUrl ? 'documento' : 'texto'
       const { data, error: dbError } = await supabase
         .from('mensagens')
         .insert({

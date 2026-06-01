@@ -104,7 +104,6 @@ interface TicketData {
   prioridade: 'baixa' | 'media' | 'alta'
   canal: string
   assunto: string | null
-  created_at: string
   updated_at: string
   criado_em: string
   primeira_resposta_em: string | null
@@ -117,10 +116,10 @@ interface TicketData {
 interface TicketLog {
   id: string
   ticket_id: string
-  colaborador_id: string | null
+  autor_id: string | null
   tipo: string
   descricao: string
-  created_at: string
+  criado_em: string
   colaborador?: Colaborador | null
 }
 
@@ -130,7 +129,7 @@ interface Mensagem {
   remetente: 'cliente' | 'colaborador'
   conteudo: string
   tipo: string
-  created_at: string
+  enviado_em: string
   url_imagem?: string | null
   media_type?: string | null
 }
@@ -267,7 +266,7 @@ export default function TicketsPage() {
         setor:setores(id, nome)
       `)
       .eq('organizacao_id', orgId)
-      .order('created_at', { ascending: false })
+      .order('criado_em', { ascending: false })
 
     // Filter by accessible setores (unless master)
     if (!colaborador?.is_master && setorIdsAcessiveis.length > 0) {
@@ -395,7 +394,7 @@ export default function TicketsPage() {
         colaborador:colaboradores(id, nome)
       `)
       .eq('ticket_id', ticket.id)
-      .order('created_at', { ascending: false })
+      .order('criado_em', { ascending: false })
 
     if (logsData) setTicketLogs(logsData)
 
@@ -404,7 +403,7 @@ export default function TicketsPage() {
       .from('mensagens')
       .select('*')
       .eq('ticket_id', ticket.id)
-      .order('created_at', { ascending: true })
+      .order('enviado_em', { ascending: true })
 
     if (messagesData) setTicketMessages(messagesData)
 
@@ -530,7 +529,7 @@ export default function TicketsPage() {
           colaborador:colaboradores(id, nome)
         `)
         .eq('ticket_id', selectedTicket.id)
-        .order('created_at', { ascending: false })
+        .order('criado_em', { ascending: false })
 
       if (logsData) setTicketLogs(logsData)
 
@@ -815,7 +814,7 @@ export default function TicketsPage() {
 
                     {/* Date */}
                     <span className="hidden sm:block text-xs text-muted-foreground/70 shrink-0">
-                      {format(new Date(ticket.criado_em || ticket.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
+                      {format(new Date(ticket.criado_em), "dd/MM/yy HH:mm", { locale: ptBR })}
                     </span>
 
                     {/* Actions */}
@@ -1097,7 +1096,7 @@ export default function TicketsPage() {
                                 <div className="flex-1">
                                   <p className="text-sm">{log.descricao}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", {
+                                    {format(new Date(log.criado_em), "dd/MM/yyyy HH:mm", {
                                       locale: ptBR,
                                     })}
                                     {log.colaborador && ` - ${log.colaborador.nome}`}
@@ -1154,7 +1153,7 @@ export default function TicketsPage() {
                               return <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
                             })()}
                             <p className="mt-1 text-xs text-muted-foreground">
-                              {format(new Date(msg.created_at), 'dd/MM HH:mm', { locale: ptBR })}
+                              {format(new Date(msg.enviado_em), 'dd/MM HH:mm', { locale: ptBR })}
                             </p>
                           </div>
                         ))}

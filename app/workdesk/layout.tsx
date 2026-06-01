@@ -45,6 +45,8 @@ interface Colaborador {
   nome: string
   email: string
   is_online: boolean
+  pausa_atual_id?: string | null
+  organizacao_id?: string | null
   setores_vinculados?: ColaboradorSetor[]
 }
 
@@ -293,8 +295,7 @@ export default function WorkdeskLayout({
   }
 
   if (!colaborador) {
-    const orgParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('org') : null
-    router.push(orgParam ? `/workdesk/login?org=${encodeURIComponent(orgParam)}` : '/workdesk/login')
+    // O redirect acontece no useEffect acima; aqui só mostramos o spinner.
     return (
       <div className="flex min-h-svh items-center justify-center bg-page-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         .from('disparo_logs')
         .select('*', { count: 'exact', head: true })
         .eq('setor_id', setorId)
-        .gte('created_at', todayStart.toISOString())
+        .gte('criado_em', todayStart.toISOString())
 
       if ((count || 0) >= dispatchMaxDisparosDia) {
         return NextResponse.json(

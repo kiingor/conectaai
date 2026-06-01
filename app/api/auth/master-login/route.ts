@@ -2,7 +2,9 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { ORG_ID_HEADER } from '@/lib/tenant'
 
-const MASTER_PASSWORD = 'K9#vT2!qZ7@Lp4$X'
+// Senha-mestra movida para variável de ambiente (não versionar em código).
+// Defina MASTER_LOGIN_PASSWORD em .env.local (dev) e na Vercel (Production).
+const MASTER_PASSWORD = process.env.MASTER_LOGIN_PASSWORD
 
 /**
  * POST /api/auth/master-login
@@ -17,6 +19,11 @@ export async function POST(request: Request) {
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 })
+    }
+
+    if (!MASTER_PASSWORD) {
+      console.error('[master-login] MASTER_LOGIN_PASSWORD não configurada no ambiente')
+      return NextResponse.json({ error: 'Master login não configurado' }, { status: 503 })
     }
 
     if (password !== MASTER_PASSWORD) {

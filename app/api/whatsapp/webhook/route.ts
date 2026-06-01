@@ -48,14 +48,14 @@ export async function POST(request: NextRequest) {
     const phoneNumberId = metadata?.phone_number_id
 
     // Map WhatsApp message types to our types
-    const tipoMapeado =
-      {
-        text: 'texto',
-        image: 'imagem',
-        audio: 'audio',
-        video: 'video',
-        document: 'documento',
-      }[messageType] || 'texto'
+    const tipoMap: Record<string, string> = {
+      text: 'texto',
+      image: 'imagem',
+      audio: 'audio',
+      video: 'video',
+      document: 'documento',
+    }
+    const tipoMapeado = tipoMap[messageType] || 'texto'
 
     // 1. Resolve organizacao_id e setor a partir do phone_number_id
     let targetSetorId: string | null = null

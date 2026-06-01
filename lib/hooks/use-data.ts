@@ -94,7 +94,7 @@ export function useSetorTickets(setorId: string) {
           colaboradores:colaborador_id(nome)
         `)
         .eq('setor_id', setorId)
-        .order('created_at', { ascending: false })
+        .order('criado_em', { ascending: false })
       return data || []
     },
     {

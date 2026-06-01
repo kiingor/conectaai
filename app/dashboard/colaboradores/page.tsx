@@ -149,7 +149,7 @@ export default function ColaboradoresPage() {
 
     // Fetch colaborador_setores (join table)
     const { data: colabSetoresData } = await supabase
-      .from('colaborador_setores')
+      .from('colaboradores_setores')
       .select('colaborador_id, setor_id')
 
     if (colabSetoresData) {
@@ -259,7 +259,7 @@ export default function ColaboradoresPage() {
 
       // Update colaborador_setores join table
       await supabase
-        .from('colaborador_setores')
+        .from('colaboradores_setores')
         .delete()
         .eq('colaborador_id', editingColaborador.id)
 
@@ -268,7 +268,7 @@ export default function ColaboradoresPage() {
           colaborador_id: editingColaborador.id,
           setor_id: setorId,
         }))
-        await supabase.from('colaborador_setores').insert(relations)
+        await supabase.from('colaboradores_setores').insert(relations)
       }
 
       toast({
@@ -333,7 +333,7 @@ export default function ColaboradoresPage() {
           colaborador_id: authData.user!.id,
           setor_id: setorId,
         }))
-        await supabase.from('colaborador_setores').insert(relations)
+        await supabase.from('colaboradores_setores').insert(relations)
       }
 
       toast({

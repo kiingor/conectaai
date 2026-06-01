@@ -28,6 +28,14 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+# qualquer arquivo de env compactado (pode conter segredos)
+.env.rar
+.env.zip
+.env.*.rar
+.env.bak
+
+# codex / ferramentas locais (contém logs e env-restore com segredos)
+.codex/
 
 # vercel
 .vercel

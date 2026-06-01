@@ -10,6 +10,8 @@ import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { parseMessageContent } from '@/lib/whatsapp-message-parser'
 import { SpecialMessageContent } from '@/components/chat/special-message-content'
+import { AudioRecorder } from '@/components/workdesk/audio-recorder'
+import { VoiceNotePreview } from '@/components/workdesk/voice-note-preview'
 import {
   MessageCircle,
   Clock,
@@ -365,13 +367,25 @@ function MessageMedia({ url, mediaType, tipo, conteudo, isOutgoing }: MessageMed
   const urlLower = url.toLowerCase().split('?')[0]
   const ext = urlLower.split('.').pop() || ''
 
-  // Determina o tipo real pela ordem: media_type MIME > tipo do banco > extensão da URL
-  const isImage = mediaType?.startsWith('image/') || (tipo === 'imagem' && !mediaType)
-    || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
-  const isVideo = mediaType?.startsWith('video/') || tipo === 'video'
-    || ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)
-  const isAudio = mediaType?.startsWith('audio/') || tipo === 'audio'
-    || ['mp3', 'ogg', 'wav', 'aac', 'm4a', 'opus'].includes(ext)
+  // Classificação mutuamente exclusiva, por prioridade: MIME (media_type) >
+  // tipo do banco > extensão. Importante p/ containers ambíguos como .webm/.ogg
+  // (servem áudio E vídeo) — sem isso, um áudio .webm cai no ramo de vídeo.
+  const mt = (mediaType || '').toLowerCase()
+  let kind: 'image' | 'video' | 'audio' | 'file'
+  if (mt.startsWith('image/')) kind = 'image'
+  else if (mt.startsWith('video/')) kind = 'video'
+  else if (mt.startsWith('audio/')) kind = 'audio'
+  else if (tipo === 'imagem') kind = 'image'
+  else if (tipo === 'video') kind = 'video'
+  else if (tipo === 'audio') kind = 'audio'
+  else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) kind = 'image'
+  else if (['mp3', 'ogg', 'oga', 'wav', 'aac', 'm4a', 'opus'].includes(ext)) kind = 'audio'
+  else if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)) kind = 'video'
+  else kind = 'file'
+
+  const isImage = kind === 'image'
+  const isVideo = kind === 'video'
+  const isAudio = kind === 'audio'
 
   const fileName = conteudo || url.split('/').pop()?.split('?')[0] || 'arquivo'
 
@@ -581,6 +595,8 @@ export default function WorkdeskPage() {
   // File upload (images and PDFs)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
+  const [isVoiceNote, setIsVoiceNote] = useState(false)
+  const [recorderActive, setRecorderActive] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -2268,10 +2284,27 @@ const insertEmoji = (emoji: string) => {
   // Clear selected file
   const clearSelectedFile = () => {
     setSelectedFile(null)
-    setFilePreview(null)
+    setFilePreview((prev) => {
+      // Revoga o objectURL do player de áudio gravado para não vazar memória
+      if (prev && prev.startsWith('audio:')) URL.revokeObjectURL(prev.slice('audio:'.length))
+      return null
+    })
+    setIsVoiceNote(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+  }
+
+  // Áudio gravado no próprio workdesk → vira anexo (nota de voz PTT via Evolution).
+  // Mostra um player na área de preview (acima do compositor) para revisar antes de enviar.
+  const handleRecordedAudio = (file: File) => {
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error('Áudio muito longo. Máximo 16MB.')
+      return
+    }
+    setIsVoiceNote(true)
+    setSelectedFile(file)
+    setFilePreview(`audio:${URL.createObjectURL(file)}`)
   }
 
 
@@ -2317,6 +2350,7 @@ const tempId = `temp-${Date.now()}`
     let messageContent = messageInput.trim()
     const fileToUpload = selectedFile
     const hasFile = !!fileToUpload
+    const wasVoiceNote = isVoiceNote
   const isImage = fileToUpload?.type.startsWith('image/')
   const isVideo = fileToUpload?.type.startsWith('video/')
   const isAudio = fileToUpload?.type.startsWith('audio/')
@@ -2511,6 +2545,7 @@ const tempId = `temp-${Date.now()}`
             fileUrl: fileUrl,
             fileType: fileToUpload?.type || null,
             fileName: fileToUpload?.name || null,
+            ptt: wasVoiceNote,
           }
         } else {
           sendBody = {
@@ -2520,6 +2555,7 @@ const tempId = `temp-${Date.now()}`
             phoneNumberId: phoneNumberId,
             fileUrl: fileUrl,
             fileType: fileToUpload?.type || null,
+            fileName: fileToUpload?.name || null,
             messageId: savedMsg.id,
           }
         }
@@ -3185,8 +3221,20 @@ const tempId = `temp-${Date.now()}`
   className="hidden"
   />
 
-{/* File Preview */}
-                    {filePreview && (
+{/* Voice note preview (estilo WhatsApp) — layout próprio, full width */}
+                    {filePreview && filePreview.startsWith('audio:') && (
+                      <div className="mb-2">
+                        <VoiceNotePreview
+                          src={filePreview.replace('audio:', '')}
+                          onDiscard={clearSelectedFile}
+                          onSend={handleSendMessage}
+                          sending={uploadingFile}
+                        />
+                      </div>
+                    )}
+
+{/* File Preview (imagem, vídeo, documentos) */}
+                    {filePreview && !filePreview.startsWith('audio:') && (
                       <div className="mb-2 p-2 bg-foreground/[0.02] rounded-lg border border-foreground/6">
                         <div className="relative inline-block">
   {filePreview.startsWith('file:') ? (
@@ -3220,6 +3268,7 @@ const tempId = `temp-${Date.now()}`
                     )}
 
                   <div className="flex items-center gap-2">
+                      {!recorderActive && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -3228,6 +3277,8 @@ const tempId = `temp-${Date.now()}`
                       >
                         <Smile className="h-5 w-5 text-muted-foreground/80" />
                       </Button>
+                      )}
+                      {!recorderActive && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -3237,6 +3288,13 @@ const tempId = `temp-${Date.now()}`
                       >
                         <ImageIcon className="h-5 w-5 text-muted-foreground/80" />
                       </Button>
+                      )}
+                      <AudioRecorder
+                        onConfirm={handleRecordedAudio}
+                        onActiveChange={setRecorderActive}
+                        disabled={isWindowExpired || (selectedTicket?.is_disparo === true && isDisparoLocked(selectedTicket))}
+                      />
+                      {!recorderActive && (
                       <div className="relative flex-1">
                   <Input
                   value={messageInput}
@@ -3256,6 +3314,8 @@ const tempId = `temp-${Date.now()}`
                   data-ms-editor="false"
                   />
                       </div>
+                      )}
+                      {!recorderActive && (
                       <Button
                         size="icon"
                         onClick={handleSendMessage}
@@ -3268,6 +3328,7 @@ const tempId = `temp-${Date.now()}`
                           <Send className="h-4 w-4" />
                         )}
                       </Button>
+                      )}
                   </div>
                 </div>
             </>

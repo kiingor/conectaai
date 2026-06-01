@@ -1,5 +1,9 @@
-import { put } from '@vercel/blob'
 import { type NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/service'
+
+// Bucket público no Supabase Storage (self-hosted). Precisa existir previamente —
+// veja sql/2026-05-29_storage_bucket.sql para criá-lo.
+const BUCKET = 'uploads'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,18 +24,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Arquivo deve ter no maximo ${maxMB}MB` }, { status: 400 })
     }
 
-    // Generate unique filename
+    // Generate unique path
     const timestamp = Date.now()
-    const extension = file.name.split('.').pop() || 'bin'
-    const filename = `workdesk/${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'bin'
+    const path = `workdesk/${timestamp}-${Math.random().toString(36).substring(2, 9)}.${extension}`
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: 'public',
-    })
+    // Upload to Supabase Storage (self-hosted)
+    const supabase = createServiceClient()
+    const arrayBuffer = await file.arrayBuffer()
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, arrayBuffer, {
+        contentType: file.type || 'application/octet-stream',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('[Upload] Supabase Storage error:', uploadError)
+      return NextResponse.json(
+        { error: 'Upload failed', details: uploadError.message },
+        { status: 500 },
+      )
+    }
+
+    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path)
 
     return NextResponse.json({
-      url: blob.url,
+      url: pub.publicUrl,
       filename: file.name,
       size: file.size,
       type: file.type,

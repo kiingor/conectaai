@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { ticketId, message, messageId, instanceName, fileUrl, fileType, fileName } = body
+    const { ticketId, message, messageId, instanceName, fileUrl, fileType, fileName, ptt } = body
     if (!ticketId || (!message && !fileUrl)) {
       return NextResponse.json(
         { error: 'Missing required fields: ticketId, message or fileUrl' },
@@ -132,7 +132,16 @@ export async function POST(request: NextRequest) {
     let evolutionUrl: string
     let evolutionBody: Record<string, any>
 
-    if (isMedia) {
+    if (isMedia && ptt === true) {
+      // Nota de voz (PTT): endpoint dedicado — a Evolution converte para o
+      // formato de voz do WhatsApp (ogg/opus) e envia como bilhete de voz.
+      evolutionUrl = `${baseUrl}/message/sendWhatsAppAudio/${resolvedInstance}`
+      evolutionBody = {
+        number: formattedPhone,
+        audio: fileUrl,
+        delay: 1000,
+      }
+    } else if (isMedia) {
       // Resolve mediatype from fileType/fileName
       let mediatype = 'document'
       let mimetype = fileType || 'application/octet-stream'

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .from('disparo_logs')
       .select('*', { count: 'exact', head: true })
       .eq('setor_id', setorId)
-      .gte('created_at', todayStart.toISOString())
+      .gte('criado_em', todayStart.toISOString())
     if (orgId) countQ = countQ.eq('organizacao_id', orgId)
     const { count } = await countQ
 

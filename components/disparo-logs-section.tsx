@@ -24,7 +24,7 @@ import {
 
 interface DisparoLog {
   id: string
-  created_at: string
+  criado_em: string
   cliente_nome: string
   cliente_telefone: string
   template_usado: string
@@ -63,7 +63,7 @@ export function DisparoLogsSection({ setorId }: { setorId: string }) {
       .from('disparo_logs')
       .select('*', { count: 'exact', head: true })
       .eq('setor_id', setorId)
-      .gte('created_at', todayStart.toISOString())
+      .gte('criado_em', todayStart.toISOString())
 
     setTodayCount(todayTotal || 0)
 
@@ -85,7 +85,7 @@ export function DisparoLogsSection({ setorId }: { setorId: string }) {
       .from('disparo_logs')
       .select('*, colaboradores(nome)')
       .eq('setor_id', setorId)
-      .order('created_at', { ascending: false })
+      .order('criado_em', { ascending: false })
       .range(page * pageSize, (page + 1) * pageSize - 1)
 
     if (search) {
@@ -234,7 +234,7 @@ export function DisparoLogsSection({ setorId }: { setorId: string }) {
                   {logs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-sm whitespace-nowrap">
-                        {formatDate(log.created_at)}
+                        {formatDate(log.criado_em)}
                       </TableCell>
                       <TableCell className="font-medium">
                         {log.cliente_nome}

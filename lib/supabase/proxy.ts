@@ -99,7 +99,14 @@ export async function updateSession(request: NextRequest) {
     const { data: colaborador } = await colaboradorQuery.maybeSingle()
 
     // If no colaborador record exists, redirect to workdesk (default for new users)
-    const canViewDashboard = colaborador?.permissoes?.can_view_dashboard ?? false
+    // O join do Supabase pode vir como objeto (1:1) ou array — normaliza ambos.
+    const permissoesRel = colaborador?.permissoes as
+      | { can_view_dashboard?: boolean }
+      | { can_view_dashboard?: boolean }[]
+      | null
+      | undefined
+    const permissao = Array.isArray(permissoesRel) ? permissoesRel[0] : permissoesRel
+    const canViewDashboard = permissao?.can_view_dashboard ?? false
 
     // Redirect from login pages based on permissions
     if (isLoginPage) {

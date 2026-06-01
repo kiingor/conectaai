@@ -62,7 +62,14 @@ export default function LoginPage() {
         throw new Error('Sua conta esta desativada. Entre em contato com o administrador.')
       }
 
-      const canViewDashboard = colaborador?.permissoes?.can_view_dashboard ?? false
+      // O join do Supabase pode vir como objeto (1:1) ou array — normaliza ambos.
+      const permissoesRel = colaborador?.permissoes as
+        | { can_view_dashboard?: boolean }
+        | { can_view_dashboard?: boolean }[]
+        | null
+        | undefined
+      const permissao = Array.isArray(permissoesRel) ? permissoesRel[0] : permissoesRel
+      const canViewDashboard = permissao?.can_view_dashboard ?? false
 
       if (!canViewDashboard) {
         throw new Error('Voce nao tem permissao para acessar o Dashboard. Use o WorkDesk.')
