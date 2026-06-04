@@ -230,10 +230,9 @@ const [setorRes, ticketsAtivosRes, ticketsHojeRes, ticketsRelatorioRes, colabora
   const ticketsNaFila = ticketsAtivos.filter((t: any) => t.status === 'aberto')
   const ticketsEmAtendimento = ticketsAtivos.filter((t: any) => t.status === 'em_atendimento')
   const ticketsFinalizadosHoje = ticketsHoje.filter((t: any) => t.status === 'encerrado')
-  const HEARTBEAT_STALE_MS = 2 * 60 * 1000
+  // Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
   const atendentesOnline = atendentes.filter((c: any) =>
-    c.is_online && c.ativo && !c.pausa_atual_id &&
-    c.last_heartbeat && (Date.now() - new Date(c.last_heartbeat).getTime()) < HEARTBEAT_STALE_MS
+    c.is_online && c.ativo && !c.pausa_atual_id
   )
     const atendentesEmPausa = atendentes.filter((c: any) => c.pausa_atual_id && c.ativo)
 
@@ -2395,11 +2394,9 @@ const saveConfig = async (opts?: { silent?: boolean }) => {
     }
   }
 
-  const HEARTBEAT_STALE_MS_TRANSFER = 2 * 60 * 1000
+  // Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
   const isTransferAtendenteOnline = (a: any) => {
-    if (!a?.is_online || !a?.ativo) return false
-    if (!a.last_heartbeat) return false
-    return (Date.now() - new Date(a.last_heartbeat).getTime()) < HEARTBEAT_STALE_MS_TRANSFER
+    return !!(a?.is_online && a?.ativo)
   }
 
   const transferTicket = async () => {

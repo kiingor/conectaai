@@ -67,9 +67,6 @@ export async function POST(request: Request) {
       )
     }
 
-    const HEARTBEAT_STALE_MS = 5 * 60 * 1000
-    const now = Date.now()
-
     // ── 1. Find unassigned open tickets ──────────────────────────────
     let ticketQuery = supabase
       .from('tickets')
@@ -126,33 +123,16 @@ export async function POST(request: Request) {
       // ── 3. Get collaborators in this setor ───────────────────────────
       const { data: rawData } = await supabase
         .from('colaboradores_setores')
-        .select('colaborador_id, colaboradores(id, nome, is_online, ativo, pausa_atual_id, last_heartbeat)')
+        .select('colaborador_id, colaboradores(id, nome, is_online, ativo, pausa_atual_id)')
         .eq('setor_id', sId)
 
       const allColabs = (rawData || []).map((cs: any) => cs.colaboradores).filter(Boolean)
 
-      // Mark stale collaborators as offline
-      const stale = allColabs.filter(
-        (c: any) =>
-          c.ativo &&
-          c.is_online &&
-          (!c.last_heartbeat || now - new Date(c.last_heartbeat).getTime() > HEARTBEAT_STALE_MS),
-      )
-      if (stale.length > 0) {
-        await supabase
-          .from('colaboradores')
-          .update({ is_online: false })
-          .in('id', stale.map((c: any) => c.id))
-        console.log(`[auto-assign] Marcou ${stale.length} colaborador(es) offline (heartbeat stale)`)
-      }
-
+      // Disponibilidade controlada APENAS pelo botão online/offline do workdesk.
+      // (O heartbeat deixou de bloquear: um atendente "online" recebe tickets
+      // mesmo sem aba aberta — quem decide é o status manual.)
       const available = allColabs.filter(
-        (c: any) =>
-          c.ativo &&
-          c.is_online &&
-          !c.pausa_atual_id &&
-          c.last_heartbeat &&
-          now - new Date(c.last_heartbeat).getTime() < HEARTBEAT_STALE_MS,
+        (c: any) => c.ativo && c.is_online && !c.pausa_atual_id,
       )
 
       console.log(`[auto-assign] Setor ${sId}: ${available.length} atendente(s) disponível(is)`)

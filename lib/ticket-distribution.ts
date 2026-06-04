@@ -61,34 +61,19 @@ export async function criarEDistribuirTicket(
 
     // 3. If auto-assign is enabled, find an available collaborator
     if (autoAssignEnabled) {
-      const HEARTBEAT_STALE_MS = 5 * 60 * 1000
-      const now = Date.now()
-
       const colabQuery = supabase
         .from('colaboradores_setores')
-        .select('colaborador_id, colaboradores(id, nome, is_online, ativo, pausa_atual_id, last_heartbeat)')
+        .select('colaborador_id, colaboradores(id, nome, is_online, ativo, pausa_atual_id)')
         .eq('setor_id', setorId)
       const { data: rawData } = await colabQuery
 
       const rawColabs = (rawData || []).map((cs: any) => cs.colaboradores).filter(Boolean)
 
-      // Only consider collaborators with fresh heartbeat
+      // Disponibilidade controlada APENAS pelo botão online/offline do workdesk.
+      // O heartbeat não bloqueia mais a distribuição.
       const available = rawColabs.filter((c: any) =>
-        c && c.ativo && c.is_online && !c.pausa_atual_id &&
-        c.last_heartbeat && (now - new Date(c.last_heartbeat).getTime()) < HEARTBEAT_STALE_MS
+        c && c.ativo && c.is_online && !c.pausa_atual_id
       )
-
-      // Cleanup: mark offline collaborators with stale heartbeat (> 5 min)
-      const stale = rawColabs.filter((c: any) =>
-        c && c.ativo && c.is_online &&
-        (!c.last_heartbeat || (now - new Date(c.last_heartbeat).getTime()) > HEARTBEAT_STALE_MS)
-      )
-      if (stale.length > 0) {
-        await supabase
-          .from('colaboradores')
-          .update({ is_online: false })
-          .in('id', stale.map((c: any) => c.id))
-      }
 
       console.log(`[Distribuição] ${available.length} atendentes disponíveis para setorId=${setorId}`)
 

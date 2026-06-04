@@ -82,11 +82,9 @@ interface Colaborador {
   last_heartbeat?: string
 }
 
-const HEARTBEAT_STALE_THRESHOLD = 3 * 60 * 1000
+// Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
 function isColabOnline(c: Colaborador | null | undefined): boolean {
-  if (!c?.is_online) return false
-  if (!c.last_heartbeat) return false
-  return (Date.now() - new Date(c.last_heartbeat).getTime()) < HEARTBEAT_STALE_THRESHOLD
+  return !!c?.is_online
 }
 
 interface Subsetor {

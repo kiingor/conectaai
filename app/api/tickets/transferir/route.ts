@@ -48,10 +48,10 @@ export async function POST(request: Request) {
     }
 
     if (colaborador_id) {
-      // Verificar se o atendente está online com heartbeat fresco
+      // Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
       const { data: colab } = await supabase
         .from('colaboradores')
-        .select('id, nome, is_online, pausa_atual_id, last_heartbeat')
+        .select('id, nome, is_online, pausa_atual_id')
         .eq('id', colaborador_id)
         .single()
 
@@ -65,17 +65,6 @@ export async function POST(request: Request) {
       if (colab.pausa_atual_id) {
         return NextResponse.json(
           { error: 'Este atendente está em pausa. Selecione outro atendente.' },
-          { status: 422 }
-        )
-      }
-
-      const HEARTBEAT_STALE_MS = 5 * 60 * 1000
-      const heartbeatAge = colab.last_heartbeat
-        ? Date.now() - new Date(colab.last_heartbeat).getTime()
-        : Infinity
-      if (heartbeatAge > HEARTBEAT_STALE_MS) {
-        return NextResponse.json(
-          { error: 'Este atendente parece estar desconectado (heartbeat expirado). Selecione outro atendente.' },
           { status: 422 }
         )
       }
