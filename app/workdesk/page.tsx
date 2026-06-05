@@ -1127,10 +1127,9 @@ if (setorCanalConfig === 'evolution_api') {
 
     const colaboradorId = colaborador.id
 
-    // Auto-assign: only trigger when the agent is actually online (reads live ref)
+    // Auto-assign runs even if the local online state is stale.
+    // The API reads the database and only assigns to atendentes marked online there.
     const triggerAutoAssign = async () => {
-      const colab = colaboradorCurrentRef.current
-      if (!colab?.is_online) return
       try {
         await fetch('/api/tickets/auto-assign', {
           method: 'POST',

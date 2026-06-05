@@ -99,12 +99,19 @@ export async function criarEDistribuirTicket(
 
         const best = sorted[0]
         if (best) {
-          const { error: updateError } = await supabase
+          const { data: updatedTicket, error: updateError } = await supabase
             .from('tickets')
-            .update({ colaborador_id: best.id, status: 'em_atendimento' })
+            .update({
+              colaborador_id: best.id,
+              status: 'em_atendimento',
+              atribuido_em: new Date().toISOString(),
+            })
             .eq('id', ticket.id)
+            .is('colaborador_id', null)
+            .select('id')
+            .maybeSingle()
 
-          if (!updateError) {
+          if (!updateError && updatedTicket) {
             assignedColaboradorId = best.id
             console.log(`[Distribuição] Ticket ${ticket.id} atribuído para ${best.nome} (${best.count} tickets ativos)`)
           }
