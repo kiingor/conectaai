@@ -394,12 +394,17 @@ export default function MonitoramentoPage() {
       .map((t: any) => ({
         id: t.id,
         cliente_id: t.cliente_id,
+        setor_id: t.setor_id,
+        colaborador_id: t.colaborador_id,
+        setores: t.setores,
+        colaboradores: t.colaboradores,
         numero: t.numero ?? null,
         contato: t.clientes?.nome || t.clientes?.telefone || 'Desconhecido',
         telefone: t.clientes?.telefone || null,
         canal: t.canal || 'whatsapp',
         setor: t.setores?.nome || '-',
         subsetor: t.subsetores?.nome || null,
+        status: t.status,
         tempoEspera: formatDuration(t.criado_em, null),
         criado_em: t.criado_em,
       }))
@@ -625,7 +630,10 @@ export default function MonitoramentoPage() {
     setAtendentesDisponiveis([])
     setSetoresTransfer([])
 
-    const currentSetorId = selectedTicket?.setor_id
+    const sourceTicket = selectedTicket?.setor_id
+      ? selectedTicket
+      : tickets.find((ticket: any) => ticket.id === selectedTicket?.id)
+    const currentSetorId = sourceTicket?.setor_id
     if (!currentSetorId) return
 
     const res = await fetch(`/api/setor/${currentSetorId}/transferencia-destinos`)
