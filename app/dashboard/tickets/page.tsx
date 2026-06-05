@@ -79,12 +79,14 @@ interface Colaborador {
   id: string
   nome: string
   is_online?: boolean
+  ativo?: boolean
+  pausa_atual_id?: string | null
   last_heartbeat?: string
 }
 
 // Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
 function isColabOnline(c: Colaborador | null | undefined): boolean {
-  return !!c?.is_online
+  return !!(c?.is_online && c.ativo !== false && !c.pausa_atual_id)
 }
 
 interface Subsetor {
@@ -416,13 +418,23 @@ export default function TicketsPage() {
       return
     }
     setLoadingAtendentes(true)
-    const { data } = await supabase
-      .from('colaboradores')
-      .select('id, nome, is_online, last_heartbeat')
-      .eq('ativo', true)
-      .contains('setor_ids', [setorId])
-      .order('nome')
-    setTransferAtendentes(data || [])
+    const { data: vinculos } = await supabase
+      .from('colaboradores_setores')
+      .select('colaborador_id')
+      .eq('setor_id', setorId)
+
+    if (vinculos && vinculos.length > 0) {
+      const colaboradorIds = vinculos.map((v) => v.colaborador_id)
+      const { data } = await supabase
+        .from('colaboradores')
+        .select('id, nome, is_online, ativo, pausa_atual_id, last_heartbeat')
+        .in('id', colaboradorIds)
+        .eq('ativo', true)
+        .order('nome')
+      setTransferAtendentes(data || [])
+    } else {
+      setTransferAtendentes([])
+    }
     setLoadingAtendentes(false)
   }
 
@@ -434,57 +446,33 @@ export default function TicketsPage() {
 
     setSaving(true)
 
-    const oldSetorName = selectedTicket.setor?.nome || 'Nenhum'
-    const newSetor = setores.find((s) => s.id === transferSetorId)
-
-    // Update ticket
     const actualAtendenteId = transferAtendenteId && transferAtendenteId !== 'fila' ? transferAtendenteId : null
-    const updateData: Record<string, any> = {
-      setor_id: transferSetorId,
-      colaborador_id: actualAtendenteId,
-      status: actualAtendenteId ? 'em_atendimento' : 'aberto',
-    }
-    const { error: updateError } = await supabase
-      .from('tickets')
-      .update(updateData)
-      .eq('id', selectedTicket.id)
+    const res = await fetch('/api/tickets/transferir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticket_id: selectedTicket.id,
+        setor_id: transferSetorId,
+        colaborador_id: actualAtendenteId,
+        from_colaborador_nome: selectedTicket.colaborador?.nome || 'Sem atendente',
+        from_setor_nome: selectedTicket.setor?.nome || 'Nenhum',
+        observacao: transferObservacao.trim() || undefined,
+      }),
+    })
 
-    if (updateError) {
-      toast({ title: 'Erro', description: 'Erro ao transferir ticket', variant: 'destructive' })
+    const result = await res.json()
+
+    if (!res.ok) {
+      toast({ title: 'Erro', description: result.error || 'Erro ao transferir ticket', variant: 'destructive' })
     } else {
-      // Add log
-      const atendenteNome = actualAtendenteId ? transferAtendentes.find(a => a.id === actualAtendenteId)?.nome : null
-      await supabase.from('ticket_logs').insert({
-        ticket_id: selectedTicket.id,
-        tipo: 'transferencia',
-        descricao: `Ticket transferido de "${oldSetorName}" para "${newSetor?.nome}"${atendenteNome ? ` (atendente: ${atendenteNome})` : ''}${transferObservacao ? `. Obs: ${transferObservacao}` : ''}`,
-      })
-
-      // Insert system message in chat for transfer visibility
-      const fromColabName = selectedTicket.colaborador?.nome || 'Sem atendente'
-      const toColabName = atendenteNome || 'Aguardando atendente'
-      const transferContent = `Transferido de ${fromColabName} - ${oldSetorName} >> ${toColabName} - ${newSetor?.nome}`
-
-      const { error: msgError } = await supabase.from('mensagens').insert({
-        ticket_id: selectedTicket.id,
-        cliente_id: selectedTicket.cliente_id,
-        remetente: 'sistema',
-        conteudo: transferContent,
-        tipo: 'texto',
-        enviado_em: new Date().toISOString(),
-      })
-      if (msgError) {
-        console.error('[v0] Erro ao inserir mensagem de transferencia:', msgError)
-      }
-
-      toast({ title: 'Sucesso', description: 'Ticket transferido com sucesso' })
+      toast({ title: 'Sucesso', description: result.message || 'Ticket transferido com sucesso' })
 
       // Se o ticket foi para a fila (sem atendente), acionar distribuição imediata
-      if (!actualAtendenteId) {
+      if (result.queued || !actualAtendenteId) {
         fetch('/api/tickets/auto-assign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ setorId: transferSetorId }),
+          body: JSON.stringify({ setorId: result.setor_id || transferSetorId }),
         }).catch(() => {})
       }
 
@@ -1275,7 +1263,7 @@ export default function TicketsPage() {
                       {transferAtendentes.map((a) => {
                         const online = isColabOnline(a)
                         return (
-                          <SelectItem key={a.id} value={a.id} disabled={!online}>
+                          <SelectItem key={a.id} value={a.id}>
                             <div className="flex items-center gap-2">
                               <span className={`h-2 w-2 rounded-full ${online ? 'bg-green-500' : 'bg-gray-400'}`} />
                               <span className={!online ? 'text-muted-foreground' : ''}>
@@ -1298,7 +1286,7 @@ export default function TicketsPage() {
                 )}
                 {!loadingAtendentes && transferAtendentes.length > 0 && !transferAtendentes.some(a => isColabOnline(a)) && (
                   <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-2 rounded-md text-xs">
-                    Todos os atendentes estao offline. O ticket ira para a fila.
+                    Todos os atendentes estao offline. Escolha um atendente para transferir direto ou deixe na fila.
                   </p>
                 )}
               </div>

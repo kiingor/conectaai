@@ -702,7 +702,7 @@ export default function MonitoramentoPage() {
     }
 
     if (result.queued) {
-      toast.info('Atendente no limite de tickets — ticket adicionado à fila de espera')
+      toast.info('Ticket transferido para a fila de espera')
     } else {
       toast.success('Ticket transferido com sucesso')
     }
@@ -1884,7 +1884,7 @@ export default function MonitoramentoPage() {
                     {atendentesDisponiveis.map((atendente) => {
                       const online = isAtendenteOnline(atendente)
                       return (
-                        <SelectItem key={atendente.id} value={atendente.id} disabled={!online}>
+                        <SelectItem key={atendente.id} value={atendente.id}>
                           <div className="flex items-center gap-2">
                             <span className={cn('h-2 w-2 rounded-full', online ? 'bg-green-500' : 'bg-gray-400')} />
                             <span className={!online ? 'text-muted-foreground' : ''}>{atendente.nome}</span>
@@ -1899,7 +1899,7 @@ export default function MonitoramentoPage() {
                   <p className="text-sm text-muted-foreground">Nenhum outro atendente neste setor.</p>
                 )}
                 {atendentesDisponiveis.length > 0 && !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
-                  <p className="text-sm text-amber-600">Todos os atendentes estao offline.</p>
+                  <p className="text-sm text-amber-600">Todos os atendentes estao offline, mas a transferencia direta ainda e permitida.</p>
                 )}
               </div>
               <Button
@@ -1907,16 +1907,12 @@ export default function MonitoramentoPage() {
                 disabled={
                   !selectedAtendenteTransfer ||
                   selectedAtendenteTransfer === 'all' ||
-                  transferLoading ||
-                  !isAtendenteOnline(atendentesDisponiveis.find((a) => a.id === selectedAtendenteTransfer))
+                  transferLoading
                 }
                 className="w-full"
               >
                 {transferLoading ? 'Transferindo...' : 'Transferir para Atendente'}
               </Button>
-              {selectedAtendenteTransfer && selectedAtendenteTransfer !== 'all' && !isAtendenteOnline(atendentesDisponiveis.find((a) => a.id === selectedAtendenteTransfer)) && (
-                <p className="text-sm text-destructive">Este atendente esta offline. Selecione um atendente online.</p>
-              )}
             </TabsContent>
 
             <TabsContent value="setor" className="space-y-4 pt-4">
@@ -1957,7 +1953,7 @@ export default function MonitoramentoPage() {
                       {atendentesDisponiveis.map((atendente) => {
                         const online = isAtendenteOnline(atendente)
                         return (
-                          <SelectItem key={atendente.id} value={atendente.id} disabled={!online}>
+                          <SelectItem key={atendente.id} value={atendente.id}>
                             <div className="flex items-center gap-2">
                               <span className={cn('h-2 w-2 rounded-full', online ? 'bg-green-500' : 'bg-gray-400')} />
                               <span className={!online ? 'text-muted-foreground' : ''}>{atendente.nome}</span>
@@ -1973,7 +1969,7 @@ export default function MonitoramentoPage() {
 
               {selectedSetorTransfer !== 'all' && atendentesDisponiveis.length > 0 && !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
                 <p className="text-sm text-blue-400 bg-blue-950/30 p-2 rounded-md border border-blue-800/30">
-                  Nenhum atendente online neste setor. O ticket ira para a fila e sera atribuido automaticamente quando alguem ficar online.
+                  Nenhum atendente online neste setor. Escolha um atendente para transferir direto ou deixe na fila.
                 </p>
               )}
 

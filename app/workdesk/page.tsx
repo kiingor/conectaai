@@ -3612,7 +3612,6 @@ const tempId = `temp-${Date.now()}`
                               <SelectItem
                                 key={atendente.id}
                                 value={atendente.id}
-                                disabled={!online}
                               >
                                 <div className="flex items-center gap-2 w-full">
                                   <span
@@ -3646,7 +3645,7 @@ const tempId = `temp-${Date.now()}`
                       {atendentesDisponiveis.length > 0 &&
                         !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
                           <p className="text-sm text-amber-600">
-                            Todos os atendentes estao offline.
+                            Todos os atendentes estao offline, mas a transferencia direta ainda e permitida.
                           </p>
                         )}
                     </div>
@@ -3656,18 +3655,12 @@ const tempId = `temp-${Date.now()}`
   disabled={
   !selectedAtendenteTransfer ||
   selectedAtendenteTransfer === 'all' ||
-  transferLoading ||
-  !isAtendenteOnline(atendentesDisponiveis.find((a) => a.id === selectedAtendenteTransfer))
+  transferLoading
   }
   className="w-full"
   >
   {transferLoading ? 'Transferindo...' : 'Transferir para Atendente'}
   </Button>
-  {selectedAtendenteTransfer && selectedAtendenteTransfer !== 'all' && !isAtendenteOnline(atendentesDisponiveis.find((a) => a.id === selectedAtendenteTransfer)) && (
-  <p className="text-sm text-destructive">
-  Este atendente esta offline. Selecione um atendente online.
-  </p>
-  )}
   </TabsContent>
   
   <TabsContent value="setor" className="space-y-4 pt-4">
@@ -3721,7 +3714,6 @@ const tempId = `temp-${Date.now()}`
                                 <SelectItem
                                   key={atendente.id}
                                   value={atendente.id}
-                                  disabled={!online}
                                 >
                                   <div className="flex items-center gap-2">
                                     <span
@@ -3749,8 +3741,7 @@ const tempId = `temp-${Date.now()}`
                       atendentesDisponiveis.length > 0 &&
                       !atendentesDisponiveis.some((a) => isAtendenteOnline(a)) && (
                         <p className="text-sm text-blue-400 bg-blue-500/5 p-2 rounded-md border border-blue-500/10">
-                          Nenhum atendente online neste setor. O ticket ira para a fila e sera
-                          atribuido automaticamente quando alguem ficar online.
+                          Nenhum atendente online neste setor. Escolha um atendente para transferir direto ou deixe na fila.
                         </p>
                       )}
 

@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   try {
     const orgId = (request as any).headers?.get?.(ORG_ID_HEADER) ?? null
     const body = await request.json()
-    const { ticket_id, setor_id, colaborador_id, from_colaborador_nome, from_setor_nome } = body
+    const { ticket_id, setor_id, colaborador_id, from_colaborador_nome, from_setor_nome, observacao } = body
 
     if (!ticket_id) {
       return NextResponse.json({ error: 'ticket_id é obrigatório' }, { status: 400 })
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     // 1. Buscar ticket atual
     const ticketQuery = supabase
       .from('tickets')
-      .select('id, setor_id, colaborador_id, cliente_id, status, setores(nome)')
+      .select('id, setor_id, colaborador_id, cliente_id, status, organizacao_id, setores(nome)')
       .eq('id', ticket_id)
     if (orgId) ticketQuery.eq('organizacao_id', orgId)
     const { data: ticket, error: ticketError } = await ticketQuery.single()
@@ -48,34 +48,50 @@ export async function POST(request: Request) {
     }
 
     if (colaborador_id) {
-      // Disponibilidade controlada APENAS pelo botão online/offline (sem heartbeat).
+      // Transferencia direta cai no atendente escolhido mesmo se ele estiver offline/em pausa.
+      // Fila so acontece quando colaborador_id nao e enviado.
       const { data: colab } = await supabase
         .from('colaboradores')
-        .select('id, nome, is_online, pausa_atual_id')
+        .select('id, nome, is_online, ativo, pausa_atual_id, organizacao_id')
         .eq('id', colaborador_id)
         .single()
 
-      if (!colab?.is_online) {
+      if (!colab?.ativo) {
         return NextResponse.json(
-          { error: 'Este atendente está offline. Selecione um atendente online.' },
+          { error: 'Este atendente esta inativo. Selecione outro atendente.' },
           { status: 422 }
         )
       }
 
-      if (colab.pausa_atual_id) {
+      if (ticket.organizacao_id && colab.organizacao_id !== ticket.organizacao_id) {
         return NextResponse.json(
-          { error: 'Este atendente está em pausa. Selecione outro atendente.' },
+          { error: 'Este atendente nao pertence a organizacao do ticket.' },
           { status: 422 }
         )
       }
 
+      const { data: vinculo } = await supabase
+        .from('colaboradores_setores')
+        .select('colaborador_id')
+        .eq('colaborador_id', colaborador_id)
+        .eq('setor_id', targetSetorId)
+        .maybeSingle()
+
+      if (!vinculo) {
+        return NextResponse.json(
+          { error: 'Este atendente nao pertence ao setor de destino.' },
+          { status: 422 }
+        )
+      }
       updateData.colaborador_id = colaborador_id
       updateData.status = 'em_atendimento'
+      updateData.atribuido_em = new Date().toISOString()
       toColabNome = colab.nome
     } else {
       // Transferir para fila (sem atendente específico)
       updateData.colaborador_id = null
       updateData.status = 'aberto'
+      updateData.atribuido_em = null
       queued = true
     }
 
@@ -106,7 +122,7 @@ export async function POST(request: Request) {
     // 4. Inserir mensagem de sistema com log de transferência
     const fromNome = from_colaborador_nome || 'Desconhecido'
     const fromSetor = from_setor_nome || (ticket.setores as any)?.nome || 'Desconhecido'
-    const conteudo = `Transferido de ${fromNome} - ${fromSetor} >> ${toColabNome} - ${toSetorNome}`
+    const conteudo = `Transferido de ${fromNome} - ${fromSetor} >> ${toColabNome} - ${toSetorNome}${observacao ? `. Obs: ${observacao}` : ''}`
 
     await supabase.from('mensagens').insert({
       ticket_id,
